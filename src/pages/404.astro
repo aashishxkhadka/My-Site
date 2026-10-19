@@ -5,6 +5,9 @@ import { NAV, TOPICS } from '@/site.config';
 ---
 
 <Layout title="Page not found" description="This page doesn't exist or has moved. Here are the best places to go next on Aashish Khadka's website." noindex>
+  <script is:inline>
+    if (location.pathname.startsWith('/site/')) location.replace(location.pathname.slice(5) + location.search + location.hash);
+  </script>
   <section class="stage relative overflow-hidden" aria-labelledby="nf">
     <p class="display pointer-events-none absolute -bottom-[0.18em] right-0 select-none text-[clamp(10rem,38vw,34rem)] leading-none text-[#262626]" aria-hidden="true">404</p>
     <div class="wrap relative py-24 md:py-36">
