@@ -1,0 +1,30 @@
+---
+/** Charcoal page header shared by inner pages: breadcrumbs, kicker, H1, lead, optional aside. */
+import Breadcrumbs from '@/components/seo/Breadcrumbs.astro';
+import { withHome } from '@/lib/crumbs';
+import type { Crumb } from '@/lib/schema';
+
+export interface Props {
+  title: string;
+  kicker?: string | undefined;
+  lead?: string | undefined;
+  breadcrumbs?: Crumb[] | undefined;
+}
+const { title, kicker, lead, breadcrumbs } = Astro.props;
+const crumbs = withHome(breadcrumbs);
+const hasAside = Astro.slots.has('aside');
+---
+
+<section class="stage relative overflow-hidden" aria-labelledby="page-title">
+  <div class="pointer-events-none absolute inset-0" style="background: radial-gradient(50% 80% at 85% 0%, #2c2c2b 0%, transparent 70%);" aria-hidden="true"></div>
+  <div class:list={['wrap relative pb-14 pt-10 md:pb-20 md:pt-14', hasAside && 'grid gap-10 md:grid-cols-12 md:items-end']}>
+    <div class:list={[hasAside && 'md:col-span-8']}>
+      {crumbs && <Breadcrumbs crumbs={crumbs} />}
+      {kicker && <p class="label mt-10 flex items-center gap-3 text-ink"><span class="h-px w-8 bg-accent" aria-hidden="true"></span>{kicker}</p>}
+      <h1 id="page-title" class:list={['display text-step-5 max-w-4xl', kicker ? 'mt-4' : 'mt-10']}>{title}</h1>
+      {lead && <p class="mt-6 max-w-2xl text-step-1 leading-snug text-muted">{lead}</p>}
+      <slot />
+    </div>
+    {hasAside && <div class="md:col-span-4"><slot name="aside" /></div>}
+  </div>
+</section>

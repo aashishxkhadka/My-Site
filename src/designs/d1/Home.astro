@@ -1,0 +1,204 @@
+---
+/**
+ * Homepage — answers, in order:
+ *   1. Who I am (hero)  2. What I deliver (services)  3. How to work with me (CTA)
+ * with proof in between: selected work, products, writing.
+ * Sections with no published content are omitted rather than shown empty.
+ */
+import { Image } from 'astro:assets';
+import BaseLayout from './Layout.astro';
+import Button from './components/Button.astro';
+import SectionHeader from './components/SectionHeader.astro';
+import Todo from '@/components/ui/Todo.astro';
+import ServiceCard from './components/ServiceCard.astro';
+import WorkRow from './components/WorkRow.astro';
+import ProjectCard from './components/ProjectCard.astro';
+import PostRow from './components/PostRow.astro';
+import { getPublished, byNewest, byOrder } from '@/lib/content';
+import { SITE, CONTACT, BASILPOT } from '@/site.config';
+
+export interface Props {
+  /** True on /designs/<id>/ previews. */
+  noindex?: boolean;
+}
+const { noindex = false } = Astro.props;
+
+const allServices = await getPublished('services');
+const services = allServices.filter((s) => s.data.featured).sort(byOrder).slice(0, 5);
+const work = (await getPublished('work')).filter((w) => w.data.featured).sort(byOrder).slice(0, 3);
+const projects = (await getPublished('projects')).sort(byOrder);
+const posts = (await getPublished('blog')).sort(byNewest).slice(0, 4);
+
+const serviceTitle = (id: string) => allServices.find((s) => s.id === id)?.data.title ?? id;
+
+// Portrait: drop a real photo at src/assets/aashish.(jpg|png|webp) and it appears here.
+const portraitFiles = import.meta.glob<{ default: ImageMetadata }>('../../assets/aashish.{jpg,jpeg,png,webp}', { eager: true });
+const portrait = Object.values(portraitFiles)[0]?.default;
+const dev = import.meta.env.DEV;
+
+const facts: { k: string; v: string; href?: string }[] = [
+  { k: 'Based in', v: CONTACT.address.display },
+  { k: 'Founder', v: 'Basilpot', href: BASILPOT.url },
+  { k: 'Studying', v: 'MBA, Infomax College' },
+];
+---
+
+<BaseLayout rawTitle={SITE.defaultTitle} description={SITE.defaultDescription} noindex={noindex}>
+  <!-- 1 · Who I am -->
+  <section class="wrap pb-20 pt-10 md:pb-28 md:pt-16" aria-labelledby="intro">
+    <h1 id="intro" class="reveal headline text-step-5">Aashish Khadka</h1>
+
+    <div class="mt-10 grid gap-10 border-t border-line pt-8 md:mt-14 md:grid-cols-12 md:gap-8">
+      <div class="md:col-span-7">
+        <p class="reveal text-step-2 font-medium leading-[1.2] tracking-[-0.025em]" style="--i:1">
+          <Todo note="Draft intro, review wording">
+            I build websites and products, and help them get found. Founder of
+            <a class="link" href={BASILPOT.url}>Basilpot</a>, based in Pokhara, Nepal.
+          </Todo>
+        </p>
+        <div class="reveal mt-10 flex flex-wrap gap-3" style="--i:2">
+          <Button href="/contact/" size="lg">Work with me</Button>
+          <Button href="/about/" size="lg" variant="secondary">About me</Button>
+        </div>
+        <dl class="reveal mt-12 grid grid-cols-3 gap-6 border-t border-line pt-6" style="--i:3">
+          {
+            facts.map((f) => (
+              <div>
+                <dt class="label">{f.k}</dt>
+                <dd class="mt-1 font-semibold leading-snug">{f.href ? <a class="link" href={f.href}>{f.v}</a> : f.v}</dd>
+              </div>
+            ))
+          }
+        </dl>
+      </div>
+
+      <div class="reveal md:col-span-5" style="--i:2">
+        {
+          portrait ? (
+            <Image
+              src={portrait}
+              alt="Aashish Khadka"
+              widths={[400, 640, 900]}
+              sizes="(min-width: 768px) 40vw, 100vw"
+              loading="eager"
+              fetchpriority="high"
+              class="aspect-[4/5] w-full rounded-lg object-cover"
+            />
+          ) : (
+            dev && (
+              <div class="todo grid aspect-[4/5] w-full place-items-center rounded-lg bg-surface text-center text-muted">
+                <span>
+                  TODO: your photo
+                  <br />
+                  <span class="text-step--1">src/assets/aashish.jpg</span>
+                </span>
+              </div>
+            )
+          )
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 · What I deliver -->
+  {
+    services.length > 0 && (
+      <section class="wrap py-16 md:py-20" aria-labelledby="services">
+        <SectionHeader
+          id="services"
+          title="What I do"
+          lead="The work I take on myself, start to finish. Bigger team builds go through Basilpot."
+          action={{ label: 'All services', href: '/services/' }}
+        />
+        <ul class="grid gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-2 lg:grid-cols-3">
+          {services.map((s, i) => (
+            <li class="reveal" style={`--i:${i}`}>
+              <ServiceCard service={s} />
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+
+  <!-- Proof · Selected work -->
+  {
+    work.length > 0 && (
+      <section class="wrap py-16 md:py-20" aria-labelledby="work">
+        <SectionHeader id="work" title="Selected work" action={{ label: 'All case studies', href: '/work/' }} />
+        <div class="border-t border-line-strong">
+          {work.map((w) => (
+            <WorkRow item={w} serviceTitles={w.data.services.map((s) => serviceTitle(s.id))} />
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  <!-- Proof · Products -->
+  {
+    projects.length > 0 && (
+      <section class="wrap py-16 md:py-20" aria-labelledby="projects">
+        <SectionHeader
+          id="projects"
+          title="Things I've built"
+          lead="Products I've designed and launched under Basilpot."
+          action={{ label: 'All projects', href: '/projects/' }}
+        />
+        <ul class="grid gap-x-8 gap-y-14 md:grid-cols-2">
+          {projects.map((p) => (
+            <li>
+              <ProjectCard project={p}>
+                <Todo slot="tagline" note="Taken from the site's <title>, confirm">{p.data.tagline}</Todo>
+              </ProjectCard>
+            </li>
+          ))}
+        </ul>
+        <p class="mt-14 flex flex-col gap-2 border-y border-line py-6 sm:flex-row sm:items-center sm:justify-between">
+          <span class="text-muted">Need a whole team for something bigger?</span>
+          <a class="group inline-flex items-center gap-2 font-semibold" href={BASILPOT.url}>
+            Visit Basilpot <span aria-hidden="true" class="transition-transform duration-300 group-hover:translate-x-1">↗</span>
+          </a>
+        </p>
+      </section>
+    )
+  }
+
+  <!-- Proof · Writing -->
+  {
+    posts.length > 0 && (
+      <section class="wrap py-16 md:py-20" aria-labelledby="writing">
+        <SectionHeader id="writing" title="Writing" action={{ label: 'All posts', href: '/blog/' }} />
+        <div class="border-t border-line-strong">
+          {posts.map((p) => (
+            <PostRow post={p} />
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  <!-- 3 · How to work with me -->
+  <section class="wrap pt-16 md:pt-20" aria-labelledby="cta">
+    <div class="rounded-xl bg-accent px-6 py-14 text-on-accent md:px-14 md:py-20">
+      <h2 id="cta" class="headline text-step-5">Let's talk.</h2>
+      <div class="mt-10 grid gap-10 border-t border-current/25 pt-8 md:mt-14 md:grid-cols-12 md:items-end">
+        <p class="text-step-2 font-medium leading-[1.2] tracking-[-0.025em] md:col-span-7">
+          <Todo note="Confirm response time">Tell me what you're working on. I reply personally, usually within a day or two.</Todo>
+        </p>
+        <div class="flex flex-col gap-4 md:col-span-5 md:items-end">
+          <a
+            href="/contact/"
+            class="group inline-flex w-fit items-center gap-2 rounded-md bg-on-accent px-6 py-3.5 font-semibold text-accent transition-opacity hover:opacity-90"
+          >
+            Start a conversation <span aria-hidden="true" class="transition-transform duration-300 group-hover:translate-x-0.5">→</span>
+          </a>
+          <div class="flex flex-col gap-1 font-medium md:items-end">
+            <a class="link" href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>
+            <a class="link" href={`tel:${CONTACT.phoneE164}`}>{CONTACT.phoneDisplay}</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

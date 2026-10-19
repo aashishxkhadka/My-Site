@@ -1,0 +1,229 @@
+---
+/**
+ * d3 "Onchain" homepage — answers, in order:
+ *   1. Who I am (hero)  2. What I deliver (services)  3. How to work with me (CTA)
+ * with proof in between: selected work, products, writing.
+ * Sections with no published content are omitted rather than shown empty.
+ */
+import { Image } from 'astro:assets';
+import BaseLayout from './Layout.astro';
+import Button from './components/Button.astro';
+import SectionHeader from './components/SectionHeader.astro';
+import Orb from './components/Orb.astro';
+import GridFloor from './components/GridFloor.astro';
+import Ticker from './components/Ticker.astro';
+import ServiceCard from './components/ServiceCard.astro';
+import WorkCard from './components/WorkCard.astro';
+import ProjectCard from './components/ProjectCard.astro';
+import PostRow from './components/PostRow.astro';
+import Todo from '@/components/ui/Todo.astro';
+import { getPublished, byNewest, byOrder } from '@/lib/content';
+import { SITE, CONTACT, BASILPOT } from '@/site.config';
+
+export interface Props {
+  /** True on /designs/<id>/ previews. */
+  noindex?: boolean;
+}
+const { noindex = false } = Astro.props;
+
+const allServices = await getPublished('services');
+const services = allServices.filter((s) => s.data.featured).sort(byOrder).slice(0, 5);
+const work = (await getPublished('work')).filter((w) => w.data.featured).sort(byOrder).slice(0, 3);
+const projects = (await getPublished('projects')).sort(byOrder);
+const posts = (await getPublished('blog')).sort(byNewest).slice(0, 4);
+
+const serviceTitle = (id: string) => allServices.find((s) => s.id === id)?.data.title ?? id;
+
+// Portrait: drop a real photo at src/assets/aashish.(jpg|png|webp) and it appears in the hero card.
+const portraitFiles = import.meta.glob<{ default: ImageMetadata }>('../../assets/aashish.{jpg,jpeg,png,webp}', { eager: true });
+const portrait = Object.values(portraitFiles)[0]?.default;
+const dev = import.meta.env.DEV;
+
+const statusLabel = { live: 'Live', beta: 'Beta', 'in-development': 'Building', archived: 'Archived' } as const;
+const tickerItems = [
+  ...projects.map((p) => ({ label: p.data.title, status: statusLabel[p.data.status], live: p.data.status === 'live' })),
+  { label: 'Basilpot', status: 'Studio' },
+  { label: 'Pokhara, NP', status: 'GMT+5:45' },
+];
+
+const meta = [
+  { k: 'Founder', v: 'Basilpot', href: BASILPOT.url },
+  { k: 'Based', v: 'Pokhara, NP' },
+  { k: 'Studying', v: 'MBA' },
+];
+---
+
+<BaseLayout rawTitle={SITE.defaultTitle} description={SITE.defaultDescription} noindex={noindex}>
+  <!-- 1 · Who I am -->
+  <section class="relative isolate overflow-hidden" aria-labelledby="intro">
+    <GridFloor />
+    <div class="pointer-events-none absolute -right-[12vw] top-[6%] -z-10 w-[min(62vw,52rem)] md:-right-[6vw]">
+      <Orb />
+    </div>
+
+    <div class="wrap relative flex flex-col gap-12 pb-24 pt-12 md:gap-14 md:pb-32 md:pt-16">
+      <p class="mono reveal flex items-center gap-2.5">
+        <span class="relative flex size-2"><span class="absolute inline-flex size-full animate-ping rounded-full bg-accent opacity-70 motion-reduce:hidden"></span><span class="relative inline-flex size-2 rounded-full bg-accent"></span></span>
+        {CONTACT.address.display} <span class="text-muted">· GMT+5:45</span>
+      </p>
+
+      <h1 id="intro" class="display text-[clamp(3rem,0.8rem+9.2vw,10rem)]">
+        <span class="reveal block">Aashish</span>
+        <span class="reveal text-holo block" style="--i:1">Khadka</span>
+      </h1>
+
+      <div class="grid items-end gap-10 md:grid-cols-12">
+        <div class="md:col-span-7 lg:col-span-6">
+          <p class="reveal text-step-2 font-medium leading-[1.2] tracking-[-0.01em]" style="--i:2">
+            <Todo note="Draft intro, review wording">
+              I plan, design and build websites and products, then help them grow. Founder of
+              <a class="link" href={BASILPOT.url}>Basilpot</a>.
+            </Todo>
+          </p>
+          <div class="reveal mt-10 flex flex-wrap gap-3" style="--i:3">
+            <Button href="/contact/">Work with me</Button>
+            <Button href="/about/" variant="glass">My story</Button>
+          </div>
+          <dl class="reveal glass mt-10 grid max-w-lg grid-cols-3 divide-x divide-line overflow-hidden rounded-2xl" style="--i:4">
+            {
+              meta.map((m) => (
+                <div class="p-4">
+                  <dt class="label">{m.k}</dt>
+                  <dd class="mt-1.5 font-semibold">{m.href ? <a class="link" href={m.href}>{m.v}</a> : m.v}</dd>
+                </div>
+              ))
+            }
+          </dl>
+        </div>
+
+        <!-- Portrait as a collectible card -->
+        <div class="reveal hidden md:col-span-4 md:col-start-9 md:block lg:col-span-3 lg:col-start-10" style="--i:3">
+          <div class="glass neon-border rotate-3 rounded-[1.5rem] p-2.5 transition-transform duration-700 ease-[var(--ease-spring)] hover:rotate-0">
+            {
+              portrait ? (
+                <Image src={portrait} alt="Aashish Khadka" widths={[300, 500]} sizes="22vw" loading="eager" class="aspect-[4/5] w-full rounded-[1.1rem] object-cover" />
+              ) : (
+                dev && (
+                  <div class="todo grid aspect-[4/5] w-full place-items-center rounded-[1.1rem] bg-surface-2 p-6 text-center text-step--1 text-muted">
+                    TODO: your photo
+                    <br />
+                    src/assets/aashish.jpg
+                  </div>
+                )
+              )
+            }
+            <div class="mono flex justify-between px-2 pb-1 pt-3 text-muted">
+              <span>Founder</span><span>#001</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Ticker -->
+  <div aria-label="Products and status">
+    <Ticker items={tickerItems} />
+  </div>
+
+  <!-- 2 · What I deliver -->
+  {
+    services.length > 0 && (
+      <section class="wrap pt-28 md:pt-40" aria-labelledby="services">
+        <SectionHeader
+          id="services"
+          kicker="What I do"
+          title="Skills, minted."
+          lead="The work I take on myself, start to finish. Bigger team builds go through Basilpot."
+          action={{ label: 'All services', href: '/services/' }}
+        />
+        <ul class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {services.map((s, i) => (
+            <li class="scroll-in">
+              <ServiceCard service={s} index={i} />
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+
+  <!-- Proof · Selected work -->
+  {
+    work.length > 0 && (
+      <section class="wrap pt-28 md:pt-40" aria-labelledby="work">
+        <SectionHeader id="work" kicker="Selected work" title="Case files." action={{ label: 'All case studies', href: '/work/' }} />
+        <div class="grid gap-5">
+          {work.map((w, i) => (
+            <WorkCard item={w} index={i} serviceTitles={w.data.services.map((s) => serviceTitle(s.id))} />
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  <!-- Proof · Products -->
+  {
+    projects.length > 0 && (
+      <section class="wrap pt-28 md:pt-40" aria-labelledby="projects">
+        <SectionHeader
+          id="projects"
+          kicker="Things I've built"
+          title="The collection."
+          lead="Products I've designed, built and launched under Basilpot."
+          action={{ label: 'All projects', href: '/projects/' }}
+        />
+        <ul class="grid gap-8 md:grid-cols-2">
+          {projects.map((p, i) => (
+            <li class="min-w-0">
+              <ProjectCard project={p} index={i}>
+                <Todo slot="tagline" note="Taken from the site's <title>, confirm">{p.data.tagline}</Todo>
+              </ProjectCard>
+            </li>
+          ))}
+        </ul>
+        <p class="mono mt-14 text-center text-muted">
+          Need a whole team? <a class="link text-ink hover:text-accent" href={BASILPOT.url}>[ Meet Basilpot ↗ ]</a>
+        </p>
+      </section>
+    )
+  }
+
+  <!-- Proof · Writing -->
+  {
+    posts.length > 0 && (
+      <section class="wrap pt-28 md:pt-40" aria-labelledby="writing">
+        <SectionHeader id="writing" kicker="Writing" title="The log." action={{ label: 'All posts', href: '/blog/' }} />
+        <div class="border-t border-line">
+          {posts.map((p) => (
+            <PostRow post={p} />
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  <!-- 3 · How to work with me -->
+  <section class="wrap pt-28 md:pt-40" aria-labelledby="cta">
+    <div class="glass relative isolate overflow-hidden rounded-[2.5rem] px-6 pb-40 pt-16 md:px-16 md:pb-56 md:pt-24">
+      <GridFloor class="h-[60%]" />
+      <div class="pointer-events-none absolute -right-24 -top-24 -z-10 w-[28rem] opacity-80 md:w-[36rem]">
+        <Orb />
+      </div>
+      <p class="label mb-6">// How to work with me</p>
+      <h2 id="cta" class="display text-step-5">
+        Let's<br /><span class="text-holo">build.</span>
+      </h2>
+      <div class="mt-12 grid gap-10 md:mt-16 md:grid-cols-12 md:items-end">
+        <p class="text-step-1 leading-snug text-muted md:col-span-6">
+          <Todo note="Confirm response time">Tell me what you're working on. I reply personally, usually within a day or two.</Todo>
+        </p>
+        <div class="flex flex-col gap-5 md:col-span-6 md:items-end">
+          <Button href="/contact/">Connect</Button>
+          <a class="title link text-step-2 normal-case md:text-right" href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>
+          <a class="mono link text-muted" href={`tel:${CONTACT.phoneE164}`}>{CONTACT.phoneDisplay}</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

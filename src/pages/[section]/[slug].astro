@@ -1,0 +1,31 @@
+---
+/** Generic section entry page. See [section]/index.astro. */
+import type { GetStaticPaths } from 'astro';
+import { getCollection, render, type CollectionKey } from 'astro:content';
+import Layout from '@/designs/d4/Layout.astro';
+import PageHeader from '@/designs/d4/components/PageHeader.astro';
+import { SECTIONS, type Section } from '@/site.config';
+
+export const getStaticPaths = (async () => {
+  const generic = (Object.values(SECTIONS) as Section[]).filter((s) => s.enabled && s.template === 'generic' && s.detailPages);
+  const paths = await Promise.all(
+    generic.map(async (section) => {
+      const entries = await getCollection(section.collection as CollectionKey);
+      return entries
+        .filter((e) => import.meta.env.DEV || !(e.data as { draft?: boolean }).draft)
+        .map((entry) => ({ params: { section: section.base.replaceAll('/', ''), slug: entry.id }, props: { section, entry } }));
+    }),
+  );
+  return paths.flat();
+}) satisfies GetStaticPaths;
+
+const { section, entry } = Astro.props;
+const d = entry.data as { title: string; description: string };
+const { Content } = await render(entry as never);
+const crumbs = [{ label: section.label, href: section.base }, { label: d.title, href: `${section.base}${entry.id}/` }];
+---
+
+<Layout title={d.title} description={d.description} breadcrumbs={crumbs}>
+  <PageHeader title={d.title} lead={d.description} breadcrumbs={crumbs} />
+  <div class="wrap py-16"><div class="prose"><Content /></div></div>
+</Layout>

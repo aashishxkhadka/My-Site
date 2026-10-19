@@ -1,0 +1,77 @@
+---
+import { NAV, SITE, SOCIALS, CONTACT } from '@/site.config';
+
+const year = new Date().getFullYear();
+const socials = SOCIALS.filter((s) => s.visible && s.url);
+const isExternal = (href: string) => /^https?:\/\//.test(href);
+---
+
+<footer class="relative mt-32 overflow-hidden border-t border-line">
+  <div class="wrap grid gap-12 pb-10 pt-16 md:grid-cols-12">
+    <div class="md:col-span-5">
+      <address class="space-y-1 not-italic text-muted">
+        <p class="text-ink">{CONTACT.address.display}</p>
+        <p><a class="link" href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a></p>
+        <p><a class="link" href={`tel:${CONTACT.phoneE164}`}>{CONTACT.phoneDisplay}</a></p>
+      </address>
+      {
+        socials.length > 0 && (
+          <ul class="mt-6 flex flex-wrap gap-2" aria-label="Elsewhere">
+            {socials.map((s) => (
+              <li>
+                <a
+                  class="inline-block rounded-full border border-line px-4 py-1.5 text-step--1 font-medium transition-colors hover:border-transparent hover:bg-ink hover:text-bg"
+                  href={s.url}
+                  rel="me noopener"
+                  target="_blank"
+                >
+                  {s.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        )
+      }
+    </div>
+
+    <nav aria-label="Footer" class="grid grid-cols-2 gap-8 sm:grid-cols-3 md:col-span-7">
+      {
+        NAV.footer.map((group) => (
+          <div>
+            <p class="label mb-4">{group.heading}</p>
+            <ul class="space-y-2 text-[0.9375rem]">
+              {group.links.map((l) => (
+                <li>
+                  <a
+                    class="transition-colors hover:text-accent"
+                    href={l.href}
+                    {...(isExternal(l.href) ? { rel: 'noopener', target: '_blank' } : {})}
+                  >
+                    {l.label}
+                    {isExternal(l.href) && <span aria-hidden="true"> ↗</span>}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
+    </nav>
+  </div>
+
+  <!-- Giant wordmark, decorative (name is already in the header and address). -->
+  <div class="wrap select-none" aria-hidden="true">
+    <p class="display text-gradient -mb-[0.18em] whitespace-nowrap text-[clamp(4rem,19vw,20rem)] leading-none tracking-[-0.05em]">
+      aashish*
+    </p>
+  </div>
+
+  <div class="relative border-t border-line bg-bg">
+    <div class="wrap flex flex-col gap-3 py-5 text-step--1 text-muted sm:flex-row sm:items-center sm:justify-between">
+      <p>© {year} {SITE.name}</p>
+      <ul class="flex gap-5">
+        {NAV.legal.map((l) => <li><a class="hover:text-ink" href={l.href}>{l.label}</a></li>)}
+      </ul>
+    </div>
+  </div>
+</footer>

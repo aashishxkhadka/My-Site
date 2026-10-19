@@ -1,0 +1,15 @@
+---
+import { Picture } from 'astro:assets';
+import portrait from '@/assets/aashish.jpg';
+import { BASILPOT } from '@/site.config';
+---
+
+<aside class="flex flex-col gap-5 rounded-2xl border border-line bg-paper p-6 sm:flex-row sm:items-center" aria-label="About the author">
+  <Picture src={portrait} alt="Aashish Khadka" formats={['avif', 'webp']} widths={[160]} sizes="80px" class="size-20 shrink-0 rounded-full object-cover object-[50%_18%]" />
+  <div>
+    <p class="title text-step-1"><a class="link" href="/about/">Aashish Khadka</a></p>
+    <p class="mt-1 text-muted">
+      Founder of <a class="link" href={BASILPOT.url}>Basilpot</a> in Pokhara, Nepal. I help businesses grow with strategy, SEO, digital marketing, branding and websites.
+    </p>
+  </div>
+</aside>

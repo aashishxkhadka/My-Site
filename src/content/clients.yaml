@@ -1,0 +1,144 @@
+# Brands supported through Basilpot (websites and/or media & marketing).
+# Source: basilpot.com/clients and basilpot.com/media-and-marketing.
+# Two unnamed logos on that page (a purple record/dove mark, a red eight-spoked wheel) are left out until named.
+
+- id: hope-fertility
+  featured: true
+  name: 'Hope Fertility & IVF Centre'
+  logo: ../assets/clients/hope-fertility.png
+  url: 'https://hopefertility.com.np/'
+  kind: [web, marketing]
+  industry: 'Healthcare'
+  order: 1
+- id: sadp-nepal
+  name: 'SADP Nepal'
+  url: 'https://sadpnepal.org/'
+  kind: [web]
+  industry: 'Non-profit'
+  order: 2
+- id: hex-healing-hub
+  name: 'Hex Healing Hub Pokhara'
+  url: 'https://hexhealinghubpokhara.com/'
+  kind: [web]
+  industry: 'Wellness'
+  order: 3
+- id: rancho-steakhouse
+  featured: true
+  name: 'Rancho Steak House'
+  logo: ../assets/clients/rancho-steakhouse.webp
+  logoOnDark: true
+  kind: [marketing]
+  industry: 'Hospitality'
+  order: 4
+- id: maret-migration
+  featured: true
+  name: 'Maret Migration'
+  logo: ../assets/clients/maret-migration.png
+  kind: [marketing]
+  industry: 'Migration services'
+  order: 5
+- id: unistar-education
+  featured: true
+  name: 'Unistar Education'
+  logo: ../assets/clients/unistar-education.png
+  kind: [marketing]
+  industry: 'Education'
+  order: 6
+- id: happy-face
+  name: 'Happy Face'
+  logo: ../assets/clients/happy-face.png
+  kind: [marketing]
+  order: 7
+- id: cc-advance-polyclinic
+  name: 'C&C Advance Polyclinic and Cardiac Care'
+  logo: ../assets/clients/cc-advance-polyclinic.png
+  kind: [marketing]
+  industry: 'Healthcare'
+  order: 8
+- id: nistha-education
+  name: 'Nistha Education'
+  logo: ../assets/clients/nistha-education.png
+  kind: [marketing]
+  industry: 'Education'
+  order: 9
+- id: himalayan-nirvana-spa
+  name: 'Himalayan Nirvana Spa'
+  logo: ../assets/clients/himalayan-nirvana-spa.png
+  kind: [marketing]
+  industry: 'Wellness'
+  order: 10
+- id: begnas-aqua-park
+  name: 'Begnas Aqua Park Resort & Restaurant'
+  logo: ../assets/clients/begnas-aqua-park.png
+  kind: [marketing]
+  industry: 'Hospitality'
+  order: 11
+- id: piri-siri
+  name: 'Piri-Siri'
+  logo: ../assets/clients/piri-siri.png
+  kind: [marketing]
+  industry: 'Hospitality'
+  order: 12
+- id: nirvana-restaurant
+  featured: true
+  name: 'Nirvana Restaurant & Bar'
+  logo: ../assets/clients/nirvana-restaurant.png
+  kind: [marketing]
+  industry: 'Hospitality'
+  order: 13
+- id: infochip
+  featured: true
+  name: 'Infochip'
+  logo: ../assets/clients/infochip.png
+  kind: [marketing]
+  industry: 'Technology'
+  order: 14
+- id: behaygraphy
+  name: 'Behaygraphy'
+  logo: ../assets/clients/behaygraphy.png
+  kind: [marketing]
+  order: 15
+- id: bobby-maret
+  featured: true
+  name: 'Bobby Maret'
+  logo: ../assets/clients/bobby-maret.png
+  kind: [marketing]
+  order: 16
+- id: sorha-aana-homes
+  name: 'Sorha Aana Homes'
+  logo: ../assets/clients/sorha-aana-homes.png
+  kind: [marketing]
+  industry: 'Real estate'
+  order: 17
+- id: rivet-engineering
+  featured: true
+  name: 'Rivet Engineering Services'
+  logo: ../assets/clients/rivet-engineering.png
+  kind: [marketing]
+  industry: 'Engineering'
+  order: 18
+- id: blonde-me-salon
+  name: 'Blonde Me Unisex Salon'
+  logo: ../assets/clients/blonde-me-salon.png
+  kind: [marketing]
+  industry: 'Beauty'
+  order: 19
+- id: pinnacle-academy
+  name: 'Pinnacle Academy'
+  logo: ../assets/clients/pinnacle-academy.png
+  kind: [marketing]
+  industry: 'Education'
+  order: 20
+- id: kunjana
+  featured: true
+  name: 'Kunjana'
+  logo: ../assets/clients/kunjana.png
+  kind: [marketing]
+  order: 21
+- id: ihtc
+  featured: true
+  name: 'International Hotel Training Center'
+  logo: ../assets/clients/ihtc.png
+  kind: [marketing]
+  industry: 'Education'
+  order: 22

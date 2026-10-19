@@ -1,0 +1,39 @@
+---
+/** Ticker band, crypto-exchange style. Second copy is aria-hidden; static under reduced motion. */
+export interface Props {
+  items: { label: string; status?: string; live?: boolean }[];
+}
+const { items } = Astro.props;
+---
+
+<div class="ticker overflow-hidden border-y border-line bg-surface/70 py-3 backdrop-blur">
+  <div class="track flex w-max">
+    {
+      [0, 1].map((copy) => (
+        <ul class="mono flex shrink-0 items-center" aria-hidden={copy === 1 ? 'true' : undefined}>
+          {items.map((it) => (
+            <li class="flex items-center gap-2.5 px-7">
+              <span class="font-semibold text-ink">{it.label}</span>
+              {it.status && (
+                <span class:list={['inline-flex items-center gap-1.5', it.live ? 'text-[#16a34a] dark-live' : 'text-muted']}>
+                  <span class="size-1.5 rounded-full bg-current" aria-hidden="true" />
+                  {it.status}
+                </span>
+              )}
+              <span class="ml-5 text-muted" aria-hidden="true">/</span>
+            </li>
+          ))}
+        </ul>
+      ))
+    }
+  </div>
+</div>
+
+<style>
+  @media (prefers-reduced-motion: no-preference) {
+    .track { animation: tick 45s linear infinite; }
+    .ticker:hover .track { animation-play-state: paused; }
+  }
+  @keyframes tick { to { transform: translateX(-50%); } }
+  :global(:root[data-resolved-theme='dark']) .dark-live { color: #4ade80; }
+</style>

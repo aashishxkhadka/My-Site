@@ -1,0 +1,17 @@
+---
+import { INTEGRATIONS } from '@/site.config';
+
+const token = INTEGRATIONS.cloudflareAnalyticsToken;
+const enabled = import.meta.env.PROD && !!token;
+---
+
+{
+  enabled && (
+    <script
+      is:inline
+      defer
+      src="https://static.cloudflareinsights.com/beacon.min.js"
+      data-cf-beacon={JSON.stringify({ token })}
+    />
+  )
+}

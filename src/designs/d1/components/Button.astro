@@ -1,0 +1,32 @@
+---
+export interface Props {
+  href: string;
+  variant?: 'primary' | 'secondary' | 'inverse';
+  size?: 'md' | 'lg';
+  class?: string;
+  [key: string]: unknown;
+}
+
+const { href, variant = 'primary', size = 'md', class: className = '', ...rest } = Astro.props;
+
+const variants = {
+  primary: 'bg-accent text-on-accent hover:bg-accent-hover',
+  secondary: 'border border-line text-ink hover:border-ink',
+  inverse: 'bg-ink text-bg hover:opacity-90',
+};
+const sizes = { md: 'px-4 py-2 text-[0.9375rem]', lg: 'px-6 py-3.5 text-step-0' };
+---
+
+<a
+  href={href}
+  class:list={[
+    'group inline-flex items-center gap-2 rounded-md font-semibold transition-[background-color,border-color,opacity]',
+    variants[variant],
+    sizes[size],
+    className,
+  ]}
+  {...rest}
+>
+  <slot />
+  <span aria-hidden="true" class="transition-transform duration-300 group-hover:translate-x-0.5">→</span>
+</a>

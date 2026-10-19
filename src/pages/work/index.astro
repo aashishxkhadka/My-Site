@@ -1,0 +1,97 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '@/designs/d4/Layout.astro';
+import PageHeader from '@/designs/d4/components/PageHeader.astro';
+import WorkCard from '@/designs/d4/components/WorkCard.astro';
+import ClientWall from '@/designs/d4/components/ClientWall.astro';
+import SectionHeader from '@/designs/d4/components/SectionHeader.astro';
+import CtaPanel from '@/designs/d4/components/CtaPanel.astro';
+import { getPublished, byOrder } from '@/lib/content';
+import { itemListNode } from '@/lib/schema';
+import { STATS } from '@/site.config';
+
+const work = (await getPublished('work')).sort(byOrder);
+const services = await getPublished('services');
+const titleOf = (id: string) => services.find((s) => s.id === id)?.data.title ?? id;
+const clients = (await getCollection('clients')).sort(byOrder).filter((c) => c.data.logo);
+
+// Filter facets: only values that actually occur.
+const serviceFacets = [...new Set(work.flatMap((w) => w.data.services.map((s) => s.id)))].map((id) => ({ id, label: titleOf(id) }));
+const industryFacets = [...new Set(work.map((w) => w.data.industry))].sort();
+const crumbs = [{ label: 'Work', href: '/work/' }];
+---
+
+<Layout
+  title="Work & Case Studies"
+  description={`Selected work for clients in Nepal and abroad: websites, digital marketing and growth. ${STATS.businessesWorkedWith}+ businesses worked with.`}
+  pageType="CollectionPage"
+  breadcrumbs={crumbs}
+  schema={[itemListNode('/work/', work.map((w) => ({ name: w.data.title, url: `/work/${w.id}/` })))]}
+>
+  <PageHeader title="Work." kicker="Case studies" lead={`A selection from ${STATS.businessesWorkedWith}+ businesses I've worked with, personally and through Basilpot.`} breadcrumbs={crumbs} />
+
+  <section class="wrap pt-14 md:pt-20" aria-label="Case studies">
+    <!-- Filters: progressive enhancement. Without JS every case study is simply listed. -->
+    <div class="filters hidden flex-wrap items-center gap-2" data-filters>
+      <span class="label mr-2">Filter</span>
+      <button type="button" class="chip" data-filter="all" aria-pressed="true">All</button>
+      {serviceFacets.map((f) => <button type="button" class="chip" data-filter={`service:${f.id}`} aria-pressed="false">{f.label}</button>)}
+      {industryFacets.map((i) => <button type="button" class="chip" data-filter={`industry:${i}`} aria-pressed="false">{i}</button>)}
+    </div>
+
+    <ul class="mt-10 grid gap-16 md:grid-cols-2 md:gap-x-10 md:gap-y-20">
+      {
+        work.map((w) => (
+          <li data-tags={[...w.data.services.map((s) => `service:${s.id}`), `industry:${w.data.industry}`].join('|')}>
+            <WorkCard item={w} serviceTitles={w.data.services.map((s) => titleOf(s.id))} />
+          </li>
+        ))
+      }
+    </ul>
+    <p class="mt-10 hidden text-muted" data-empty>No case studies match that filter yet.</p>
+  </section>
+
+  <section id="clients" class="wrap scroll-mt-24 pt-24 md:pt-32" aria-labelledby="clients-title">
+    <SectionHeader id="clients-title" kicker="Clients" title="Brands I've helped grow." lead="Through Basilpot: websites, digital marketing and media." />
+    <ClientWall clients={clients} />
+  </section>
+
+  <CtaPanel />
+</Layout>
+
+<style>
+  .chip {
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 0.45rem 1rem;
+    font-size: var(--text-step--1);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 150ms, color 150ms, border-color 150ms;
+  }
+  .chip:hover { border-color: var(--ink); }
+  .chip[aria-pressed='true'] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+</style>
+
+<script>
+  const bar = document.querySelector<HTMLElement>('[data-filters]');
+  if (bar) {
+    bar.classList.remove('hidden');
+    bar.classList.add('flex');
+    const items = [...document.querySelectorAll<HTMLElement>('[data-tags]')];
+    const empty = document.querySelector<HTMLElement>('[data-empty]');
+    bar.addEventListener('click', (e) => {
+      const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-filter]');
+      if (!btn) return;
+      const f = btn.dataset.filter!;
+      bar.querySelectorAll('[data-filter]').forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+      let shown = 0;
+      for (const li of items) {
+        const match = f === 'all' || li.dataset.tags!.split('|').includes(f);
+        li.hidden = !match;
+        if (match) shown++;
+      }
+      empty?.classList.toggle('hidden', shown > 0);
+    });
+  }
+</script>

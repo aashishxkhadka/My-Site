@@ -1,0 +1,30 @@
+---
+import Layout from '@/designs/d4/Layout.astro';
+import Button from '@/designs/d4/components/Button.astro';
+import { NAV, TOPICS } from '@/site.config';
+---
+
+<Layout title="Page not found" description="This page doesn't exist or has moved. Here are the best places to go next on Aashish Khadka's website." noindex>
+  <section class="stage relative overflow-hidden" aria-labelledby="nf">
+    <p class="display pointer-events-none absolute -bottom-[0.18em] right-0 select-none text-[clamp(10rem,38vw,34rem)] leading-none text-[#262626]" aria-hidden="true">404</p>
+    <div class="wrap relative py-24 md:py-36">
+      <p class="label flex items-center gap-3 text-ink"><span class="h-px w-8 bg-accent" aria-hidden="true"></span>Error 404</p>
+      <h1 id="nf" class="display mt-4 max-w-3xl text-step-5">This page has moved, or never existed.</h1>
+      <p class="mt-6 max-w-xl text-step-1 leading-snug text-muted">The site was rebuilt recently, so some old links point nowhere. These will get you back on track:</p>
+      <div class="mt-9 flex flex-wrap gap-3">
+        <Button href="/">Go home</Button>
+        <Button href="/contact/" variant="outline">Contact me</Button>
+      </div>
+    </div>
+  </section>
+  <div class="wrap grid gap-12 py-20 md:grid-cols-2">
+    <nav aria-labelledby="nf-pages">
+      <h2 id="nf-pages" class="label">Pages</h2>
+      <ul class="mt-4 space-y-2 text-step-1">{NAV.primary.map((l) => <li><a class="link" href={l.href}>{l.label}</a></li>)}</ul>
+    </nav>
+    <nav aria-labelledby="nf-topics">
+      <h2 id="nf-topics" class="label">Topics</h2>
+      <ul class="mt-4 space-y-2 text-step-1">{TOPICS.map((t) => <li><a class="link" href={`/topics/${t.key}/`}>{t.label}</a></li>)}</ul>
+    </nav>
+  </div>
+</Layout>

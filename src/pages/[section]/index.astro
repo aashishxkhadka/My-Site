@@ -1,0 +1,33 @@
+---
+/**
+ * Generic section index for future sections (courses, talks, newsletter…).
+ * A section appears here when it is `enabled` with `template: 'generic'` in
+ * SECTIONS (site.config.ts) and has a collection using `entryBase`.
+ */
+import type { GetStaticPaths } from 'astro';
+import { getCollection, type CollectionKey } from 'astro:content';
+import Layout from '@/designs/d4/Layout.astro';
+import PageHeader from '@/designs/d4/components/PageHeader.astro';
+import { SECTIONS, type Section } from '@/site.config';
+import { formatDate } from '@/lib/format';
+
+export const getStaticPaths = (async () => {
+  const generic = (Object.values(SECTIONS) as Section[]).filter((s) => s.enabled && s.template === 'generic');
+  return Promise.all(
+    generic.map(async (section) => {
+      const entries = (await getCollection(section.collection as CollectionKey)) as { id: string; data: { title: string; description: string; pubDate: Date; draft?: boolean } }[];
+      return { params: { section: section.base.replaceAll('/', '') }, props: { section, entries: entries.filter((e) => import.meta.env.DEV || !e.data.draft) } };
+    }),
+  );
+}) satisfies GetStaticPaths;
+
+const { section, entries } = Astro.props;
+const crumbs = [{ label: section.label, href: section.base }];
+---
+
+<Layout title={section.label} description={`${section.label} by Aashish Khadka.`} pageType="CollectionPage" breadcrumbs={crumbs}>
+  <PageHeader title={section.label} breadcrumbs={crumbs} />
+  <ul class="wrap py-16">
+    {entries.map((e) => <li class="border-t border-line py-6"><a class="title text-step-2 link" href={`${section.base}${e.id}/`}>{e.data.title}</a><p class="text-muted">{e.data.description} · {formatDate(e.data.pubDate)}</p></li>)}
+  </ul>
+</Layout>

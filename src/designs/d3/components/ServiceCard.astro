@@ -1,0 +1,27 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { SERVICE_GROUPS } from '@/site.config';
+
+export interface Props {
+  service: CollectionEntry<'services'>;
+  index: number;
+  headingLevel?: 'h2' | 'h3';
+}
+const { service, index, headingLevel: H = 'h3' } = Astro.props;
+const group = SERVICE_GROUPS.find((g) => g.key === service.data.group)?.label;
+---
+
+<article class="glass neon-border group relative flex h-full flex-col overflow-hidden rounded-3xl p-7 transition-transform duration-500 ease-[var(--ease-out-soft)] hover:-translate-y-1 md:p-8">
+  <div class="bg-holo pointer-events-none absolute -right-16 -top-16 size-40 rounded-full opacity-0 blur-3xl transition-opacity duration-700 group-hover:opacity-40" aria-hidden="true"></div>
+  <div class="mono flex items-center justify-between text-muted">
+    <span>/0{index + 1}</span>
+    <span>{group}</span>
+  </div>
+  <H class="title mt-14 text-step-2 uppercase">
+    <a href={`/services/${service.id}/`} class="after:absolute after:inset-0">{service.data.title}</a>
+  </H>
+  <p class="mt-4 text-muted">{service.data.summary}</p>
+  <p class="mono mt-auto pt-10 text-ink group-hover:text-accent" aria-hidden="true">
+    Explore <span class="inline-block transition-transform duration-500 group-hover:translate-x-1">→</span>
+  </p>
+</article>

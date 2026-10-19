@@ -1,0 +1,27 @@
+---
+/** Visible breadcrumb trail. Its BreadcrumbList node is added by BaseLayout. */
+import type { Crumb } from '@/lib/schema';
+
+export interface Props {
+  crumbs: Crumb[];
+}
+
+const { crumbs } = Astro.props;
+---
+
+<nav aria-label="Breadcrumb" class="label">
+  <ol class="flex flex-wrap items-center gap-x-2 gap-y-1">
+    {
+      crumbs.map((c, i) => (
+        <li class="flex items-center gap-2">
+          {i > 0 && <span aria-hidden="true" class="text-muted">/</span>}
+          {i === crumbs.length - 1 ? (
+            <span aria-current="page" class="text-ink">{c.label}</span>
+          ) : (
+            <a href={c.href} class="link">{c.label}</a>
+          )}
+        </li>
+      ))
+    }
+  </ol>
+</nav>

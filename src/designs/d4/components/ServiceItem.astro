@@ -1,0 +1,24 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+export interface Props {
+  service: CollectionEntry<'services'>;
+  index: number;
+}
+const { service, index } = Astro.props;
+const { title, summary, deliverables } = service.data;
+---
+
+<article class="group relative grid gap-4 border-t border-line py-8 md:grid-cols-[3rem_1fr_auto] md:gap-6 md:py-10">
+  <p class="title text-step-1 text-accent" aria-hidden="true">{String(index + 1).padStart(2, '0')}</p>
+  <div>
+    <h3 class="title text-step-3">
+      <a href={`/services/${service.id}/`} class="after:absolute after:inset-0">{title}</a>
+    </h3>
+    <p class="mt-3 max-w-xl text-muted">{summary}</p>
+    <ul class="mt-5 flex flex-wrap gap-2" aria-label={`Includes`}>
+      {deliverables.slice(0, 3).map((d) => <li class="rounded-full bg-surface px-3 py-1.5 text-step--1">{d}</li>)}
+    </ul>
+  </div>
+  <span aria-hidden="true" class="hidden size-12 place-items-center self-start rounded-full border border-line transition-colors duration-300 group-hover:border-accent group-hover:bg-accent group-hover:text-on-accent md:grid">→</span>
+</article>

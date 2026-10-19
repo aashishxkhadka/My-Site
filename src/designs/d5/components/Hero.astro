@@ -1,0 +1,241 @@
+---
+/**
+ * d5 hero — portrait-led, layered:
+ *   back:   giant name watermark, toned to the studio backdrop so the
+ *           portrait appears to stand in front of it
+ *   middle: the portrait, edges dissolved into the stage
+ *   front:  headline + CTAs (left), floating fact cards (right)
+ *   bottom: client logos as white marks, scrolling
+ */
+import { Image, getImage } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import Button from '../../d4/components/Button.astro';
+import portrait from '@/assets/aashish.jpg';
+// Subject cutout (transparent background, made on-device with Apple Vision).
+// Used on phones so the name watermark can sit genuinely behind the portrait.
+import portraitCutout from '@/assets/aashish-cutout.png';
+import { CONTACT, BASILPOT, STATS } from '@/site.config';
+
+export interface Props {
+  clients: CollectionEntry<'clients'>[];
+  productCount: number;
+}
+const { clients, productCount } = Astro.props;
+const logos = clients.filter((c) => c.data.logo);
+const brandCount = STATS.businessesWorkedWith;
+const stack = logos.slice(0, 4);
+
+// Art direction: cutout on phones, studio photo from tablet up. One download either way.
+const variant = (src: ImageMetadata, format: 'avif' | 'webp') =>
+  getImage({ src, format, widths: [400, 600, 716], sizes: '(min-width: 768px) 38vw, 88vw' });
+const [cutAvif, cutWebp, fullAvif, fullWebp, fallback] = await Promise.all([
+  variant(portraitCutout, 'avif'),
+  variant(portraitCutout, 'webp'),
+  variant(portrait, 'avif'),
+  variant(portrait, 'webp'),
+  getImage({ src: portrait, format: 'jpg', width: 716 }),
+]);
+---
+
+<section class="stage hero relative isolate overflow-hidden" aria-labelledby="intro">
+  <!-- Backdrop light, echoing the studio -->
+  <div class="pointer-events-none absolute inset-0 -z-20" style="background: radial-gradient(42% 60% at 58% 42%, #303030 0%, #1c1c1c 70%);" aria-hidden="true"></div>
+
+  <!-- Giant name watermark -->
+  <p class="watermark display pointer-events-none absolute inset-x-0 top-[7%] -z-10 select-none whitespace-nowrap text-center leading-none" aria-hidden="true">
+    Aashish
+  </p>
+
+  <div class="wrap relative grid min-h-[calc(100svh-4.25rem-5.5rem)] items-end md:grid-cols-12 md:gap-6">
+    <!-- Portrait (center) -->
+    <div class="portrait reveal relative mx-auto w-[min(88vw,26rem)] md:absolute md:bottom-0 md:left-[57%] md:w-[min(38vw,34rem)] md:-translate-x-[40%]" style="--i:1">
+      <!-- Phones: studio-style light behind the cutout's head and shoulders (laptop gets it from the photo itself). -->
+      <span class="halo pointer-events-none absolute md:hidden" aria-hidden="true"></span>
+      <picture class="relative block">
+        <source media="(max-width: 767px)" type="image/avif" srcset={cutAvif.srcSet.attribute} sizes="88vw" />
+        <source media="(max-width: 767px)" type="image/webp" srcset={cutWebp.srcSet.attribute} sizes="88vw" />
+        <source type="image/avif" srcset={fullAvif.srcSet.attribute} sizes="(min-width: 768px) 38vw, 88vw" />
+        <source type="image/webp" srcset={fullWebp.srcSet.attribute} sizes="(min-width: 768px) 38vw, 88vw" />
+        <img
+          src={fallback.src}
+          width={portrait.width}
+          height={portrait.height}
+          alt="Aashish Khadka, founder of Basilpot, in a black polo shirt with arms crossed"
+          loading="eager"
+          fetchpriority="high"
+          decoding="async"
+          class="h-auto w-full"
+        />
+      </picture>
+
+      <!-- Floating cards (desktop) -->
+      <a
+        href={BASILPOT.url}
+        class="float-card float-a glass-card group absolute -right-[30%] top-[56%] hidden w-56 p-4 xl:block"
+        aria-label="Founder of Basilpot (opens basilpot.com)"
+      >
+        <span class="label block text-[0.6875rem]">Founder of</span>
+        <span class="title mt-1 block text-step-2">Basilpot</span>
+        <span class="mt-2 flex items-center justify-between text-step--1 text-muted">
+          Design & development studio <span aria-hidden="true" class="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5">↗</span>
+        </span>
+      </a>
+
+      <div class="float-card float-b glass-card absolute -right-[16%] top-[22%] hidden w-52 p-4 lg:block">
+        <div class="flex -space-x-2.5" aria-hidden="true">
+          {
+            stack.map((c) => (
+              <span class="grid size-9 place-items-center overflow-hidden rounded-full bg-white ring-2 ring-[#262626]">
+                {c.data.logo && <Image src={c.data.logo} alt="" widths={[72]} sizes="36px" class="w-[82%] object-contain" />}
+              </span>
+            ))
+          }
+          <span class="grid size-9 place-items-center rounded-full bg-accent text-[0.6875rem] font-bold text-on-accent ring-2 ring-[#262626]">+{brandCount - stack.length}</span>
+        </div>
+        <p class="display mt-3 text-step-2">{brandCount}+</p>
+        <p class="text-step--1 text-muted">businesses worked with</p>
+      </div>
+
+      <div class="float-card float-c glass-card absolute -right-[8%] bottom-[7%] hidden items-center gap-3 px-4 py-3 xl:flex">
+        <span class="display text-step-2 text-accent">{productCount}</span>
+        <span class="text-step--1 leading-tight text-muted">products<br />built & running</span>
+      </div>
+    </div>
+
+    <!-- Text (left) -->
+    <div class="relative z-10 -mt-[min(58vw,16.5rem)] pb-12 md:col-span-7 md:mt-0 md:self-center md:pb-24 md:pt-16 lg:col-span-6">
+      <p class="reveal label flex items-center gap-3 text-ink">
+        <span class="h-px w-8 bg-accent" aria-hidden="true"></span>
+        <svg class="size-3.5 text-accent" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5Z"/></svg>
+        {CONTACT.address.display}
+      </p>
+      <p class="reveal title mt-6 text-step-1 text-muted" style="--i:1">Hi, I'm Aashish Khadka.</p>
+      <h1 id="intro" class="reveal display mt-3 text-[11.2vw] leading-[1.02] md:text-[clamp(2.75rem,0.9rem+4.4vw,5.25rem)]" style="--i:2">
+        <span class="block whitespace-nowrap">I help businesses</span>{' '}
+        <span class="block">grow, <span class="underline-accent text-accent">properly.</span></span>
+      </h1>
+      <p class="reveal mt-6 max-w-md text-step-1 leading-normal text-muted" style="--i:3">
+        Strategy, a growth plan your team can follow, and the SEO, digital marketing, branding and web to back it up.
+      </p>
+      <div class="reveal mt-8 flex flex-wrap gap-3" style="--i:4">
+        <Button href="/contact/">Work with me</Button>
+        <Button href="#work" variant="outline">See my work</Button>
+      </div>
+      <!-- Mobile facts (cards are desktop-only) -->
+      <dl class="reveal mt-10 grid grid-cols-2 gap-4 border-t border-line pt-6 lg:hidden" style="--i:5">
+        <div class="flex flex-col-reverse"><dt class="text-step--1 text-muted">businesses worked with</dt><dd class="display text-step-3">{brandCount}+</dd></div>
+        <div class="flex flex-col-reverse"><dt class="text-step--1 text-muted">products built</dt><dd class="display text-step-3">{productCount}</dd></div>
+      </dl>
+    </div>
+  </div>
+
+  <!-- Logo strip -->
+  <div class="relative border-t border-line bg-[#191919]">
+    <div class="wrap flex h-[5.5rem] items-center gap-8">
+      <p class="hidden shrink-0 text-step--1 text-muted md:block">Trusted by {brandCount}+ businesses</p>
+      <div class="logo-marquee relative min-w-0 flex-1 overflow-hidden" aria-label={`Client brands, including ${logos.slice(0, 5).map((c) => c.data.name).join(', ')}`} role="img">
+        <div class="logo-track flex w-max items-center bg-[#191919]">
+          {
+            [0, 1].map(() => (
+              <ul class="flex shrink-0 items-center gap-14 pr-14" aria-hidden="true">
+                {logos.map((c) => (
+                  <li class="h-9 w-28 shrink-0">
+                    {c.data.logo && (
+                      <Image
+                        src={c.data.logo}
+                        alt=""
+                        widths={[224]}
+                        sizes="112px"
+                        class:list={['h-full w-full object-contain opacity-70', c.data.logoOnDark ? 'grayscale' : 'mix-blend-screen [filter:grayscale(1)_invert(1)_contrast(1.4)]']}
+                      />
+                    )}
+                  </li>
+                ))}
+              </ul>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .watermark {
+    font-size: clamp(6rem, 27vw, 26rem);
+    letter-spacing: -0.05em;
+    /* A step lighter than the photo's backdrop (#1d–#2a): visible, still behind. */
+    color: #383837;
+  }
+  @media (max-width: 767px) {
+    /* Crosses behind the head and shoulders of the cutout. */
+    .watermark { font-size: 29vw; top: 14vw; color: #3d3d3b; letter-spacing: -0.045em; }
+  }
+
+  /* Dissolve the photo's rectangle into the stage. */
+  .portrait :global(img) {
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 20%, #000 80%, transparent 100%), linear-gradient(to bottom, transparent 0%, #000 16%, #000 100%);
+    -webkit-mask-composite: source-in;
+    mask-image: linear-gradient(to right, transparent 0%, #000 20%, #000 80%, transparent 100%), linear-gradient(to bottom, transparent 0%, #000 16%, #000 100%);
+    mask-composite: intersect;
+  }
+
+  @media (max-width: 767px) {
+    .portrait :global(img) {
+      -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 52%, transparent 88%);
+      mask-image: linear-gradient(to bottom, #000 0%, #000 52%, transparent 88%);
+    }
+  }
+
+  .halo {
+    left: -14%;
+    right: -14%;
+    top: -4%;
+    height: 70%;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgb(78 78 76 / 0.95) 0%, rgb(56 56 54 / 0.8) 42%, rgb(28 28 28 / 0) 100%);
+    filter: blur(18px);
+  }
+
+  .glass-card {
+    border-radius: 1.25rem;
+    border: 1px solid rgb(255 255 255 / 0.1);
+    background: rgb(36 36 35 / 0.72);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    box-shadow: 0 24px 50px -20px rgb(0 0 0 / 0.6);
+  }
+
+  .underline-accent {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 100% 0.08em;
+    background-position: 0 92%;
+    background-repeat: no-repeat;
+  }
+
+  .logo-marquee {
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+    mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .float-a { animation: float 7s ease-in-out infinite, card-in 900ms var(--ease-out-soft) 500ms both; }
+    .float-b { animation: float 8s ease-in-out -2s infinite, card-in 900ms var(--ease-out-soft) 650ms both; }
+    .float-c { animation: float 6.5s ease-in-out -4s infinite, card-in 900ms var(--ease-out-soft) 800ms both; }
+    .logo-track { animation: logos 50s linear infinite; }
+    .logo-marquee:hover .logo-track { animation-play-state: paused; }
+    .watermark { animation: rise 1.4s var(--ease-out-soft) both; }
+    @supports (animation-timeline: scroll()) {
+      .watermark {
+        animation: rise 1.4s var(--ease-out-soft) both, drift linear both;
+        animation-timeline: auto, scroll();
+        animation-range: normal, 0 100vh;
+      }
+    }
+  }
+  @keyframes float { 50% { translate: 0 -10px; } }
+  @keyframes card-in { from { opacity: 0; transform: translateY(16px) scale(0.96); } }
+  @keyframes logos { to { transform: translateX(-50%); } }
+  @keyframes rise { from { opacity: 0; transform: translateY(6%); } }
+  @keyframes drift { to { translate: 0 18%; } }
+</style>

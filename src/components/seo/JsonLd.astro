@@ -1,0 +1,15 @@
+---
+/** Emits a single @id-linked @graph: site-wide entities + page nodes. */
+import { baseGraph, type JsonLdNode } from '@/lib/schema';
+
+export interface Props {
+  nodes?: JsonLdNode[];
+}
+
+const { nodes = [] } = Astro.props;
+const graph = { '@context': 'https://schema.org', '@graph': [...baseGraph(), ...nodes] };
+// Escape "<" so content can never close the script tag.
+const json = JSON.stringify(graph).replace(/</g, '\\u003c');
+---
+
+<script type="application/ld+json" set:html={json} />

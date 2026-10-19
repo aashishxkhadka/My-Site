@@ -1,0 +1,163 @@
+---
+import Layout from '@/designs/d4/Layout.astro';
+import PageHeader from '@/designs/d4/components/PageHeader.astro';
+import Todo from '@/components/ui/Todo.astro';
+import { professionalServiceNode } from '@/lib/schema';
+import { CONTACT, SITE } from '@/site.config';
+import { getPublished, byOrder } from '@/lib/content';
+
+const services = (await getPublished('services')).sort(byOrder);
+const key = CONTACT.form.accessKey;
+const crumbs = [{ label: 'Contact', href: '/contact/' }];
+const mapsUrl = CONTACT.mapUrl ?? 'https://www.google.com/maps/search/?api=1&query=Pokhara%2C%20Nepal';
+---
+
+<Layout
+  title="Contact"
+  description="Contact Aashish Khadka in Pokhara, Nepal. Email aashishxseo@gmail.com or call +977 9805106358 to talk about growing your business."
+  pageType="ContactPage"
+  breadcrumbs={crumbs}
+  schema={[professionalServiceNode()]}
+>
+  <PageHeader title="Let's talk." kicker="Contact" lead="Tell me where your business is today and where you want it to be. I'll reply personally." breadcrumbs={crumbs} />
+
+  <div class="wrap grid gap-14 pt-14 md:grid-cols-12 md:pt-20">
+    <!-- Form -->
+    <section class="md:col-span-7" aria-labelledby="form-title">
+      <h2 id="form-title" class="display text-step-3">Send a message</h2>
+      <form
+        class="mt-8 grid gap-5"
+        method="POST"
+        action="https://api.web3forms.com/submit"
+        data-contact-form
+        data-email={CONTACT.email}
+        data-has-key={key ? 'true' : 'false'}
+      >
+        {key && <input type="hidden" name="access_key" value={key} />}
+        <input type="hidden" name="subject" value="New enquiry from aashishkhadka.com.np" />
+        <input type="hidden" name="redirect" value={`${SITE.url}/contact/thanks/`} />
+        <input type="checkbox" name="botcheck" class="hidden" tabindex="-1" autocomplete="off" aria-hidden="true" />
+
+        <div class="grid gap-5 sm:grid-cols-2">
+          <label class="field">
+            <span>Your name</span>
+            <input name="name" type="text" autocomplete="name" required />
+          </label>
+          <label class="field">
+            <span>Email</span>
+            <input name="email" type="email" autocomplete="email" required />
+          </label>
+        </div>
+        <div class="grid gap-5 sm:grid-cols-2">
+          <label class="field">
+            <span>Phone / WhatsApp <em class="not-italic text-muted">(optional)</em></span>
+            <input name="phone" type="tel" autocomplete="tel" />
+          </label>
+          <label class="field">
+            <span>Business / website <em class="not-italic text-muted">(optional)</em></span>
+            <input name="business" type="text" autocomplete="organization" />
+          </label>
+        </div>
+        <fieldset class="field">
+          <legend>What do you need help with?</legend>
+          <div class="mt-3 flex flex-wrap gap-2">
+            {services.map((s) => (
+              <label class="pill">
+                <input type="checkbox" name="interest" value={s.data.title} class="sr-only" />
+                <span>{s.data.title}</span>
+              </label>
+            ))}
+            <label class="pill"><input type="checkbox" name="interest" value="Not sure yet" class="sr-only" /><span>Not sure yet</span></label>
+          </div>
+        </fieldset>
+        <label class="field">
+          <span>Message</span>
+          <textarea name="message" rows="6" required placeholder="Where is the business today, and where do you want it to be?"></textarea>
+        </label>
+        <div class="flex flex-wrap items-center gap-4">
+          <button type="submit" class="group inline-flex items-center gap-2.5 rounded-full bg-accent px-7 py-4 font-semibold text-on-accent transition-opacity hover:opacity-90">
+            Send message <span aria-hidden="true" class="transition-transform group-hover:translate-x-1">→</span>
+          </button>
+          <p class="text-step--1 text-muted">Or email <a class="link" href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a></p>
+        </div>
+        {!key && import.meta.env.DEV && <p class="text-step--1"><Todo note="Set CONTACT.form.accessKey in site.config.ts">TODO: add a Web3Forms access key. Until then, the form opens a pre-filled email.</Todo></p>}
+      </form>
+    </section>
+
+    <!-- Direct -->
+    <aside class="-order-1 md:order-none md:col-span-5" aria-label="Contact details">
+      <div class="space-y-4 md:sticky md:top-28">
+        <a href={`mailto:${CONTACT.email}`} class="block rounded-2xl border border-line bg-paper p-6 transition-colors hover:border-ink">
+          <p class="label">Email</p>
+          <p class="title mt-2 text-step-1 break-all">{CONTACT.email}</p>
+        </a>
+        <a href={`tel:${CONTACT.phoneE164}`} class="block rounded-2xl border border-line bg-paper p-6 transition-colors hover:border-ink">
+          <p class="label">Phone</p>
+          <p class="title mt-2 text-step-1">{CONTACT.phoneDisplay}</p>
+        </a>
+        {
+          CONTACT.whatsapp && (
+            <a href={CONTACT.whatsapp} target="_blank" rel="noopener" class="block rounded-2xl border border-line bg-paper p-6 transition-colors hover:border-ink">
+              <p class="label">WhatsApp</p>
+              <p class="title mt-2 text-step-1">Message me ↗</p>
+            </a>
+          )
+        }
+        <a href={mapsUrl} target="_blank" rel="noopener" class="stage block rounded-2xl p-6">
+          <p class="label">Based in</p>
+          <p class="title mt-2 text-step-2">{CONTACT.address.display}</p>
+          <p class="mt-2 text-step--1 text-muted">Working with clients in Nepal and abroad. Open in Google Maps ↗</p>
+        </a>
+      </div>
+    </aside>
+  </div>
+  <div class="pb-24 md:pb-32"></div>
+</Layout>
+
+<style>
+  .field { display: grid; gap: 0.5rem; font-weight: 600; font-size: var(--text-step--1); }
+  .field :where(input, textarea) {
+    font: inherit;
+    font-weight: 400;
+    font-size: var(--text-step-0);
+    color: var(--ink);
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 0.875rem;
+    padding: 0.85rem 1rem;
+    transition: border-color 150ms;
+  }
+  .field :where(input, textarea):focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; border-color: transparent; }
+  .pill span {
+    display: inline-block;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 150ms, color 150ms, border-color 150ms;
+  }
+  .pill input:checked + span { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+  .pill input:focus-visible + span { outline: 2px solid var(--focus); outline-offset: 2px; }
+</style>
+
+<script>
+  // Without a Web3Forms key, fall back to a pre-filled email so the form still works.
+  const form = document.querySelector<HTMLFormElement>('[data-contact-form]');
+  if (form && form.dataset.hasKey !== 'true') {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const f = new FormData(form);
+      const lines = [
+        `Name: ${f.get('name')}`,
+        `Email: ${f.get('email')}`,
+        f.get('phone') ? `Phone: ${f.get('phone')}` : '',
+        f.get('business') ? `Business: ${f.get('business')}` : '',
+        f.getAll('interest').length ? `Interested in: ${f.getAll('interest').join(', ')}` : '',
+        '',
+        String(f.get('message') ?? ''),
+      ].filter((l, i) => l !== '' || i === 5);
+      location.href = `mailto:${form.dataset.email}?subject=${encodeURIComponent('Enquiry from your website')}&body=${encodeURIComponent(lines.join('\n'))}`;
+    });
+  }
+</script>

@@ -1,0 +1,44 @@
+---
+import Layout from '@/designs/d4/Layout.astro';
+import PageHeader from '@/designs/d4/components/PageHeader.astro';
+import ServiceItem from '@/designs/d4/components/ServiceItem.astro';
+import CtaPanel from '@/designs/d4/components/CtaPanel.astro';
+import { getPublished, byOrder } from '@/lib/content';
+import { itemListNode } from '@/lib/schema';
+import { SERVICE_GROUPS } from '@/site.config';
+
+const services = (await getPublished('services')).sort(byOrder);
+const groups = SERVICE_GROUPS.map((g) => ({ ...g, items: services.filter((s) => s.data.group === g.key) })).filter((g) => g.items.length);
+let n = 0;
+const crumbs = [{ label: 'Services', href: '/services/' }];
+---
+
+<Layout
+  title="Services"
+  description="Growth strategy, SEO, digital marketing, branding and websites for businesses in Nepal and abroad, delivered personally by Aashish Khadka."
+  pageType="CollectionPage"
+  breadcrumbs={crumbs}
+  schema={[itemListNode('/services/', services.map((s) => ({ name: s.data.title, url: `/services/${s.id}/` })))]}
+>
+  <PageHeader
+    title="How I help businesses grow."
+    kicker="Services"
+    lead="Growth rarely comes from one tactic. I work across strategy, marketing, brand and web, so nothing falls between the gaps."
+    breadcrumbs={crumbs}
+  />
+
+  <div class="wrap pt-12 md:pt-16">
+    {
+      groups.map((g) => (
+        <section class="grid gap-6 border-t border-line pt-10 first:border-t-0 md:grid-cols-12 md:gap-10" aria-labelledby={`group-${g.key}`}>
+          <h2 id={`group-${g.key}`} class="label md:col-span-3 md:pt-10">{g.label}</h2>
+          <div class="md:col-span-9">
+            {g.items.map((s) => <ServiceItem service={s} index={n++} />)}
+          </div>
+        </section>
+      ))
+    }
+  </div>
+
+  <CtaPanel title="Not sure where to start?" lead="Tell me about your business and I'll suggest the one or two things that will make the biggest difference first." />
+</Layout>

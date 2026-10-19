@@ -1,0 +1,59 @@
+---
+/**
+ * Light/dark toggle. Default = OS preference; a click stores an explicit
+ * choice. The pre-paint script in BaseLayout applies it before first render.
+ */
+export interface Props {
+  class?: string;
+}
+const { class: className = '' } = Astro.props;
+---
+
+<button
+  type="button"
+  data-theme-toggle
+  class:list={[
+    'inline-grid size-10 place-items-center rounded-full text-muted transition-colors hover:bg-surface hover:text-ink',
+    className,
+  ]}
+  aria-label="Toggle dark mode"
+>
+  <svg class="theme-icon-sun size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="4"></circle>
+    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>
+  </svg>
+  <svg class="theme-icon-moon size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11Z"></path>
+  </svg>
+</button>
+
+<style>
+  /* Show the icon for the theme you'd switch TO. */
+  .theme-icon-sun { display: none; }
+  :global(html[data-resolved-theme='dark']) .theme-icon-sun { display: block; }
+  :global(html[data-resolved-theme='dark']) .theme-icon-moon { display: none; }
+</style>
+
+<script is:inline>
+  (function () {
+    var root = document.documentElement;
+    document.querySelectorAll('[data-theme-toggle]').forEach(function (btn) {
+      if (btn.dataset.bound) return;
+      btn.dataset.bound = '1';
+      var sync = function () {
+        var dark = root.dataset.resolvedTheme === 'dark';
+        btn.setAttribute('aria-pressed', String(dark));
+      };
+      sync();
+      btn.addEventListener('click', function () {
+        var next = root.dataset.resolvedTheme === 'dark' ? 'light' : 'dark';
+        root.dataset.theme = next;
+        root.dataset.resolvedTheme = next;
+        try { localStorage.setItem('theme', next); } catch (e) {}
+        document.querySelectorAll('[data-theme-toggle]').forEach(function (b) {
+          b.setAttribute('aria-pressed', String(next === 'dark'));
+        });
+      });
+    });
+  })();
+</script>

@@ -1,0 +1,24 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { SERVICE_GROUPS } from '@/site.config';
+
+export interface Props {
+  service: CollectionEntry<'services'>;
+  headingLevel?: 'h2' | 'h3';
+}
+const { service, headingLevel: H = 'h3' } = Astro.props;
+const group = SERVICE_GROUPS.find((g) => g.key === service.data.group)?.label;
+---
+
+<article class="row group relative isolate overflow-hidden border-b border-line">
+  <!-- Gradient wipe on hover -->
+  <span class="bg-gradient absolute inset-0 -z-10 origin-left scale-x-0 transition-transform duration-700 ease-[var(--ease-out-soft)] group-hover:scale-x-100 motion-reduce:transition-none" aria-hidden="true"></span>
+  <div class="grid gap-3 py-8 transition-[padding,color] duration-500 ease-[var(--ease-out-soft)] group-hover:text-white md:grid-cols-12 md:items-center md:gap-8 md:py-10 md:group-hover:px-8">
+    <p class="label md:col-span-2 group-hover:text-white/80">{group}</p>
+    <H class="display text-step-3 md:col-span-5">
+      <a href={`/services/${service.id}/`} class="after:absolute after:inset-0">{service.data.title}</a>
+    </H>
+    <p class="text-muted group-hover:text-white/85 md:col-span-4">{service.data.summary}</p>
+    <span aria-hidden="true" class="hidden size-12 place-items-center justify-self-end rounded-full border border-current/25 text-xl transition-transform duration-500 ease-[var(--ease-spring)] group-hover:rotate-[-45deg] md:col-span-1 md:grid">→</span>
+  </div>
+</article>

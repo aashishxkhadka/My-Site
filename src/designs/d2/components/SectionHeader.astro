@@ -1,0 +1,27 @@
+---
+/** Section heading: small kicker, big display title, optional action. */
+export interface Props {
+  id: string;
+  kicker?: string;
+  title: string;
+  lead?: string;
+  action?: { label: string; href: string } | undefined;
+}
+const { id, kicker, title, lead, action } = Astro.props;
+---
+
+<div class="scroll-in mb-12 flex flex-col gap-6 md:mb-16 md:flex-row md:items-end md:justify-between">
+  <div class="max-w-4xl">
+    {kicker && <p class="label mb-5 flex items-center gap-2"><span class="text-gradient text-base" aria-hidden="true">✦</span>{kicker}</p>}
+    <h2 id={id} class="display text-step-4">{title}</h2>
+    {lead && <p class="mt-6 max-w-xl text-step-1 leading-snug text-muted">{lead}</p>}
+  </div>
+  {
+    action && (
+      <a href={action.href} class="group inline-flex shrink-0 items-center gap-3 font-medium">
+        {action.label}
+        <span aria-hidden="true" class="grid size-10 place-items-center rounded-full border border-line transition-all duration-500 ease-[var(--ease-spring)] group-hover:rotate-[-45deg] group-hover:border-transparent group-hover:bg-ink group-hover:text-bg">→</span>
+      </a>
+    )
+  }
+</div>

@@ -1,0 +1,36 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { render, type CollectionEntry } from 'astro:content';
+import Layout from '@/designs/d4/Layout.astro';
+import PageHeader from '@/designs/d4/components/PageHeader.astro';
+import Faq from '@/designs/d4/components/Faq.astro';
+import Button from '@/designs/d4/components/Button.astro';
+import CtaPanel from '@/designs/d4/components/CtaPanel.astro';
+import { getPublished } from '@/lib/content';
+import { faqNode } from '@/lib/schema';
+import { formatDate, isoDate } from '@/lib/format';
+
+export const getStaticPaths = (async () => {
+  const resources = await getPublished('resources');
+  return resources.map((resource) => ({ params: { slug: resource.id }, props: { resource } }));
+}) satisfies GetStaticPaths;
+
+const { resource } = Astro.props as { resource: CollectionEntry<'resources'> };
+const d = resource.data;
+const { Content } = await render(resource);
+const path = `/resource/${resource.id}/`;
+const crumbs = [{ label: 'Resources', href: '/resource/' }, { label: d.title, href: path }];
+---
+
+<Layout title={d.title} rawTitle={d.seo.title} description={d.description} noindex={d.seo.noindex} breadcrumbs={crumbs} schema={d.faq.length ? [faqNode(path, d.faq)] : []}>
+  <PageHeader title={d.title} kicker={d.kind} lead={d.description} breadcrumbs={crumbs}>
+    <div class="mt-9 flex flex-wrap items-center gap-4">
+      {d.file && <Button href={`/downloads/${d.file}`} download>Download</Button>}
+      {d.externalUrl && <Button href={d.externalUrl} target="_blank" rel="noopener">Open</Button>}
+      <span class="text-step--1 text-muted">Updated <time datetime={isoDate(d.updatedDate ?? d.pubDate)}>{formatDate(d.updatedDate ?? d.pubDate)}</time></span>
+    </div>
+  </PageHeader>
+  <div class="wrap pt-14 md:pt-20"><div class="prose"><Content /></div></div>
+  <div class="wrap pt-16"><Faq items={d.faq} /></div>
+  <CtaPanel />
+</Layout>

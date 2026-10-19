@@ -1,0 +1,267 @@
+---
+/**
+ * d4 "Editorial" homepage — answers, in order:
+ *   1. Who I am (portrait hero)  2. What I deliver (services)  3. How to work with me (CTA)
+ * with proof in between: client brands, selected work, products, writing.
+ * Sections with no published content are omitted rather than shown empty.
+ */
+import { Picture } from 'astro:assets';
+import BaseLayout from './Layout.astro';
+import Button from './components/Button.astro';
+import SectionHeader from './components/SectionHeader.astro';
+import ServiceItem from './components/ServiceItem.astro';
+import WorkCard from './components/WorkCard.astro';
+import ProductCard from './components/ProductCard.astro';
+import ClientWall from './components/ClientWall.astro';
+import PostRow from './components/PostRow.astro';
+import portrait from '@/assets/aashish.jpg';
+import { getCollection } from 'astro:content';
+import { getPublished, byNewest, byOrder } from '@/lib/content';
+import { SITE, CONTACT, BASILPOT, STATS } from '@/site.config';
+
+export interface Props {
+  /** True on /designs/<id>/ previews. */
+  noindex?: boolean;
+}
+const { noindex = false } = Astro.props;
+
+const allServices = (await getPublished('services')).sort(byOrder);
+const services = allServices.filter((s) => s.data.featured).slice(0, 5);
+const work = (await getPublished('work')).filter((w) => w.data.featured).sort(byOrder).slice(0, 3);
+const projects = (await getPublished('projects')).sort(byOrder);
+const posts = (await getPublished('blog')).sort(byNewest).slice(0, 4);
+const clients = (await getCollection('clients')).sort(byOrder);
+// The wall shows logos only; web clients without a logo appear under Selected work.
+const logoClients = clients.filter((c) => c.data.logo);
+
+const serviceTitle = (id: string) => allServices.find((s) => s.id === id)?.data.title ?? id;
+
+// Facts derived from content, so they can never drift from what's on the site.
+const brandCount = STATS.businessesWorkedWith;
+const facts = [
+  { value: `${brandCount}+`, label: 'businesses worked with' },
+  { value: String(projects.length), label: 'products built' },
+  { value: 'Nepal', label: '& clients abroad' },
+];
+const [leadWork, ...moreWork] = work;
+---
+
+<BaseLayout rawTitle={SITE.defaultTitle} description={SITE.defaultDescription} noindex={noindex}>
+  <!-- 1 · Who I am -->
+  <section class="stage relative overflow-hidden" aria-labelledby="intro">
+    <!-- soft light behind the portrait, echoing the studio backdrop -->
+    <div class="pointer-events-none absolute inset-y-0 right-0 w-full md:w-[55%]" style="background: radial-gradient(60% 55% at 60% 45%, #2e2e2d 0%, transparent 70%);" aria-hidden="true"></div>
+
+    <div class="wrap relative grid md:grid-cols-12 md:gap-8">
+      <!-- Portrait -->
+      <div class="portrait reveal relative -mx-5 md:order-2 md:col-span-5 md:mx-0 md:self-end" style="--i:1">
+        <Picture
+          src={portrait}
+          alt="Aashish Khadka, founder of Basilpot, in a black polo shirt with arms crossed"
+          formats={['avif', 'webp']}
+          widths={[400, 600, 716]}
+          sizes="(min-width: 768px) 40vw, 100vw"
+          loading="eager"
+          fetchpriority="high"
+          pictureAttributes={{ class: 'block' }}
+          class="mx-auto h-auto max-h-[78svh] w-full max-w-[34rem] object-contain object-bottom md:max-h-[calc(100svh-4.25rem)]"
+        />
+      </div>
+
+      <!-- Text -->
+      <div class="relative z-10 -mt-24 pb-16 md:order-1 md:col-span-7 md:mt-0 md:flex md:flex-col md:justify-center md:py-16">
+        <p class="reveal label flex items-center gap-3 text-ink">
+          <span class="h-px w-8 bg-accent" aria-hidden="true"></span>
+          Founder, Basilpot · {CONTACT.address.display}
+        </p>
+        <p class="reveal title mt-6 text-step-2 text-muted" style="--i:1">Hi, I'm Aashish Khadka.</p>
+        <h1 id="intro" class="reveal display mt-3 text-[clamp(2.75rem,1.5rem+4.3vw,5.5rem)]" style="--i:2">
+          I help businesses grow, <span class="text-accent">properly.</span>
+        </h1>
+        <p class="reveal mt-7 max-w-xl text-step-1 leading-normal text-muted" style="--i:3">
+          With a clear strategy, a growth plan your team can follow, and the SEO, digital marketing, branding and web to back it up. For businesses in Nepal and abroad.
+        </p>
+        <div class="reveal mt-9 flex flex-wrap gap-3" style="--i:4">
+          <Button href="/contact/">Work with me</Button>
+          <Button href="#work" variant="outline">See my work</Button>
+        </div>
+        <dl class="reveal mt-12 grid max-w-xl grid-cols-3 gap-6 border-t border-line pt-6" style="--i:5">
+          {
+            facts.map((f) => (
+              <div class="flex flex-col-reverse">
+                <dt class="mt-1 text-step--1 text-muted">{f.label}</dt>
+                <dd class="display text-step-3">{f.value}</dd>
+              </div>
+            ))
+          }
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <!-- Proof · Client brands -->
+  {
+    clients.length > 0 && (
+      <section class="wrap pt-24 md:pt-32" aria-labelledby="clients">
+        <SectionHeader
+          id="clients"
+          kicker="Clients"
+          title="Brands I've helped grow."
+          lead="Through Basilpot: websites, digital marketing and media for clinics, schools, restaurants, resorts and more, in Nepal and abroad."
+        />
+        <ClientWall clients={logoClients} />
+      </section>
+    )
+  }
+
+  <!-- 2 · What I deliver -->
+  {
+    services.length > 0 && (
+      <section class="wrap pt-24 md:pt-36" aria-labelledby="services">
+        <div class="grid gap-12 lg:grid-cols-12 lg:gap-16">
+          <div class="lg:col-span-5">
+            <div class="lg:sticky lg:top-28">
+              <p class="label mb-4 flex items-center gap-3"><span class="h-px w-8 bg-accent" aria-hidden="true" />Services</p>
+              <h2 id="services" class="display text-step-4">How I help businesses grow.</h2>
+              <p class="mt-6 max-w-md text-step-1 leading-snug text-muted">
+                Growth rarely comes from one tactic. It comes from knowing who you serve, telling them clearly, and showing up where they look. I work across all of it, so nothing falls between the gaps.
+              </p>
+              <div class="mt-8 flex flex-wrap gap-3">
+                <Button href="/contact/">Talk to me</Button>
+                <Button href="/services/" variant="outline">All services</Button>
+              </div>
+            </div>
+          </div>
+          <div class="border-b border-line lg:col-span-7">
+            {services.map((s, i) => (
+              <ServiceItem service={s} index={i} />
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <!-- How I work -->
+  <section class="wrap pt-24 md:pt-36" aria-label="How I work">
+    <figure class="stage scroll-in relative overflow-hidden rounded-[2rem] border border-line px-6 py-14 md:px-16 md:py-20">
+      <svg class="mb-8 h-10 w-12 text-accent md:h-12 md:w-14" viewBox="0 0 56 44" fill="currentColor" aria-hidden="true"><path d="M0 44V26.4C0 11.9 7.2 3.1 21.6 0l2.6 5.6C16.5 8 12.6 12.7 12.4 19.6H22V44H0Zm33.6 0V26.4C33.6 11.9 40.8 3.1 55.2 0l2.6 5.6c-7.7 2.4-11.6 7.1-11.8 14H56V44H33.6Z"/></svg>
+      <blockquote class="relative max-w-4xl">
+        <p class="display text-step-3 leading-[1.08]">
+          I keep the work grounded in actual people, actual businesses and actual problems.
+        </p>
+      </blockquote>
+      <figcaption class="relative mt-10 flex items-center gap-4">
+        <Picture src={portrait} alt="" formats={['avif', 'webp']} widths={[112]} sizes="56px" class="size-14 rounded-full object-cover object-[50%_18%]" />
+        <span>
+          <span class="title block">Aashish Khadka</span>
+          <span class="text-step--1 text-muted">Founder, <a class="link" href={BASILPOT.url}>Basilpot</a></span>
+        </span>
+      </figcaption>
+    </figure>
+  </section>
+
+  <!-- Proof · Selected work -->
+  {
+    leadWork && (
+      <section id="work" class="wrap pt-24 md:pt-36" aria-labelledby="work-title">
+        <SectionHeader id="work-title" kicker="Selected work" title="Recent work." action={{ label: 'All case studies', href: '/work/' }} />
+        <WorkCard item={leadWork} large serviceTitles={leadWork.data.services.map((s) => serviceTitle(s.id))} />
+        {moreWork.length > 0 && (
+          <div class="mt-16 grid gap-14 md:mt-20 md:grid-cols-2 md:gap-10">
+            {moreWork.map((w) => (
+              <WorkCard item={w} serviceTitles={w.data.services.map((s) => serviceTitle(s.id))} />
+            ))}
+          </div>
+        )}
+      </section>
+    )
+  }
+
+  <!-- Proof · Products -->
+  {
+    projects.length > 0 && (
+      <section class="wrap pt-24 md:pt-36" aria-labelledby="products">
+        <SectionHeader
+          id="products"
+          kicker="Products"
+          title="Built at Basilpot."
+          lead="Alongside client work, we build and run products of our own."
+          action={{ label: 'All projects', href: '/projects/' }}
+        />
+        <ul class="grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
+          {projects.map((p) => (
+            <li>
+              <ProductCard project={p} />
+            </li>
+          ))}
+          <li>
+            <a href={BASILPOT.url} class="group grid aspect-[16/10] place-items-center rounded-xl border border-dashed border-line p-6 text-center transition-colors hover:border-accent">
+              <span>
+                <span class="title block text-step-1">Need a team?</span>
+                <span class="mt-1 block text-step--1 text-muted group-hover:text-accent">Visit Basilpot ↗</span>
+              </span>
+            </a>
+          </li>
+        </ul>
+      </section>
+    )
+  }
+
+  <!-- Proof · Writing -->
+  {
+    posts.length > 0 && (
+      <section class="wrap pt-24 md:pt-36" aria-labelledby="writing">
+        <SectionHeader id="writing" kicker="Writing" title="Notes on growth." action={{ label: 'All posts', href: '/blog/' }} />
+        <div class="border-b border-line">
+          {posts.map((p) => (
+            <PostRow post={p} />
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  <!-- 3 · How to work with me -->
+  <section class="wrap py-24 md:py-36" aria-labelledby="cta">
+    <div class="stage relative grid overflow-hidden rounded-[2rem] border border-line md:grid-cols-12">
+      <div class="relative z-10 px-6 py-14 md:col-span-7 md:px-16 md:py-20">
+        <p class="label mb-4 flex items-center gap-3 text-ink"><span class="h-px w-8 bg-accent" aria-hidden="true"></span>Work with me</p>
+        <h2 id="cta" class="display text-step-4">Let's grow your business.</h2>
+        <p class="mt-6 max-w-md text-step-1 leading-snug text-muted">
+          Tell me where your business is today and where you want it to be. I'll tell you honestly how I can help.
+        </p>
+        <div class="mt-9 flex flex-wrap gap-3">
+          <Button href="/contact/">Start a conversation</Button>
+        </div>
+        <div class="mt-10 flex flex-col gap-1 sm:flex-row sm:gap-8">
+          <a class="link font-medium" href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>
+          <a class="link font-medium" href={`tel:${CONTACT.phoneE164}`}>{CONTACT.phoneDisplay}</a>
+        </div>
+      </div>
+      <div class="relative hidden md:col-span-5 md:block" aria-hidden="true">
+        <Picture src={portrait} alt="" formats={['avif', 'webp']} widths={[500, 716]} sizes="35vw" class="cta-portrait absolute bottom-0 right-0 h-[118%] w-auto max-w-none object-contain object-bottom" />
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  /* Fade the photo's edges into the stage so there is no visible seam. */
+  .portrait :global(img) {
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 22%, #000 80%, transparent 100%), linear-gradient(to bottom, transparent 0%, #000 18%, #000 100%);
+    -webkit-mask-composite: source-in;
+    mask-image: linear-gradient(to right, transparent 0%, #000 22%, #000 80%, transparent 100%), linear-gradient(to bottom, transparent 0%, #000 18%, #000 100%);
+    mask-composite: intersect;
+  }
+  @media (max-width: 767px) {
+    .portrait :global(img) {
+      -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent 92%);
+      mask-image: linear-gradient(to bottom, #000 55%, transparent 92%);
+    }
+  }
+  .cta-portrait {
+    -webkit-mask-image: linear-gradient(to left, #000 60%, transparent 100%);
+    mask-image: linear-gradient(to left, #000 60%, transparent 100%);
+  }
+</style>

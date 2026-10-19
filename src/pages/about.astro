@@ -1,0 +1,81 @@
+---
+import { Picture } from 'astro:assets';
+import Layout from '@/designs/d4/Layout.astro';
+import PageHeader from '@/designs/d4/components/PageHeader.astro';
+import CtaPanel from '@/designs/d4/components/CtaPanel.astro';
+import Button from '@/designs/d4/components/Button.astro';
+import Todo from '@/components/ui/Todo.astro';
+import portrait from '@/assets/aashish.jpg';
+import { getCollection } from 'astro:content';
+import { BASILPOT, CONTACT, PERSON, SOCIALS, STATS } from '@/site.config';
+
+const projects = (await getCollection('projects', ({ data }) => !data.draft)).length;
+const socials = SOCIALS.filter((s) => s.visible && s.url);
+
+// TODO: confirm years and add the B.Sc. IT institution.
+const timeline = [
+  { when: 'TODO', what: 'B.Sc. IT', detail: PERSON.education[0]?.institution ?? 'Institution: TODO' },
+  { when: 'TODO', what: 'Founded Basilpot', detail: 'An idea-to-growth studio for teams across time zones.' },
+  { when: 'Now', what: 'MBA (in progress)', detail: 'Infomax College of IT & Management, affiliated with Asia Pacific University (APU).' },
+];
+const description = 'Aashish Khadka is the founder of Basilpot in Pokhara, Nepal. His story, how he works, education and where to find him online.';
+---
+
+<Layout rawTitle="About Aashish Khadka, Founder of Basilpot" description={description} pageType="ProfilePage" ogType="profile" breadcrumbs={[{ label: 'About', href: '/about/' }]}>
+  <PageHeader title="About me" kicker="Aashish Khadka" lead="Founder of Basilpot. I help businesses grow, and I care most about the people behind them." breadcrumbs={[{ label: 'About', href: '/about/' }]} />
+
+  <section class="wrap grid gap-12 pt-20 md:grid-cols-12 md:gap-16 md:pt-28" aria-labelledby="story">
+    <div class="md:col-span-5">
+      <div class="overflow-hidden rounded-[2rem] bg-stage md:sticky md:top-28">
+        <Picture src={portrait} alt="Aashish Khadka, founder of Basilpot" formats={['avif', 'webp']} widths={[400, 716]} sizes="(min-width: 768px) 38vw, 100vw" class="h-auto w-full" />
+      </div>
+    </div>
+    <div class="md:col-span-7">
+      <h2 id="story" class="display text-step-4">My story</h2>
+      <div class="prose mt-8">
+        <p>
+          I'm Aashish Khadka, founder of <a href={BASILPOT.url}>Basilpot</a>, based in Pokhara, Nepal. I work with businesses in Nepal and abroad to grow with a clear strategy, a plan their team can follow, and the SEO, digital marketing, branding and web to back it up.
+        </p>
+        <p>
+          At Basilpot I lead the people-facing side of the work: client relationships, communication, partnerships and day-to-day operations. I connect the people building our products with the people using them, so decisions are never made inside a technical bubble.
+        </p>
+        <p>My focus is simple: keep the work grounded in actual people, actual businesses and actual problems.</p>
+        <p><Todo note="Personal story: how you started, what drives you, a moment that shaped how you work">TODO: two or three paragraphs in your own words about how you got here.</Todo></p>
+      </div>
+
+      <dl class="mt-12 grid grid-cols-3 gap-6 border-y border-line py-8">
+        <div class="flex flex-col-reverse"><dt class="mt-1 text-step--1 text-muted">businesses worked with</dt><dd class="display text-step-3">{STATS.businessesWorkedWith}+</dd></div>
+        <div class="flex flex-col-reverse"><dt class="mt-1 text-step--1 text-muted">products built</dt><dd class="display text-step-3">{projects}</dd></div>
+        <div class="flex flex-col-reverse"><dt class="mt-1 text-step--1 text-muted">based in</dt><dd class="display text-step-2 sm:text-step-3">Pokhara</dd></div>
+      </dl>
+
+      <h2 class="display mt-16 text-step-3">Timeline</h2>
+      <ol class="mt-8 border-l border-line">
+        {
+          timeline.map((t) => (
+            <li class="relative pb-10 pl-8 last:pb-0">
+              <span class="absolute -left-[5px] top-2 size-2.5 rounded-full bg-accent" aria-hidden="true" />
+              <p class="label">{t.when === 'TODO' ? <Todo note="Year">TODO</Todo> : t.when}</p>
+              <p class="title mt-1 text-step-1">{t.what}</p>
+              <p class="mt-1 text-muted">{t.detail}</p>
+            </li>
+          ))
+        }
+      </ol>
+
+      <h2 class="display mt-16 text-step-3">Basilpot</h2>
+      <p class="mt-6 max-w-xl text-step-1 leading-snug text-muted">
+        {BASILPOT.description} When a project needs a full team (design, development, products), it goes through Basilpot.
+      </p>
+      <div class="mt-8"><Button href={BASILPOT.url} variant="outline">Visit Basilpot</Button></div>
+
+      <h2 class="display mt-16 text-step-3">Find me online</h2>
+      <ul class="mt-6 flex flex-wrap gap-2">
+        {socials.map((s) => <li><a class="inline-block rounded-full border border-line px-5 py-2.5 font-medium hover:border-ink" href={s.url} rel="me noopener" target="_blank">{s.label} ↗</a></li>)}
+        <li><a class="inline-block rounded-full border border-line px-5 py-2.5 font-medium hover:border-ink" href={`mailto:${CONTACT.email}`}>Email</a></li>
+      </ul>
+    </div>
+  </section>
+
+  <CtaPanel />
+</Layout>

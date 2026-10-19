@@ -1,0 +1,16 @@
+---
+/**
+ * Wraps placeholder copy. Highlighted in dev so nothing unfinished ships
+ * unnoticed; renders plainly in production. grep "<Todo" to find them all.
+ */
+import type { HTMLTag } from 'astro/types';
+
+export interface Props {
+  as?: HTMLTag;
+  note?: string;
+}
+const { as: Tag = 'span', note } = Astro.props;
+const dev = import.meta.env.DEV;
+---
+
+<Tag class:list={[dev && 'todo']} title={dev ? `TODO${note ? `: ${note}` : ''}` : undefined}><slot /></Tag>

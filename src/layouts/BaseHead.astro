@@ -1,0 +1,68 @@
+---
+/**
+ * Everything every design shares inside <head>: charset/viewport, the
+ * pre-paint theme script, favicon, SEO tags and the JSON-LD graph.
+ * Each design's Layout adds its own <Font> tags and stylesheet.
+ */
+import SEO from '@/components/seo/SEO.astro';
+import JsonLd from '@/components/seo/JsonLd.astro';
+import { webPageNode, breadcrumbNode, type Crumb, type JsonLdNode } from '@/lib/schema';
+import { SITE } from '@/site.config';
+
+export interface Props {
+  title?: string | undefined;
+  rawTitle?: string | undefined;
+  description: string;
+  noindex?: boolean | undefined;
+  ogImage?: string | undefined;
+  ogType?: 'website' | 'article' | 'profile' | undefined;
+  publishedTime?: Date | undefined;
+  modifiedTime?: Date | undefined;
+  /** schema.org type of the page node (WebPage, ProfilePage, CollectionPage…) */
+  pageType?: string | undefined;
+  /** Extra JSON-LD nodes (Service, BlogPosting…) */
+  schema?: JsonLdNode[] | undefined;
+  /** Full trail including Home (see withHome). */
+  crumbs?: Crumb[] | undefined;
+  themeColor?: { light: string; dark: string } | undefined;
+}
+
+const p = Astro.props;
+const path = Astro.url.pathname;
+
+const nodes: JsonLdNode[] = [
+  webPageNode({ path, title: p.rawTitle ?? p.title ?? SITE.defaultTitle, description: p.description, ...(p.pageType ? { type: p.pageType } : {}) }),
+  ...(p.crumbs ? [breadcrumbNode(path, p.crumbs)] : []),
+  ...(p.schema ?? []),
+];
+---
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<!-- Apply stored theme before first paint (no flash). -->
+<script is:inline>
+  (function () {
+    var r = document.documentElement, t = null;
+    try { t = localStorage.getItem('theme'); } catch (e) {}
+    if (t === 'light' || t === 'dark') r.dataset.theme = t;
+    var dark = t ? t === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    r.dataset.resolvedTheme = dark ? 'dark' : 'light';
+  })();
+</script>
+{p.themeColor && <meta name="theme-color" content={p.themeColor.light} media="(prefers-color-scheme: light)" />}
+{p.themeColor && <meta name="theme-color" content={p.themeColor.dark} media="(prefers-color-scheme: dark)" />}
+<link rel="icon" href="/favicon.ico" sizes="32x32 48x48" />
+<link rel="icon" href="/favicon-48.png" type="image/png" sizes="48x48" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<link rel="manifest" href="/site.webmanifest" />
+<SEO
+  title={p.title}
+  rawTitle={p.rawTitle}
+  description={p.description}
+  noindex={p.noindex}
+  ogImage={p.ogImage}
+  ogType={p.ogType ?? 'website'}
+  publishedTime={p.publishedTime}
+  modifiedTime={p.modifiedTime}
+/>
+<JsonLd nodes={nodes} />

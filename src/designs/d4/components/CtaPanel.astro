@@ -1,0 +1,47 @@
+---
+/** Closing call to action with portrait. Used on the homepage and every inner page. */
+import { Picture } from 'astro:assets';
+import Button from './Button.astro';
+import portrait from '@/assets/aashish.jpg';
+import { CONTACT } from '@/site.config';
+
+export interface Props {
+  title?: string;
+  lead?: string;
+  kicker?: string;
+}
+const {
+  title = "Let's grow your business.",
+  lead = "Tell me where your business is today and where you want it to be. I'll tell you honestly how I can help.",
+  kicker = 'Work with me',
+} = Astro.props;
+---
+
+<section class="wrap py-24 md:py-32" aria-labelledby="cta">
+  <div class="stage relative grid overflow-hidden rounded-[2rem] border border-line md:grid-cols-12">
+    <div class="relative z-10 px-6 py-14 md:col-span-7 md:px-16 md:py-20">
+      <p class="label mb-4 flex items-center gap-3 text-ink"><span class="h-px w-8 bg-accent" aria-hidden="true"></span>{kicker}</p>
+      <h2 id="cta" class="display text-step-4">{title}</h2>
+      <p class="mt-6 max-w-md text-step-1 leading-snug text-muted">{lead}</p>
+      <div class="mt-9 flex flex-wrap gap-3">
+        <Button href="/contact/">Start a conversation</Button>
+      </div>
+      <div class="mt-10 flex flex-col gap-1 sm:flex-row sm:gap-8">
+        <a class="link font-medium" href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>
+        <a class="link font-medium" href={`tel:${CONTACT.phoneE164}`}>{CONTACT.phoneDisplay}</a>
+      </div>
+    </div>
+    <div class="relative hidden md:col-span-5 md:block" aria-hidden="true">
+      <Picture src={portrait} alt="" formats={['avif', 'webp']} widths={[500, 716]} sizes="35vw" class="cta-portrait absolute bottom-0 right-[4%] h-[90%] w-auto max-w-none object-contain object-bottom" />
+    </div>
+  </div>
+</section>
+
+<style>
+  .cta-portrait {
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 38%, #000 74%, transparent 100%), linear-gradient(to bottom, transparent 0%, #000 22%, #000 100%);
+    -webkit-mask-composite: source-in;
+    mask-image: linear-gradient(to right, transparent 0%, #000 38%, #000 74%, transparent 100%), linear-gradient(to bottom, transparent 0%, #000 22%, #000 100%);
+    mask-composite: intersect;
+  }
+</style>

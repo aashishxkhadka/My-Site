@@ -1,0 +1,277 @@
+@import 'tailwindcss';
+@plugin '@tailwindcss/typography';
+
+/* =====================================================================
+   Design tokens — "aurora"
+   Expressive display type, a warm→violet gradient used sparingly, film
+   grain, and motion that is pure CSS and switches off for reduced motion.
+   Colors are semantic variables, so light/dark is a token swap.
+   TODO(brand): tune --g1..--g3 / --accent once brand colors are confirmed.
+   ===================================================================== */
+
+:root {
+  color-scheme: light;
+  --bg: #fafafa;
+  --surface: #ffffff;
+  --surface-2: #f1f0f4;
+  --ink: #0e0d12;
+  --ink-muted: #5e5b66;   /* 6.4:1 on --bg */
+  --line: #e4e2e9;
+  --accent: #6b2bd9;      /* 6.6:1 on --bg */
+  --on-accent: #ffffff;
+  --focus: #6b2bd9;
+  /* Gradient stops — each ≥ 3:1 on --bg so gradient text stays legible at display sizes. */
+  --g1: #e0482a;
+  --g2: #c2257a;
+  --g3: #6b2bd9;
+  --aura-opacity: 0.55;
+  --grain-opacity: 0.06;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --bg: #0b0a0f;
+    --surface: #15131c;
+    --surface-2: #1c1a25;
+    --ink: #f3f1f7;
+    --ink-muted: #a29fad;  /* 7.6:1 on --bg */
+    --line: #25222e;
+    --accent: #b79cff;     /* 8.9:1 on --bg */
+    --on-accent: #0b0a0f;
+    --focus: #b79cff;
+    --g1: #ff8a5b;
+    --g2: #ff5fa8;
+    --g3: #a98bff;
+    --aura-opacity: 0.45;
+    --grain-opacity: 0.08;
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #0b0a0f;
+  --surface: #15131c;
+  --surface-2: #1c1a25;
+  --ink: #f3f1f7;
+  --ink-muted: #a29fad;
+  --line: #25222e;
+  --accent: #b79cff;
+  --on-accent: #0b0a0f;
+  --focus: #b79cff;
+  --g1: #ff8a5b;
+  --g2: #ff5fa8;
+  --g3: #a98bff;
+  --aura-opacity: 0.45;
+  --grain-opacity: 0.08;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-muted: var(--ink-muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-on-accent: var(--on-accent);
+  --color-g1: var(--g1);
+  --color-g2: var(--g2);
+  --color-g3: var(--g3);
+
+  --font-display: var(--d2-display);
+  --font-sans: var(--d2-sans);
+}
+
+@theme {
+  --text-step--1: clamp(0.8125rem, 0.79rem + 0.1vw, 0.875rem);
+  --text-step-0: clamp(1rem, 0.97rem + 0.15vw, 1.125rem);
+  --text-step-1: clamp(1.1875rem, 1.1rem + 0.4vw, 1.4375rem);
+  --text-step-2: clamp(1.5rem, 1.3rem + 1vw, 2.25rem);
+  --text-step-3: clamp(2.125rem, 1.55rem + 2.8vw, 4rem);
+  --text-step-4: clamp(2.75rem, 1.6rem + 5.5vw, 6.5rem);
+  --text-step-5: clamp(3.5rem, 1.4rem + 10vw, 11rem);
+  --text-step-6: clamp(4.25rem, 1rem + 14.5vw, 15rem);
+
+  --ease-out-soft: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* =====================================================================
+   Base
+   ===================================================================== */
+
+@layer base {
+  html {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    -webkit-text-size-adjust: 100%;
+    scroll-padding-top: 6rem;
+  }
+
+  body {
+    @apply bg-bg text-ink text-step-0 leading-relaxed antialiased;
+    min-height: 100dvh;
+    overflow-x: clip;
+  }
+
+  /* Film grain over everything. Static image, no repaint on scroll. */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    pointer-events: none;
+    opacity: var(--grain-opacity);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  h1, h2, h3, h4 {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  ::selection {
+    background: var(--g2);
+    color: #fff;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+}
+
+/* =====================================================================
+   Utilities
+   ===================================================================== */
+
+@utility wrap {
+  width: 100%;
+  max-width: 88rem;
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 4vw, 3rem);
+}
+
+@utility wrap-prose {
+  width: 100%;
+  max-width: 44rem;
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 4vw, 3rem);
+}
+
+@utility display {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 0.9;
+}
+
+@utility title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.05;
+}
+
+@utility label {
+  font-size: var(--text-step--1);
+  font-weight: 500;
+  color: var(--ink-muted);
+}
+
+/* Gradient-filled text. Stops are contrast-checked per theme. */
+@utility text-gradient {
+  background: linear-gradient(100deg, var(--g1), var(--g2) 45%, var(--g3));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@utility bg-gradient {
+  background-image: linear-gradient(100deg, var(--g1), var(--g2) 45%, var(--g3));
+}
+
+@utility link {
+  color: inherit;
+  text-decoration-line: underline;
+  text-decoration-color: color-mix(in oklab, currentColor 30%, transparent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.22em;
+  transition: text-decoration-color 150ms;
+  &:hover {
+    text-decoration-color: currentColor;
+  }
+}
+
+/* Load-in motion. */
+@utility reveal {
+  @media (prefers-reduced-motion: no-preference) {
+    animation: reveal 1s var(--ease-out-soft) both;
+    animation-delay: calc(var(--i, 0) * 90ms);
+  }
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(0.35em);
+    filter: blur(8px);
+  }
+}
+
+/* Scroll-driven motion — CSS only, progressive enhancement. */
+@utility scroll-in {
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      animation: scroll-in linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 28%;
+    }
+  }
+}
+
+@keyframes scroll-in {
+  from {
+    opacity: 0;
+    transform: translateY(48px) rotate(var(--tilt, 0deg)) scale(0.97);
+  }
+}
+
+/* Dev-only highlight for placeholder copy (see <Todo>). */
+@utility todo {
+  outline: 1px dashed #d97706;
+  outline-offset: 2px;
+  background: color-mix(in oklab, #f59e0b 14%, transparent);
+}
+
+/* A block that is always dark, whatever the theme (CTA panel). */
+@utility dark-island {
+  color-scheme: dark;
+  --bg: #0b0a0f;
+  --surface: #15131c;
+  --surface-2: #1c1a25;
+  --ink: #f3f1f7;
+  --ink-muted: #a29fad;
+  --line: #2e2a38;
+  --accent: #b79cff;
+  --on-accent: #0b0a0f;
+  --focus: #b79cff;
+  --g1: #ff8a5b;
+  --g2: #ff5fa8;
+  --g3: #a98bff;
+  --aura-opacity: 0.5;
+  background-color: var(--bg);
+  color: var(--ink);
+}

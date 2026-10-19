@@ -1,0 +1,77 @@
+---
+import { NAV, SITE } from '@/site.config';
+import ThemeToggle from './ThemeToggle.astro';
+import { Image } from 'astro:assets';
+import logoMark from '@/assets/logo-mark.png';
+
+const path = Astro.url.pathname;
+const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWith(href));
+---
+
+<header class="stage sticky top-0 z-50 border-b border-line/70">
+  <div class="wrap flex h-[4.25rem] items-center justify-between gap-6">
+    <a href="/" class="group flex items-center gap-2.5" aria-label={`${SITE.name}, home`}>
+      <Image src={logoMark} alt="" widths={[56, 84]} sizes="28px" loading="eager" class="size-7 transition-transform duration-500 group-hover:-rotate-12" />
+      <span class="title text-[1.25rem]">Aashish Khadka</span>
+    </a>
+
+    <div class="flex items-center gap-1">
+      <nav aria-label="Main" class="mr-2 hidden md:block">
+        <ul class="flex items-center gap-1 text-[0.9375rem] font-medium">
+          {
+            NAV.primary.map((item) => (
+              <li>
+                <a
+                  href={item.href}
+                  aria-current={isActive(item.href) ? 'page' : undefined}
+                  class="relative px-3 py-2 text-muted transition-colors hover:text-ink aria-[current=page]:text-ink after:absolute after:inset-x-3 after:-bottom-[1.05rem] after:h-0.5 after:scale-x-0 after:bg-accent after:transition-transform aria-[current=page]:after:scale-x-100"
+                >
+                  {item.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+      <ThemeToggle />
+      <a href={NAV.cta.href} class="ml-2 hidden rounded-full bg-accent px-5 py-2.5 text-[0.9375rem] font-semibold text-on-accent transition-opacity hover:opacity-90 md:inline-block">
+        {NAV.cta.label}
+      </a>
+      <button type="button" popovertarget="mobile-nav" class="inline-grid size-11 place-items-center rounded-full hover:bg-surface md:hidden" aria-label="Open menu">
+        <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 8h16M4 16h16"></path></svg>
+      </button>
+    </div>
+  </div>
+
+  <div id="mobile-nav" popover class="stage mobile-nav m-0 h-dvh max-h-none w-full max-w-none p-0">
+    <div class="wrap flex h-[4.25rem] items-center justify-between border-b border-line/70">
+      <span class="flex items-center gap-2.5"><Image src={logoMark} alt="" widths={[56]} sizes="28px" class="size-7" /><span class="title text-[1.25rem]">Aashish Khadka</span></span>
+      <button type="button" popovertarget="mobile-nav" popovertargetaction="hide" class="inline-grid size-11 place-items-center rounded-full hover:bg-surface" aria-label="Close menu">
+        <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+      </button>
+    </div>
+    <nav aria-label="Main mobile" class="wrap pt-6">
+      <ul>
+        {
+          NAV.primary.map((item) => (
+            <li class="border-b border-line">
+              <a href={item.href} aria-current={isActive(item.href) ? 'page' : undefined} class="display flex items-center justify-between py-4 text-step-3 aria-[current=page]:text-accent">
+                {item.label}<span aria-hidden="true" class="text-step-1 text-muted">→</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <a href={NAV.cta.href} class="mt-8 flex justify-center rounded-full bg-accent px-6 py-4 font-semibold text-on-accent">{NAV.cta.label}</a>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .mobile-nav { inset: 0; border: 0; }
+  .mobile-nav::backdrop { background: transparent; }
+  @media (prefers-reduced-motion: no-preference) {
+    .mobile-nav:popover-open { animation: menu-in 260ms var(--ease-out-soft); }
+  }
+  @keyframes menu-in { from { opacity: 0; transform: translateY(-10px); } }
+</style>

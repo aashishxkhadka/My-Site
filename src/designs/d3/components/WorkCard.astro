@@ -1,0 +1,36 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+export interface Props {
+  item: CollectionEntry<'work'>;
+  serviceTitles: string[];
+  index: number;
+}
+const { item, serviceTitles, index } = Astro.props;
+const lead = item.data.results[0];
+---
+
+<article class="scroll-in glass neon-border group relative grid gap-8 overflow-hidden rounded-3xl p-7 md:grid-cols-12 md:items-end md:p-12">
+  <div class="md:col-span-8">
+    <p class="mono flex flex-wrap gap-x-4 gap-y-1 text-muted">
+      <span>Case #{String(index + 1).padStart(3, '0')}</span>
+      <span>{item.data.client ?? 'Confidential client'}</span>
+      <span>{item.data.industry}</span>
+    </p>
+    <h3 class="title mt-5 text-step-3 uppercase">
+      <a href={`/work/${item.id}/`} class="after:absolute after:inset-0">{item.data.title}</a>
+    </h3>
+    <p class="mt-4 max-w-2xl text-muted">{item.data.summary}</p>
+    <ul class="mono mt-6 flex flex-wrap gap-2" aria-label="Services">
+      {serviceTitles.map((t) => <li class="rounded-full border border-line px-3 py-1.5">{t}</li>)}
+    </ul>
+  </div>
+  {
+    lead && (
+      <div class="md:col-span-4 md:text-right">
+        <p class="display text-holo text-step-4">{lead.value}</p>
+        <p class="label mt-3">{lead.label}</p>
+      </div>
+    )
+  }
+</article>

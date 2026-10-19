@@ -1,0 +1,26 @@
+---
+/** Single prose pages from the `pages` collection: /now/, /privacy/, /terms/. */
+import type { GetStaticPaths } from 'astro';
+import { getCollection, render } from 'astro:content';
+import Layout from '@/designs/d4/Layout.astro';
+import PageHeader from '@/designs/d4/components/PageHeader.astro';
+import { formatDate, isoDate } from '@/lib/format';
+
+export const getStaticPaths = (async () => {
+  const pages = await getCollection('pages');
+  return pages.map((page) => ({ params: { slug: page.id }, props: { page } }));
+}) satisfies GetStaticPaths;
+
+const { page } = Astro.props;
+const d = page.data;
+const { Content } = await render(page);
+const path = `/${page.id}/`;
+const crumbs = [{ label: d.title, href: path }];
+---
+
+<Layout title={d.title} rawTitle={d.seo.title} description={d.description} noindex={d.seo.noindex} breadcrumbs={crumbs}>
+  <PageHeader title={d.title} breadcrumbs={crumbs}>
+    <p class="mt-6 text-step--1 text-muted">Last updated <time datetime={isoDate(d.updatedDate)}>{formatDate(d.updatedDate)}</time></p>
+  </PageHeader>
+  <div class="wrap pb-24 pt-14 md:pb-32 md:pt-20"><div class="prose"><Content /></div></div>
+</Layout>

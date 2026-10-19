@@ -1,0 +1,42 @@
+---
+/** Real client brands. Logos sit on white tiles in both themes (they're designed for light). */
+import type { CollectionEntry } from 'astro:content';
+import { Image } from 'astro:assets';
+
+export interface Props {
+  clients: CollectionEntry<'clients'>[];
+  /** Show only this many on phones (the rest appear from sm up). */
+  mobileLimit?: number;
+}
+const { clients, mobileLimit } = Astro.props;
+---
+
+<ul class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+  {
+    clients.map((c, i) => (
+      <li
+        class:list={[
+          'group relative grid aspect-[5/2.4] place-items-center overflow-hidden rounded-xl border px-6',
+          mobileLimit !== undefined && i >= mobileLimit && 'max-sm:hidden',
+          c.data.logoOnDark ? 'border-transparent bg-[#1c1c1c]' : 'border-line bg-white',
+        ]}
+      >
+        {c.data.logo ? (
+          <Image
+            src={c.data.logo}
+            alt={c.data.name}
+            widths={[200, 400]}
+            sizes="(min-width: 1024px) 14vw, 40vw"
+            class:list={[
+              'max-h-[78%] w-auto object-contain transition-[filter,opacity] duration-500 group-hover:grayscale-0 group-hover:opacity-100 motion-reduce:transition-none',
+              c.data.logoOnDark ? 'grayscale' : 'opacity-75 grayscale',
+            ]}
+          />
+        ) : (
+          <span class="title text-center text-step-0 text-[#1c1c1c]">{c.data.name}</span>
+        )}
+        {c.data.url && <a href={c.data.url} target="_blank" rel="noopener" class="absolute inset-0" aria-label={`${c.data.name} website`} />}
+      </li>
+    ))
+  }
+</ul>

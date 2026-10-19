@@ -1,0 +1,33 @@
+---
+/** Rotating circular text badge. The link text is the accessible name. */
+export interface Props {
+  href: string;
+  text: string;
+  label: string;
+  class?: string;
+}
+const { href, text, label, class: className = '' } = Astro.props;
+---
+
+<a href={href} aria-label={label} class:list={['spin-badge group relative grid size-32 place-items-center md:size-40', className]}>
+  <svg viewBox="0 0 200 200" class="spin absolute inset-0 size-full" aria-hidden="true">
+    <defs>
+      <path id="badge-circle" d="M100,100 m-78,0 a78,78 0 1,1 156,0 a78,78 0 1,1 -156,0"></path>
+    </defs>
+    <text class="fill-ink text-[14px] font-medium uppercase">
+      <textPath href="#badge-circle" textLength="488" lengthAdjust="spacing">{text}</textPath>
+    </text>
+  </svg>
+  <span
+    class="bg-gradient grid size-14 place-items-center rounded-full text-xl text-white transition-transform duration-500 ease-[var(--ease-spring)] group-hover:scale-110 group-hover:rotate-45 md:size-16"
+    aria-hidden="true">↗</span
+  >
+</a>
+
+<style>
+  @media (prefers-reduced-motion: no-preference) {
+    .spin { animation: spin 18s linear infinite; }
+    .spin-badge:hover .spin { animation-duration: 6s; }
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>

@@ -1,0 +1,326 @@
+@import 'tailwindcss';
+@plugin '@tailwindcss/typography';
+
+/* =====================================================================
+   d3 — "Onchain"
+   Web3 / artist: neon on near-black, holographic gradients, a glowing
+   grid horizon, glass panels, mono metadata. All motion is CSS and stops
+   under prefers-reduced-motion. Light mode is a pale-lilac counterpart.
+   TODO(brand): tune neons once brand colors are confirmed.
+   ===================================================================== */
+
+@property --angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+:root {
+  color-scheme: light;
+  --bg: #f3f2fb;
+  --surface: #ffffff;
+  --surface-2: #e9e7f7;
+  --ink: #0b0a19;
+  --ink-muted: #55536e;   /* 7.0:1 on --bg */
+  --line: #d9d6ec;
+  --accent: #6d28d9;      /* text accent, 6.9:1 on --bg */
+  --btn-bg: #0b0a19;
+  --btn-fg: #c6ff3d;
+  --glow: 0 0 0 transparent;
+  --focus: #6d28d9;
+  /* Holographic stops (≥ 3:1 on --bg for display text) */
+  --h1: #0e7490;
+  --h2: #6d28d9;
+  --h3: #be185d;
+  --h4: #4d7c0f;
+  --grid: rgb(109 40 217 / 0.35);
+  --orb-opacity: 0.85;
+  --noise-opacity: 0.05;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --bg: #06060b;
+    --surface: #0e0e17;
+    --surface-2: #161624;
+    --ink: #eceaff;
+    --ink-muted: #9a97b5;  /* 7.4:1 on --bg */
+    --line: #1f1e30;
+    --accent: #c6ff3d;     /* 17:1 on --bg */
+    --btn-bg: #c6ff3d;
+    --btn-fg: #06060b;
+    --glow: 0 0 32px rgb(198 255 61 / 0.35);
+    --focus: #c6ff3d;
+    --h1: #3df2ff;
+    --h2: #9b6bff;
+    --h3: #ff4fd8;
+    --h4: #c6ff3d;
+    --grid: rgb(155 107 255 / 0.55);
+    --orb-opacity: 1;
+    --noise-opacity: 0.07;
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #06060b;
+  --surface: #0e0e17;
+  --surface-2: #161624;
+  --ink: #eceaff;
+  --ink-muted: #9a97b5;
+  --line: #1f1e30;
+  --accent: #c6ff3d;
+  --btn-bg: #c6ff3d;
+  --btn-fg: #06060b;
+  --glow: 0 0 32px rgb(198 255 61 / 0.35);
+  --focus: #c6ff3d;
+  --h1: #3df2ff;
+  --h2: #9b6bff;
+  --h3: #ff4fd8;
+  --h4: #c6ff3d;
+  --grid: rgb(155 107 255 / 0.55);
+  --orb-opacity: 1;
+  --noise-opacity: 0.07;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-muted: var(--ink-muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-btn-bg: var(--btn-bg);
+  --color-btn-fg: var(--btn-fg);
+  --color-h1: var(--h1);
+  --color-h2: var(--h2);
+  --color-h3: var(--h3);
+  --color-h4: var(--h4);
+
+  --font-display: var(--d3-display);
+  --font-sans: var(--d3-sans);
+  --font-mono: var(--d3-mono);
+}
+
+@theme {
+  --text-step--1: clamp(0.75rem, 0.73rem + 0.1vw, 0.8125rem);
+  --text-step-0: clamp(1rem, 0.97rem + 0.15vw, 1.125rem);
+  --text-step-1: clamp(1.1875rem, 1.1rem + 0.4vw, 1.4375rem);
+  --text-step-2: clamp(1.5rem, 1.3rem + 1vw, 2.25rem);
+  --text-step-3: clamp(2rem, 1.5rem + 2.5vw, 3.75rem);
+  --text-step-4: clamp(2.75rem, 1.6rem + 5.5vw, 6.5rem);
+  --text-step-5: clamp(3.5rem, 1.3rem + 10.5vw, 11.5rem);
+
+  --ease-out-soft: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* =====================================================================
+   Base
+   ===================================================================== */
+
+@layer base {
+  html {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    -webkit-text-size-adjust: 100%;
+    scroll-padding-top: 5rem;
+  }
+
+  body {
+    @apply bg-bg text-ink text-step-0 leading-relaxed antialiased;
+    min-height: 100dvh;
+    overflow-x: clip;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    pointer-events: none;
+    opacity: var(--noise-opacity);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  h1, h2, h3, h4 { text-wrap: balance; }
+  p { text-wrap: pretty; }
+
+  ::selection {
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html { scroll-behavior: smooth; }
+  }
+}
+
+/* =====================================================================
+   Utilities
+   ===================================================================== */
+
+@utility wrap {
+  width: 100%;
+  max-width: 90rem;
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 4vw, 3rem);
+}
+
+@utility wrap-prose {
+  width: 100%;
+  max-width: 44rem;
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 4vw, 3rem);
+}
+
+@utility display {
+  font-family: var(--font-display);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  line-height: 0.86;
+}
+
+@utility title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.02;
+}
+
+/* Mono metadata — the "onchain" voice. */
+@utility mono {
+  font-family: var(--font-mono);
+  font-size: var(--text-step--1);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+@utility label {
+  font-family: var(--font-mono);
+  font-size: var(--text-step--1);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-muted);
+}
+
+@utility link {
+  color: inherit;
+  text-decoration-line: underline;
+  text-decoration-color: color-mix(in oklab, currentColor 35%, transparent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.22em;
+  transition: text-decoration-color 150ms;
+  &:hover { text-decoration-color: currentColor; }
+}
+
+/* Holographic gradient text, slowly shifting. */
+@utility text-holo {
+  background-image: linear-gradient(90deg, var(--h1), var(--h2), var(--h3), var(--h4), var(--h1));
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  @media (prefers-reduced-motion: no-preference) {
+    animation: holo-shift 8s linear infinite;
+  }
+}
+
+@utility bg-holo {
+  background-image: linear-gradient(90deg, var(--h1), var(--h2), var(--h3), var(--h4), var(--h1));
+  background-size: 200% 100%;
+  @media (prefers-reduced-motion: no-preference) {
+    animation: holo-shift 8s linear infinite;
+  }
+}
+
+@keyframes holo-shift {
+  to { background-position: 200% 0; }
+}
+
+/* Frosted glass panel. */
+@utility glass {
+  background: color-mix(in oklab, var(--surface) 60%, transparent);
+  border: 1px solid var(--line);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+}
+
+/* Rotating conic border, revealed on hover/focus of the element. */
+@utility neon-border {
+  position: relative;
+  isolation: isolate;
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    z-index: -1;
+    border-radius: inherit;
+    padding: 1px;
+    background: conic-gradient(from var(--angle), var(--h1), var(--h2), var(--h3), var(--h4), var(--h1));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 400ms;
+  }
+  &:hover::before,
+  &:focus-within::before {
+    opacity: 1;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    &::before { animation: spin-angle 4s linear infinite; }
+  }
+}
+
+@keyframes spin-angle {
+  to { --angle: 360deg; }
+}
+
+@utility reveal {
+  @media (prefers-reduced-motion: no-preference) {
+    animation: reveal 1s var(--ease-out-soft) both;
+    animation-delay: calc(var(--i, 0) * 90ms);
+  }
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(0.4em);
+    filter: blur(10px);
+  }
+}
+
+@utility scroll-in {
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      animation: scroll-in linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 28%;
+    }
+  }
+}
+
+@keyframes scroll-in {
+  from {
+    opacity: 0;
+    transform: translateY(48px) scale(0.97);
+  }
+}
+
+@utility todo {
+  outline: 1px dashed #d97706;
+  outline-offset: 2px;
+  background: color-mix(in oklab, #f59e0b 14%, transparent);
+}

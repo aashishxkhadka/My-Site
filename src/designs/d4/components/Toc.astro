@@ -1,0 +1,23 @@
+---
+import type { MarkdownHeading } from 'astro';
+
+export interface Props {
+  headings: MarkdownHeading[];
+}
+const { headings } = Astro.props;
+---
+
+{
+  headings.length > 0 && (
+    <nav aria-labelledby="toc-title" class="rounded-2xl border border-line p-5">
+      <p id="toc-title" class="label">On this page</p>
+      <ol class="mt-4 space-y-2 text-step--1">
+        {headings.map((h) => (
+          <li class:list={[h.depth === 3 && 'pl-4']}>
+            <a class="text-muted transition-colors hover:text-ink" href={`#${h.slug}`}>{h.text}</a>
+          </li>
+        ))}
+      </ol>
+    </nav>
+  )
+}

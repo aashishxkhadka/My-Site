@@ -1,0 +1,262 @@
+@import 'tailwindcss';
+@plugin '@tailwindcss/typography';
+
+/* =====================================================================
+   d4 — "Editorial"
+   Portrait-led. A charcoal stage (matched to the studio photo's
+   background) for the hero, header and closing CTA; calm warm-white
+   pages in between; one burnt-orange accent. Cabinet Grotesk for
+   headlines, Instrument Sans (Basilpot's own typeface) for text.
+   ===================================================================== */
+
+:root {
+  color-scheme: light;
+  --bg: #f6f5f1;
+  --paper: #ffffff;
+  --surface: #eceae4;
+  --ink: #151514;
+  --ink-muted: #5d5b55;   /* 6.6:1 on --bg */
+  --line: #dedbd2;
+  --accent: #c2410c;      /* 5.2:1 on --bg, 5.2:1 under white text */
+  --on-accent: #ffffff;
+  --focus: #c2410c;
+  /* The stage: sampled from the portrait background (#1d1d1d). */
+  --stage: #1c1c1c;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --bg: #121211;
+    --paper: #1a1a19;
+    --surface: #232321;
+    --ink: #f1efea;
+    --ink-muted: #a9a69e;  /* 7.6:1 on --bg */
+    --line: #2d2c29;
+    --accent: #ff7a3d;     /* 7.4:1 on --bg */
+    --on-accent: #121211;
+    --focus: #ff7a3d;
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #121211;
+  --paper: #1a1a19;
+  --surface: #232321;
+  --ink: #f1efea;
+  --ink-muted: #a9a69e;
+  --line: #2d2c29;
+  --accent: #ff7a3d;
+  --on-accent: #121211;
+  --focus: #ff7a3d;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-muted: var(--ink-muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-on-accent: var(--on-accent);
+  --color-stage: var(--stage);
+
+  --font-display: var(--d4-display);
+  --font-sans: var(--d4-sans);
+}
+
+@theme {
+  --text-step--1: clamp(0.8125rem, 0.79rem + 0.1vw, 0.875rem);
+  --text-step-0: clamp(1.0313rem, 1rem + 0.15vw, 1.125rem);
+  --text-step-1: clamp(1.1875rem, 1.1rem + 0.4vw, 1.4375rem);
+  --text-step-2: clamp(1.5rem, 1.32rem + 0.9vw, 2.125rem);
+  --text-step-3: clamp(1.875rem, 1.5rem + 1.9vw, 3.25rem);
+  --text-step-4: clamp(2.375rem, 1.7rem + 3.4vw, 4.75rem);
+  --text-step-5: clamp(2.75rem, 1.7rem + 5.2vw, 6.5rem);
+
+  --ease-out-soft: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+/* =====================================================================
+   Base
+   ===================================================================== */
+
+@layer base {
+  html {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    -webkit-text-size-adjust: 100%;
+    scroll-padding-top: 5.5rem;
+  }
+
+  body {
+    @apply bg-bg text-ink text-step-0 leading-relaxed antialiased;
+    min-height: 100dvh;
+    overflow-x: clip;
+  }
+
+  h1, h2, h3, h4 { text-wrap: balance; }
+  p { text-wrap: pretty; }
+
+  ::selection {
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 3px;
+    border-radius: 3px;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html { scroll-behavior: smooth; }
+  }
+}
+
+/* =====================================================================
+   Utilities
+   ===================================================================== */
+
+@utility wrap {
+  width: 100%;
+  max-width: 82rem;
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, 4vw, 3rem);
+}
+
+@utility wrap-prose {
+  width: 100%;
+  max-width: 44rem;
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, 4vw, 3rem);
+}
+
+@utility display {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 0.98;
+}
+
+@utility title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.1;
+}
+
+@utility label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+@utility link {
+  color: inherit;
+  text-decoration-line: underline;
+  text-decoration-color: color-mix(in oklab, currentColor 30%, transparent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.22em;
+  transition: text-decoration-color 150ms;
+  &:hover { text-decoration-color: var(--accent); }
+}
+
+/* Always-dark stage (hero, header, CTA), whatever the page theme. */
+@utility stage {
+  color-scheme: dark;
+  --bg: #1c1c1c;
+  --paper: #242423;
+  --surface: #2a2a28;
+  --ink: #f4f2ee;
+  --ink-muted: #b3b0a8;   /* 7.9:1 on stage */
+  --line: #363532;
+  --accent: #ff7a3d;      /* 6.5:1 on stage */
+  --on-accent: #161616;
+  --focus: #ff7a3d;
+  background-color: var(--stage);
+  color: var(--ink);
+}
+
+@utility reveal {
+  @media (prefers-reduced-motion: no-preference) {
+    animation: reveal 900ms var(--ease-out-soft) both;
+    animation-delay: calc(var(--i, 0) * 90ms);
+  }
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+}
+
+@utility scroll-in {
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      animation: scroll-in linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 25%;
+    }
+  }
+}
+
+@keyframes scroll-in {
+  from {
+    opacity: 0;
+    transform: translateY(36px);
+  }
+}
+
+@utility todo {
+  outline: 1px dashed #d97706;
+  outline-offset: 2px;
+  background: color-mix(in oklab, #f59e0b 14%, transparent);
+}
+
+/* =====================================================================
+   Long-form content (MDX) — Tailwind Typography mapped to the tokens
+   ===================================================================== */
+
+.prose {
+  --tw-prose-body: var(--ink);
+  --tw-prose-headings: var(--ink);
+  --tw-prose-lead: var(--ink-muted);
+  --tw-prose-links: var(--ink);
+  --tw-prose-bold: var(--ink);
+  --tw-prose-counters: var(--ink-muted);
+  --tw-prose-bullets: var(--accent);
+  --tw-prose-hr: var(--line);
+  --tw-prose-quotes: var(--ink);
+  --tw-prose-quote-borders: var(--accent);
+  --tw-prose-captions: var(--ink-muted);
+  --tw-prose-code: var(--ink);
+  --tw-prose-pre-code: #ecebe6;
+  --tw-prose-pre-bg: #1c1c1c;
+  --tw-prose-th-borders: var(--line);
+  --tw-prose-td-borders: var(--line);
+  font-size: var(--text-step-0);
+  line-height: 1.75;
+  max-width: 44rem;
+}
+.prose :where(h2, h3, h4):not(:where(.not-prose, .not-prose *)) {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  scroll-margin-top: 6rem;
+}
+.prose :where(h2):not(:where(.not-prose, .not-prose *)) { font-size: var(--text-step-2); line-height: 1.15; margin-top: 2.2em; }
+.prose :where(h3):not(:where(.not-prose, .not-prose *)) { font-size: var(--text-step-1); }
+.prose :where(a):not(:where(.not-prose, .not-prose *)) {
+  text-decoration-color: var(--accent);
+  text-underline-offset: 0.2em;
+  font-weight: 500;
+}
+.prose :where(table):not(:where(.not-prose, .not-prose *)) { font-size: 0.95em; }
+.prose :where(thead th):not(:where(.not-prose, .not-prose *)) { font-family: var(--font-display); }

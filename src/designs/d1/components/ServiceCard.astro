@@ -1,0 +1,22 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { SERVICE_GROUPS } from '@/site.config';
+
+export interface Props {
+  service: CollectionEntry<'services'>;
+  headingLevel?: 'h2' | 'h3';
+}
+const { service, headingLevel: H = 'h3' } = Astro.props;
+const group = SERVICE_GROUPS.find((g) => g.key === service.data.group)?.label;
+---
+
+<article class="group relative flex h-full flex-col bg-bg p-6 transition-colors hover:bg-surface md:p-8">
+  <p class="label">{group}</p>
+  <H class="title mt-10 text-step-3 md:mt-16">
+    <a href={`/services/${service.id}/`} class="after:absolute after:inset-0">{service.data.title}</a>
+  </H>
+  <p class="mt-4 max-w-sm text-muted">{service.data.summary}</p>
+  <div class="mt-auto pt-10" aria-hidden="true">
+    <span class="inline-grid size-10 place-items-center rounded-md border border-line transition-colors group-hover:border-accent group-hover:bg-accent group-hover:text-on-accent">→</span>
+  </div>
+</article>

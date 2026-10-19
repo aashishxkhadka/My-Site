@@ -1,0 +1,106 @@
+---
+import { NAV, SITE } from '@/site.config';
+import ThemeToggle from './ThemeToggle.astro';
+
+const path = Astro.url.pathname;
+const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWith(href));
+---
+
+<header class="sticky top-0 z-50 pt-3 md:pt-4">
+  <div class="wrap">
+    <div class="flex h-14 items-center justify-between gap-4 rounded-full border border-line bg-bg/65 pl-5 pr-2 shadow-[0_10px_40px_-18px_rgb(0_0_0/0.25)] backdrop-blur-xl">
+      <!-- TODO(brand): swap for aashish-khadka-logo.svg once provided. -->
+      <a href="/" class="display text-[1.375rem] tracking-[-0.02em]" aria-label={`${SITE.name}, home`}>
+        aashish<span class="text-gradient">*</span>
+      </a>
+
+      <nav aria-label="Main" class="hidden md:block">
+        <ul class="flex items-center gap-1 text-[0.9375rem] font-medium">
+          {
+            NAV.primary.map((item) => (
+              <li>
+                <a
+                  href={item.href}
+                  aria-current={isActive(item.href) ? 'page' : undefined}
+                  class="rounded-full px-3.5 py-2 text-muted transition-colors hover:bg-surface-2 hover:text-ink aria-[current=page]:bg-surface-2 aria-[current=page]:text-ink"
+                >
+                  {item.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+
+      <div class="flex items-center gap-1">
+        <ThemeToggle />
+        <a
+          href={NAV.cta.href}
+          class="group relative hidden overflow-hidden rounded-full bg-ink px-5 py-2.5 text-[0.9375rem] font-medium text-bg md:inline-block"
+        >
+          <span class="bg-gradient absolute inset-0 translate-y-full transition-transform duration-500 ease-[var(--ease-out-soft)] group-hover:translate-y-0" aria-hidden="true"></span>
+          <span class="relative group-hover:text-white">{NAV.cta.label}</span>
+        </a>
+        <button
+          type="button"
+          popovertarget="mobile-nav"
+          class="inline-grid size-10 place-items-center rounded-full bg-ink text-bg md:hidden"
+          aria-label="Open menu"
+        >
+          <svg class="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <path d="M4 9h16M4 15h16"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile menu: native popover. No framework JS; Esc and light-dismiss built in. -->
+  <div id="mobile-nav" popover class="mobile-nav m-0 h-dvh max-h-none w-full max-w-none overflow-hidden bg-bg p-0 text-ink">
+    <div class="wrap flex h-[4.25rem] items-center justify-between pt-3">
+      <span class="display pl-5 text-[1.375rem]">aashish<span class="text-gradient">*</span></span>
+      <button
+        type="button"
+        popovertarget="mobile-nav"
+        popovertargetaction="hide"
+        class="inline-grid size-10 place-items-center rounded-full bg-ink text-bg"
+        aria-label="Close menu"
+      >
+        <svg class="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <path d="M6 6l12 12M18 6L6 18"></path>
+        </svg>
+      </button>
+    </div>
+    <nav aria-label="Main mobile" class="wrap pt-10">
+      <ul>
+        {
+          NAV.primary.map((item, i) => (
+            <li class="menu-item" style={`--i:${i}`}>
+              <a
+                href={item.href}
+                aria-current={isActive(item.href) ? 'page' : undefined}
+                class="display block py-2 text-step-4 aria-[current=page]:text-gradient"
+              >
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <a href={NAV.cta.href} class="bg-gradient mt-10 inline-flex rounded-full px-6 py-3.5 font-medium text-white">
+        {NAV.cta.label} →
+      </a>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .mobile-nav { inset: 0; border: 0; }
+  .mobile-nav::backdrop { background: transparent; }
+  @media (prefers-reduced-motion: no-preference) {
+    .mobile-nav:popover-open { animation: menu-in 300ms var(--ease-out-soft); }
+    .mobile-nav:popover-open .menu-item { animation: item-in 600ms var(--ease-out-soft) both; animation-delay: calc(80ms + var(--i) * 60ms); }
+  }
+  @keyframes menu-in { from { opacity: 0; } }
+  @keyframes item-in { from { opacity: 0; transform: translateY(30px); } }
+</style>

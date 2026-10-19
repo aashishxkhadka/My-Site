@@ -1,0 +1,31 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { Image } from 'astro:assets';
+
+export interface Props {
+  project: CollectionEntry<'projects'>;
+}
+const { project } = Astro.props;
+const { title, tagline, url, screenshot, screenshotAlt, status } = project.data;
+const host = url ? new URL(url).host.replace(/^www\./, '') : undefined;
+---
+
+<article class="group relative flex h-full flex-col">
+  <div class="aspect-[16/10] overflow-hidden rounded-xl border border-line bg-surface">
+    {
+      screenshot ? (
+        <Image src={screenshot} alt={screenshotAlt ?? ''} widths={[400, 640]} sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw" class="h-full w-full object-cover object-top transition-transform duration-700 ease-[var(--ease-out-soft)] group-hover:scale-[1.04]" />
+      ) : (
+        <div class="grid h-full place-items-center title text-step-2 text-muted" aria-hidden="true">{title}</div>
+      )
+    }
+  </div>
+  <div class="mt-4 flex items-start justify-between gap-3">
+    <h3 class="title text-step-1">
+      {url ? <a href={url} target="_blank" rel="noopener" class="after:absolute after:inset-0">{title}</a> : title}
+    </h3>
+    {status !== 'live' && <span class="label shrink-0 pt-1">{status === 'in-development' ? 'Building' : status}</span>}
+  </div>
+  <p class="mt-1 text-step--1 leading-relaxed text-muted">{tagline}</p>
+  {host && <p class="mt-2 text-step--1 font-medium group-hover:text-accent">{host} <span aria-hidden="true">↗</span></p>}
+</article>

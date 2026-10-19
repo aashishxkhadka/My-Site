@@ -1,0 +1,43 @@
+---
+import Layout from '@/designs/d4/Layout.astro';
+import PageHeader from '@/designs/d4/components/PageHeader.astro';
+import CtaPanel from '@/designs/d4/components/CtaPanel.astro';
+import { getPublished, byNewest } from '@/lib/content';
+import { itemListNode } from '@/lib/schema';
+import { formatDate, isoDate } from '@/lib/format';
+
+const resources = (await getPublished('resources')).sort(byNewest);
+const kinds = { guide: 'Guide', template: 'Template', checklist: 'Checklist', tool: 'Tool' } as const;
+const crumbs = [{ label: 'Resources', href: '/resource/' }];
+---
+
+<Layout
+  title="Free Resources"
+  description="Free guides, templates and checklists from Aashish Khadka on SEO, digital marketing and growing a business online."
+  pageType="CollectionPage"
+  breadcrumbs={crumbs}
+  schema={resources.length ? [itemListNode('/resource/', resources.map((r) => ({ name: r.data.title, url: `/resource/${r.id}/` })))] : []}
+>
+  <PageHeader title="Free resources." kicker="Resources" lead="Guides, templates and checklists I use with clients, free to use for your own business." breadcrumbs={crumbs} />
+
+  <div class="wrap pt-14 md:pt-20">
+    {
+      resources.length > 0 ? (
+        <ul class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {resources.map((r) => (
+            <li class="group relative flex flex-col rounded-2xl border border-line bg-paper p-6 transition-colors hover:border-ink">
+              <p class="label">{kinds[r.data.kind]}</p>
+              <h2 class="title mt-6 text-step-2"><a href={`/resource/${r.id}/`} class="after:absolute after:inset-0">{r.data.title}</a></h2>
+              <p class="mt-3 text-muted">{r.data.description}</p>
+              <p class="mt-auto pt-6 text-step--1 text-muted"><time datetime={isoDate(r.data.updatedDate ?? r.data.pubDate)}>{formatDate(r.data.updatedDate ?? r.data.pubDate)}</time></p>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p class="max-w-xl text-step-1 text-muted">The first resources are being prepared. In the meantime, <a class="link text-ink" href="/blog/">read the blog</a> or <a class="link text-ink" href="/contact/">ask me directly</a>.</p>
+      )
+    }
+  </div>
+
+  <CtaPanel />
+</Layout>

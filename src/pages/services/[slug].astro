@@ -1,0 +1,119 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { getEntry, render, type CollectionEntry } from 'astro:content';
+import Layout from '@/designs/d4/Layout.astro';
+import PageHeader from '@/designs/d4/components/PageHeader.astro';
+import Faq from '@/designs/d4/components/Faq.astro';
+import WorkCard from '@/designs/d4/components/WorkCard.astro';
+import CtaPanel from '@/designs/d4/components/CtaPanel.astro';
+import Button from '@/designs/d4/components/Button.astro';
+import { getPublished, byOrder } from '@/lib/content';
+import { serviceNode, faqNode } from '@/lib/schema';
+import { SERVICE_GROUPS, TOPICS } from '@/site.config';
+
+export const getStaticPaths = (async () => {
+  const services = await getPublished('services');
+  return services.map((service) => ({ params: { slug: service.id }, props: { service } }));
+}) satisfies GetStaticPaths;
+
+const { service } = Astro.props as { service: CollectionEntry<'services'> };
+const d = service.data;
+const { Content } = await render(service);
+const hasBody = (service.body ?? '').trim().length > 0;
+const path = `/services/${service.id}/`;
+const group = SERVICE_GROUPS.find((g) => g.key === d.group)?.label;
+const work = (await Promise.all(d.relatedWork.map((r) => getEntry(r)))).filter((w): w is CollectionEntry<'work'> => !!w && (import.meta.env.DEV || !w.data.draft));
+// Fall back to case studies that list this service.
+const related = work.length ? work : (await getPublished('work')).filter((w) => w.data.services.some((s) => s.id === service.id)).sort(byOrder).slice(0, 2);
+const allServices = await getPublished('services');
+const titleOf = (id: string) => allServices.find((s) => s.id === id)?.data.title ?? id;
+const topics = TOPICS.filter((t) => (d.relatedTopics as string[]).includes(t.key));
+const crumbs = [{ label: 'Services', href: '/services/' }, { label: d.title, href: path }];
+---
+
+<Layout
+  title={d.title}
+  rawTitle={d.seo.title}
+  description={d.description}
+  noindex={d.seo.noindex}
+  breadcrumbs={crumbs}
+  schema={[serviceNode({ path, name: d.headline ?? d.title, description: d.description, serviceType: d.serviceType, areaServed: d.areaServed }), ...(d.faq.length ? [faqNode(path, d.faq)] : [])]}
+>
+  <PageHeader title={d.headline ?? d.title} kicker={group} lead={d.summary} breadcrumbs={crumbs}>
+    <div class="mt-9 flex flex-wrap gap-3">
+      <Button href={d.cta.href}>{d.cta.label}</Button>
+    </div>
+  </PageHeader>
+
+  <div class="wrap grid gap-16 pt-20 md:grid-cols-2 md:gap-12 md:pt-28">
+    <section aria-labelledby="for-who">
+      <h2 id="for-who" class="display text-step-3">Who it's for</h2>
+      <ul class="mt-8 space-y-4">
+        {d.forWho.map((x) => <li class="flex gap-4 text-step-1 leading-snug"><span class="mt-[0.55em] size-2 shrink-0 rounded-full bg-accent" aria-hidden="true" />{x}</li>)}
+      </ul>
+    </section>
+    <section aria-labelledby="you-get">
+      <h2 id="you-get" class="display text-step-3">What you get</h2>
+      <ul class="mt-8 divide-y divide-line border-y border-line">
+        {d.deliverables.map((x) => <li class="flex gap-4 py-4"><span class="text-accent" aria-hidden="true">✓</span>{x}</li>)}
+      </ul>
+    </section>
+  </div>
+
+  <section class="wrap pt-24 md:pt-32" aria-labelledby="process">
+    <h2 id="process" class="display text-step-4">How it works</h2>
+    <ol class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {
+        d.process.map((p, i) => (
+          <li class="rounded-2xl border border-line bg-paper p-6">
+            <p class="title text-step-2 text-accent">{String(i + 1).padStart(2, '0')}</p>
+            <p class="title mt-6 text-step-1">{p.title}</p>
+            <p class="mt-2 text-muted">{p.description}</p>
+          </li>
+        ))
+      }
+    </ol>
+  </section>
+
+  {
+    hasBody && (
+      <section class="wrap grid gap-12 pt-24 md:pt-32 lg:grid-cols-12" aria-label="In detail">
+        <div class="prose lg:col-span-8"><Content /></div>
+        <aside class="hidden lg:col-span-4 lg:block">
+          <div class="stage sticky top-28 rounded-2xl p-7">
+            <p class="label text-ink">{d.title}</p>
+            <p class="title mt-3 text-step-2">Talk it through first.</p>
+            <p class="mt-3 text-muted">Tell me about your business. I'll tell you honestly whether this is the right place to start.</p>
+            <a href="/contact/" class="mt-6 inline-flex rounded-full bg-accent px-5 py-3 font-semibold text-on-accent">Start a conversation →</a>
+          </div>
+        </aside>
+      </section>
+    )
+  }
+
+  <div class="wrap pt-24 md:pt-32"><Faq items={d.faq} /></div>
+
+  {
+    related.length > 0 && (
+      <section class="wrap pt-24 md:pt-32" aria-labelledby="related-work">
+        <h2 id="related-work" class="display text-step-4">Related work</h2>
+        <div class="mt-10 grid gap-14 md:grid-cols-2 md:gap-10">
+          {related.map((w) => <WorkCard item={w} serviceTitles={w.data.services.map((s) => titleOf(s.id))} />)}
+        </div>
+      </section>
+    )
+  }
+
+  {
+    topics.length > 0 && (
+      <section class="wrap pt-20" aria-labelledby="reading">
+        <h2 id="reading" class="label">Further reading</h2>
+        <ul class="mt-4 flex flex-wrap gap-2">
+          {topics.map((t) => <li><a class="inline-block rounded-full border border-line px-4 py-2 hover:border-ink" href={`/topics/${t.key}/`}>{t.label}</a></li>)}
+        </ul>
+      </section>
+    )
+  }
+
+  <CtaPanel />
+</Layout>

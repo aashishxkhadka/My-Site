@@ -1,0 +1,59 @@
+---
+/**
+ * <head> metadata for every page: title, description, canonical, robots,
+ * Open Graph, Twitter. One instance per page, rendered by BaseLayout.
+ */
+import { SITE, SOCIALS, INTEGRATIONS } from '@/site.config';
+import { fullTitle } from '@/lib/format';
+
+export interface Props {
+  /** Page part of the title. Ignored when `rawTitle` is set. */
+  title?: string | undefined;
+  /** Full title, used as-is (homepage, seo.title overrides). */
+  rawTitle?: string | undefined;
+  description: string;
+  noindex?: boolean | undefined;
+  /** Absolute or root-relative. Step 5 generates one per page. */
+  ogImage?: string | undefined;
+  ogType?: 'website' | 'article' | 'profile';
+  publishedTime?: Date | undefined;
+  modifiedTime?: Date | undefined;
+}
+
+const { title, rawTitle, description, noindex = false, ogImage, ogType = 'website', publishedTime, modifiedTime } = Astro.props;
+
+const pageTitle = rawTitle ?? (title ? fullTitle(title, SITE.titleSuffix) : SITE.defaultTitle);
+const canonical = new URL(Astro.url.pathname, SITE.url).href;
+const image = ogImage ? new URL(ogImage, SITE.url).href : undefined;
+const xHandle = SOCIALS.find((s) => s.key === 'x')?.handle;
+
+if (import.meta.env.DEV) {
+  if (pageTitle.length > 60) console.warn(`[seo] <title> is ${pageTitle.length} chars on ${Astro.url.pathname}: "${pageTitle}"`);
+  if (description.length > 155) console.warn(`[seo] description is ${description.length} chars on ${Astro.url.pathname}`);
+}
+---
+
+<title>{pageTitle}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonical} />
+<meta name="robots" content={noindex ? 'noindex, follow' : 'index, follow, max-image-preview:large, max-snippet:-1'} />
+
+<meta property="og:type" content={ogType} />
+<meta property="og:site_name" content={SITE.name} />
+<meta property="og:locale" content="en_US" />
+<meta property="og:title" content={pageTitle} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonical} />
+{image && <meta property="og:image" content={image} />}
+{image && <meta property="og:image:width" content="1200" />}
+{image && <meta property="og:image:height" content="630" />}
+{publishedTime && <meta property="article:published_time" content={publishedTime.toISOString()} />}
+{modifiedTime && <meta property="article:modified_time" content={modifiedTime.toISOString()} />}
+
+<meta name="twitter:card" content={image ? 'summary_large_image' : 'summary'} />
+{xHandle && <meta name="twitter:site" content={xHandle} />}
+{xHandle && <meta name="twitter:creator" content={xHandle} />}
+
+<link rel="alternate" type="application/rss+xml" title={`${SITE.name} — Blog`} href="/rss.xml" />
+<link rel="sitemap" href="/sitemap-index.xml" />
+{INTEGRATIONS.gscVerification && <meta name="google-site-verification" content={INTEGRATIONS.gscVerification} />}

@@ -1,0 +1,15 @@
+---
+import Layout from '@/designs/d4/Layout.astro';
+import PageHeader from '@/designs/d4/components/PageHeader.astro';
+import Button from '@/designs/d4/components/Button.astro';
+---
+
+<Layout title="Thanks for your message" description="Your message to Aashish Khadka has been sent. He will reply personally, usually within a day or two." noindex>
+  <PageHeader title="Thank you." kicker="Message sent" lead="I've got your message and will reply personally.">
+    <div class="mt-9 flex flex-wrap gap-3">
+      <Button href="/work/">See my work</Button>
+      <Button href="/blog/" variant="outline">Read the blog</Button>
+    </div>
+  </PageHeader>
+  <div class="pb-24"></div>
+</Layout>
