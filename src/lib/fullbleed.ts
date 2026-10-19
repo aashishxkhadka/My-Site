@@ -36,7 +36,7 @@ export type FullbleedItem = {
 };
 
 async function get<T>(path: string, key: string): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, { headers: { Authorization: `Bearer ${key}`, Accept: 'application/json' } });
+  const res = await fetch(`${BASE}${path}`, { headers: { Authorization: `Bearer ${key}`, Accept: 'application/json', 'User-Agent': 'aashishkhadka-site-build/1.0 (+https://aashishxkhadka.github.io)' } });
   if (!res.ok) {
     const body = await res.text().catch(() => '');
     throw new Error(`Fullbleed ${path} → ${res.status} ${body.slice(0, 200)}`);
