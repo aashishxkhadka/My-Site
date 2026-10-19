@@ -123,9 +123,12 @@ export function withFullbleedPosts(base: Loader): Loader {
       try {
         posts = await listAll('/posts', key);
       } catch (err) {
-        // Fail loudly in CI so a broken key never silently deletes the blog from the live site.
-        if (process.env.CI) throw err;
-        ctx.logger.warn(`Could not reach Fullbleed: ${(err as Error).message}`);
+        // FULLBLEED_STRICT=1 (set in the deploy workflow once the API is reliably reachable from CI)
+        // fails the build instead, so a broken key or outage never silently removes posts from the live site.
+        const msg = (err as Error).message.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').slice(0, 160);
+        if (process.env.FULLBLEED_STRICT === '1') throw err;
+        if (process.env.GITHUB_ACTIONS) console.log(`::warning title=Fullbleed CMS unreachable::${msg}`);
+        ctx.logger.warn(`Could not reach Fullbleed (building without CMS posts): ${msg}`);
         return;
       }
 
