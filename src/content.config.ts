@@ -8,6 +8,7 @@ import { defineCollection, reference } from 'astro:content';
 import { file, glob } from 'astro/loaders';
 import { z } from 'astro/zod';
 import { SERVICE_GROUP_KEYS, TOPIC_KEYS } from './site.config';
+import { withFullbleedPosts } from './lib/fullbleed';
 
 /* ------------------------------------------------------------------ */
 /* Shared fields                                                       */
@@ -53,7 +54,8 @@ export const entryBase = z.object({
 /* ------------------------------------------------------------------ */
 
 const blog = defineCollection({
-  loader: mdx('blog'),
+  // Local MDX posts + published posts from the Fullbleed CMS (see src/lib/fullbleed.ts).
+  loader: withFullbleedPosts(mdx('blog')),
   schema: ({ image }) =>
     z
       .object({
@@ -61,14 +63,18 @@ const blog = defineCollection({
         description,
         pubDate: z.coerce.date(),
         updatedDate: z.coerce.date().optional(),
-        /** First topic = primary hub (breadcrumb + "more on X" link). */
-        topics: topics.min(1),
+        /** First topic = primary hub (breadcrumb + "more on X" link). CMS posts get topics from category/tags. */
+        topics: topics.default([]),
         /** Free-form, used for on-page filtering only. No tag pages (thin content). */
         tags: z.array(z.string()).default([]),
         primaryKeyword: z.string(),
         secondaryKeywords: z.array(z.string()).default([]),
         heroImage: image().optional(),
         heroAlt: z.string().optional(),
+        /** Remote cover image (Fullbleed media domain). */
+        coverImageUrl: z.url().optional(),
+        /** Where the post comes from. */
+        source: z.enum(['mdx', 'fullbleed']).default('mdx'),
         draft: z.boolean().default(false),
         faq,
 

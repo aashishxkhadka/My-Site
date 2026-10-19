@@ -47,7 +47,7 @@ const crumbs = [
   modifiedTime={d.updatedDate}
   breadcrumbs={crumbs}
   schema={[
-    blogPostingNode({ path, title: d.title, description: d.description, pubDate: d.pubDate, updatedDate: d.updatedDate, image: d.heroImage?.src, keywords: [d.primaryKeyword, ...d.secondaryKeywords], about: topics.map((t) => t.label), mentions: d.mentions }),
+    blogPostingNode({ path, title: d.title, description: d.description, pubDate: d.pubDate, updatedDate: d.updatedDate, image: d.heroImage?.src ?? d.coverImageUrl, keywords: [d.primaryKeyword, ...d.secondaryKeywords], about: topics.map((t) => t.label), mentions: d.mentions }),
     ...(d.faq.length ? [faqNode(path, d.faq)] : []),
   ]}
 >
@@ -70,6 +70,7 @@ const crumbs = [
         )
       }
       {d.heroImage && <Image src={d.heroImage} alt={d.heroAlt ?? ''} widths={[640, 960, 1280]} sizes="(min-width: 1024px) 760px, 92vw" loading="eager" class="mb-10 h-auto w-full rounded-2xl" />}
+      {!d.heroImage && d.coverImageUrl && <img src={d.coverImageUrl} alt={d.heroAlt ?? ''} loading="eager" decoding="async" class="mb-10 aspect-[16/9] h-auto w-full rounded-2xl object-cover" />}
       {toc.length > 0 && <div class="mb-10 lg:hidden"><Toc headings={toc} /></div>}
 
       <div class="prose"><Content /></div>
