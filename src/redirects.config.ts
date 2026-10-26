@@ -4,8 +4,8 @@
  * Hosting is GitHub Pages (no server-side redirects), so:
  *   - exact paths in PATH_REDIRECTS become static redirect pages
  *     (src/pages/[...legacy].astro: meta refresh + canonical + noindex);
- *   - old WordPress sitemap URLs (*.xml) serve a sitemap index pointing at the
- *     real sitemap (src/pages/[legacy].xml.ts);
+ *   - old WordPress sitemap URLs (*.xml) serve a sitemap index pointing at
+ *     /sitemap.xml, the real sitemap (src/pages/[legacy].xml.ts);
  *   - splats (/x/*) are only documented here; list each known URL explicitly.
  * QUERY_REDIRECTS (?page_id=) can't be done on GitHub Pages; those URLs load
  * the homepage. They'd need Cloudflare Redirect Rules if DNS moves there.
@@ -47,11 +47,11 @@ export const PATH_REDIRECTS: PathRedirect[] = [
   { from: '/comments/feed/*', to: '/rss.xml', status: 301 },
 
   // WordPress / Yoast / Rank Math sitemaps
-  { from: '/wp-sitemap.xml', to: '/sitemap-index.xml', status: 301 },
-  { from: '/sitemap_index.xml', to: '/sitemap-index.xml', status: 301 },
-  { from: '/sitemap.xml', to: '/sitemap-index.xml', status: 301 },
-  { from: '/page-sitemap.xml', to: '/sitemap-index.xml', status: 301 },
-  { from: '/post-sitemap.xml', to: '/sitemap-index.xml', status: 301 },
+  // (/sitemap.xml itself is the real sitemap, written after the build: see astro.config.mjs.)
+  { from: '/wp-sitemap.xml', to: '/sitemap.xml', status: 301 },
+  { from: '/sitemap_index.xml', to: '/sitemap.xml', status: 301 },
+  { from: '/page-sitemap.xml', to: '/sitemap.xml', status: 301 },
+  { from: '/post-sitemap.xml', to: '/sitemap.xml', status: 301 },
 
   // Archives. Catch-alls for now; replace with per-category → /blog/[topic]/ mappings once we have the list.
   { from: '/category/*', to: '/blog/', status: 301, note: 'TODO: map each category to a topic hub' },

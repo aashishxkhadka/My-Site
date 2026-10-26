@@ -4,7 +4,7 @@ import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
 import ogImages from './src/integrations/og-images.mjs';
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, rmSync } from 'node:fs';
 
 const outDir = new URL('./dist/', import.meta.url);
 
@@ -18,6 +18,29 @@ const isNoindex = (/** @type {string} */ page) => {
   }
 };
 
+/**
+ * Makes /sitemap.xml the one real sitemap: @astrojs/sitemap writes sitemap-0.xml
+ * plus an index; this moves the URL list to sitemap.xml and points the index at it.
+ * (Only while everything fits in one file, i.e. under 45,000 URLs.)
+ */
+function mainSitemap() {
+  return {
+    name: 'main-sitemap',
+    hooks: {
+      'astro:build:done': () => {
+        const part = new URL('sitemap-0.xml', outDir);
+        if (!existsSync(part) || existsSync(new URL('sitemap-1.xml', outDir))) return;
+        writeFileSync(new URL('sitemap.xml', outDir), readFileSync(part));
+        rmSync(part);
+        writeFileSync(
+          new URL('sitemap-index.xml', outDir),
+          '<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><sitemap><loc>https://aashishkhadka.com.np/sitemap.xml</loc></sitemap></sitemapindex>\n',
+        );
+      },
+    },
+  };
+}
+
 export default defineConfig({
   site: 'https://aashishkhadka.com.np',
   trailingSlash: 'always',
@@ -26,6 +49,7 @@ export default defineConfig({
   integrations: [
     mdx(),
     sitemap({ filter: (page) => !page.includes('/404') && !isNoindex(page) }),
+    mainSitemap(),
     ogImages(),
   ],
   image: {

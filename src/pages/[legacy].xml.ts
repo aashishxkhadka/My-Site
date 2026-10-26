@@ -1,5 +1,5 @@
 /**
- * Old WordPress sitemap URLs (sitemap.xml, sitemap_index.xml, …) answer with a
+ * Old WordPress sitemap URLs (sitemap_index.xml, wp-sitemap.xml, …) answer with a
  * sitemap index pointing at the real sitemap, so crawlers that remember them
  * still find every page. Names come from the .xml entries in PATH_REDIRECTS.
  */
@@ -12,6 +12,6 @@ export const getStaticPaths = (() =>
 
 export const GET: APIRoute = () =>
   new Response(
-    `<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><sitemap><loc>${SITE.url}/sitemap-0.xml</loc></sitemap></sitemapindex>\n`,
+    `<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><sitemap><loc>${SITE.url}/sitemap.xml</loc></sitemap></sitemapindex>\n`,
     { headers: { 'Content-Type': 'application/xml' } },
   );
