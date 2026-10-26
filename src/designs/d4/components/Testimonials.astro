@@ -4,6 +4,7 @@
  *   bento: homepage. Mixed tiles: featured quote, stat from a review, 5-star count,
  *          quote tiles, reviewer logos, businesses-worked-with.
  *   mini:  service pages and About. Dark featured quote, with the Google rating and up to two quotes stacked beside it.
+ *   Phones (both layouts): stat tiles first, then every quote in a swipeable strip (TestimonialSwipe).
  *
  * Bento on large screens (4 columns):
  *   F F H R      F featured · H social views stat · R Google rating
@@ -16,6 +17,7 @@ import { Image } from 'astro:assets';
 import SectionHeader from './SectionHeader.astro';
 import TestimonialPerson from './TestimonialPerson.astro';
 import TestimonialWork from './TestimonialWork.astro';
+import TestimonialSwipe from './TestimonialSwipe.astro';
 import { SOCIALS, STATS } from '@/site.config';
 
 export interface Props {
@@ -36,12 +38,12 @@ const logos = allClients.filter((c) => c.data.logo).sort((a, b) => Number(b.data
 // Mini: the featured tile spans the rating row plus one row per side quote.
 const miniRows = ['lg:row-span-1', 'lg:row-span-2', 'lg:row-span-3'][Math.min(quotes.length, 2)];
 const quoteSlots = [
-  'col-span-2', // A: wide, beside the featured tile
-  'col-span-2 lg:col-span-1', // B
+  'col-span-2 hidden sm:block', // A: wide, beside the featured tile
+  'col-span-2 hidden sm:block lg:col-span-1', // B
   'col-span-2 hidden sm:block lg:col-span-1', // C
   'col-span-2 hidden sm:block', // D: wide
   'col-span-2 hidden sm:block', // E: wide
-  // Phones show the featured quote, A and B (C–E are left out to keep the section short).
+  // Phones: every quote moves into the swipeable strip (TestimonialSwipe) below the two stat tiles.
 ];
 const tile = 'scroll-in rounded-3xl border border-line p-6 md:p-7';
 ---
@@ -52,7 +54,7 @@ const tile = 'scroll-in rounded-3xl border border-line p-6 md:p-7';
       <SectionHeader id="testimonials" kicker="Testimonials" title={title} {...action} />
       <ul class="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {featured && (
-          <li class={`${tile} stage col-span-2 flex flex-col justify-between gap-10 border-transparent md:p-10 lg:row-span-2`}>
+          <li class={`${tile} stage col-span-2 flex flex-col justify-between gap-10 border-transparent max-sm:hidden md:p-10 lg:row-span-2`}>
             <figure class="flex h-full flex-col justify-between gap-10">
               <div>
                 <svg class="h-10 w-12 text-accent" viewBox="0 0 56 44" fill="currentColor" aria-hidden="true"><path d="M0 44V26.4C0 11.9 7.2 3.1 21.6 0l2.6 5.6C16.5 8 12.6 12.7 12.4 19.6H22V44H0Zm33.6 0V26.4C33.6 11.9 40.8 3.1 55.2 0l2.6 5.6c-7.7 2.4-11.6 7.1-11.8 14H56V44H33.6Z" /></svg>
@@ -92,6 +94,8 @@ const tile = 'scroll-in rounded-3xl border border-line p-6 md:p-7';
             </p>
           </div>
         </li>
+
+        <li class="col-span-2 sm:hidden"><TestimonialSwipe items={items} clients={clients} /></li>
 
         {quotes.slice(0, 3).map((t, i) => (
           <li class={`${tile} ${quoteSlots[i]} bg-paper`}>
@@ -155,9 +159,9 @@ const tile = 'scroll-in rounded-3xl border border-line p-6 md:p-7';
   ) : (
     <section class="wrap pt-24 md:pt-32" aria-labelledby="testimonials">
       <SectionHeader id="testimonials" kicker="Testimonials" title={title} {...action} />
-      <ul class="grid gap-4 lg:grid-cols-5">
+      <ul class="grid grid-cols-1 gap-4 lg:grid-cols-5">
         {featured && (
-          <li class:list={[tile, 'stage flex flex-col border-transparent md:p-10 lg:col-span-3', miniRows]}>
+          <li class:list={[tile, 'stage flex flex-col border-transparent max-sm:hidden md:p-10 lg:col-span-3', miniRows]}>
             <figure class="flex h-full flex-col justify-between gap-10">
               <div>
                 <svg class="h-9 w-11 text-accent" viewBox="0 0 56 44" fill="currentColor" aria-hidden="true"><path d="M0 44V26.4C0 11.9 7.2 3.1 21.6 0l2.6 5.6C16.5 8 12.6 12.7 12.4 19.6H22V44H0Zm33.6 0V26.4C33.6 11.9 40.8 3.1 55.2 0l2.6 5.6c-7.7 2.4-11.6 7.1-11.8 14H56V44H33.6Z" /></svg>
@@ -187,8 +191,10 @@ const tile = 'scroll-in rounded-3xl border border-line p-6 md:p-7';
           </div>
         </li>
 
+        <li class="sm:hidden"><TestimonialSwipe items={items} clients={clients} /></li>
+
         {quotes.slice(0, 2).map((t) => (
-          <li class={`${tile} bg-paper lg:col-span-2`}>
+          <li class={`${tile} bg-paper max-sm:hidden lg:col-span-2`}>
             <figure class="flex h-full flex-col justify-between gap-5">
               <div>
                 <blockquote><p class="text-[1.0625rem] leading-relaxed">“{t.data.quote}”</p></blockquote>

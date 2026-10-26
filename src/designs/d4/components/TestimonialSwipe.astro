@@ -1,0 +1,71 @@
+---
+/**
+ * Phones only (hidden from sm up): reviews as a horizontal, swipeable strip.
+ * The next card peeks in so it's clear there's more; dots show the position
+ * and jump to a review. Without JS it's still a plain scrollable row.
+ */
+import type { CollectionEntry } from 'astro:content';
+import TestimonialPerson from './TestimonialPerson.astro';
+
+export interface Props {
+  items: CollectionEntry<'testimonials'>[];
+  clients: Map<string, CollectionEntry<'clients'> | undefined>;
+  class?: string;
+}
+const { items, clients, class: className } = Astro.props;
+---
+
+<div class:list={['sm:hidden', className]} data-swipe>
+  <ul class="swipe relative -mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-1" aria-label="Client reviews">
+    {
+      items.map((t, i) => (
+        <li class="w-[86%] shrink-0 snap-start">
+          <figure class:list={['flex h-full flex-col justify-between gap-6 rounded-3xl border p-6', i === 0 ? 'stage border-transparent' : 'border-line bg-paper']}>
+            <div>
+              <svg class="h-6 w-7 text-accent" viewBox="0 0 56 44" fill="currentColor" aria-hidden="true"><path d="M0 44V26.4C0 11.9 7.2 3.1 21.6 0l2.6 5.6C16.5 8 12.6 12.7 12.4 19.6H22V44H0Zm33.6 0V26.4C33.6 11.9 40.8 3.1 55.2 0l2.6 5.6c-7.7 2.4-11.6 7.1-11.8 14H56V44H33.6Z" /></svg>
+              <blockquote class="mt-4"><p class="text-[1.0625rem] leading-relaxed">{t.data.quote}</p></blockquote>
+            </div>
+            <figcaption><TestimonialPerson item={t} client={clients.get(t.id)} /></figcaption>
+          </figure>
+        </li>
+      ))
+    }
+  </ul>
+  {
+    items.length > 1 && (
+      <div class="mt-4 flex justify-center gap-1" data-dots>
+        {items.map((t, i) => (
+          <button type="button" class="dot grid size-6 place-items-center" aria-label={`Review ${i + 1} of ${items.length}: ${t.data.name}`} aria-current={i === 0 ? 'true' : 'false'} data-i={i}>
+            <span class="block h-1.5 w-1.5 rounded-full bg-line transition-all" />
+          </button>
+        ))}
+      </div>
+    )
+  }
+</div>
+
+<style>
+  .swipe { scrollbar-width: none; scroll-padding-inline: 1.25rem; }
+  .swipe::-webkit-scrollbar { display: none; }
+  .dot[aria-current='true'] span { width: 1.25rem; background: var(--accent); }
+</style>
+
+<script>
+  for (const root of document.querySelectorAll<HTMLElement>('[data-swipe]')) {
+    const list = root.querySelector<HTMLElement>('ul')!;
+    const cards = [...list.children] as HTMLElement[];
+    const dots = [...root.querySelectorAll<HTMLButtonElement>('[data-dots] button')];
+    if (!dots.length) continue;
+    const update = () => {
+      const left = list.scrollLeft;
+      let current = 0;
+      const pos = (c: HTMLElement) => c.offsetLeft - 20; // list is the offsetParent; 20px = its side padding
+      cards.forEach((c, i) => { if (Math.abs(pos(c) - left) < Math.abs(pos(cards[current]!) - left)) current = i; });
+      // At the far end the last card can't snap to the start; treat it as current.
+      if (left + list.clientWidth >= list.scrollWidth - 2) current = cards.length - 1;
+      dots.forEach((d, i) => d.setAttribute('aria-current', String(i === current)));
+    };
+    list.addEventListener('scroll', () => requestAnimationFrame(update), { passive: true });
+    dots.forEach((d, i) => d.addEventListener('click', () => list.scrollTo({ left: cards[i]!.offsetLeft - 20, behavior: 'smooth' })));
+  }
+</script>
