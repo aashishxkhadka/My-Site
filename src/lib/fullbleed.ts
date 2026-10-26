@@ -11,6 +11,7 @@
 import type { Loader, LoaderContext } from 'astro/loaders';
 import type { MarkdownHeading } from 'astro';
 import { loadEnv } from 'vite';
+import { execFile } from 'node:child_process';
 import { TOPIC_KEYS, STORIES_CATEGORY } from '@/site.config';
 
 const BASE = process.env.FULLBLEED_API_URL ?? 'https://fullbleed.basilpot.com/api/v1';
@@ -35,13 +36,36 @@ export type FullbleedItem = {
   updatedAt: string;
 };
 
+const USER_AGENT = 'aashishkhadka-site-build/1.0 (+https://aashishkhadka.com.np)';
+
+/**
+ * GET via curl. Cloudflare in front of Fullbleed challenges Node's built-in fetch
+ * from GitHub's runners (by connection fingerprint, whatever the headers), while
+ * curl with the same headers goes through. The key is passed on stdin, never argv.
+ * Returns null when curl isn't installed, so the caller can fall back to fetch.
+ */
+function curlGet(url: string, key: string): Promise<{ status: number; body: string } | null> {
+  const config = [`header = "Authorization: Bearer ${key}"`, 'header = "Accept: application/json"', `user-agent = "${USER_AGENT}"`].join('\n');
+  return new Promise((resolve, reject) => {
+    const child = execFile('curl', ['-sS', '--max-time', '30', '-K', '-', '-w', '\n%{http_code}', url], { maxBuffer: 50 * 1024 * 1024 }, (err, stdout) => {
+      if (err && (err as NodeJS.ErrnoException).code === 'ENOENT') return resolve(null);
+      if (err) return reject(new Error(`curl ${url}: ${err.message}`));
+      const i = stdout.lastIndexOf('\n');
+      resolve({ status: Number(stdout.slice(i + 1)), body: stdout.slice(0, i) });
+    });
+    child.stdin?.end(config);
+  });
+}
+
 async function get<T>(path: string, key: string): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, { headers: { Authorization: `Bearer ${key}`, Accept: 'application/json', 'User-Agent': 'aashishkhadka-site-build/1.0 (+https://aashishxkhadka.github.io)' } });
-  if (!res.ok) {
-    const body = await res.text().catch(() => '');
-    throw new Error(`Fullbleed ${path} → ${res.status} ${body.slice(0, 200)}`);
+  const url = `${BASE}${path}`;
+  let res = await curlGet(url, key);
+  if (!res) {
+    const r = await fetch(url, { headers: { Authorization: `Bearer ${key}`, Accept: 'application/json', 'User-Agent': USER_AGENT } });
+    res = { status: r.status, body: await r.text() };
   }
-  return res.json() as Promise<T>;
+  if (res.status < 200 || res.status >= 300) throw new Error(`Fullbleed ${path} → ${res.status} ${res.body.slice(0, 200)}`);
+  return JSON.parse(res.body) as T;
 }
 
 /** All published items of a list endpoint, following pagination. */
