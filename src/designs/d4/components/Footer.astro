@@ -37,10 +37,10 @@ const groups = NAV.footer.map((g) => ({ ...g, links: g.links.filter((l) => !hidd
       }
     </div>
 
-    <nav aria-label="Footer" class="grid grid-cols-2 gap-8 sm:grid-cols-3 md:col-span-7">
+    <nav aria-label="Footer" class="grid grid-cols-2 grid-rows-[auto_1fr] items-start gap-x-8 gap-y-8 sm:grid-cols-3 sm:grid-rows-none md:col-span-7">
       {
-        groups.map((group) => (
-          <div>
+        groups.map((group, i) => (
+          <div class:list={[i === 0 && 'max-sm:row-span-2']}>
             <p class="label mb-4">{group.heading}</p>
             <ul class="space-y-2.5 text-[0.9375rem]">
               {group.links.map((l) => (
