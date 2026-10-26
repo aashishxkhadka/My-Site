@@ -13,6 +13,13 @@
 /* Site                                                                */
 /* ------------------------------------------------------------------ */
 
+/**
+ * Preview builds (SITE_PREVIEW=1, set in the deploy workflow while the site runs on
+ * new.aashishkhadka.com.np): every page is noindex, nofollow, so the preview never
+ * competes with the live domain in Google. Remove the variable at launch.
+ */
+export const PREVIEW = typeof process !== 'undefined' && process.env.SITE_PREVIEW === '1';
+
 export const SITE = {
   url: 'https://aashishkhadka.com.np', // https + non-www, no trailing slash
   name: 'Aashish Khadka',

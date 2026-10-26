@@ -3,7 +3,7 @@
  * <head> metadata for every page: title, description, canonical, robots,
  * Open Graph, Twitter. One instance per page, rendered by BaseLayout.
  */
-import { SITE, SOCIALS, INTEGRATIONS } from '@/site.config';
+import { SITE, SOCIALS, INTEGRATIONS, PREVIEW } from '@/site.config';
 import { fullTitle } from '@/lib/format';
 
 export interface Props {
@@ -37,7 +37,7 @@ if (import.meta.env.DEV) {
 <title>{pageTitle}</title>
 <meta name="description" content={description} />
 <link rel="canonical" href={canonical} />
-<meta name="robots" content={noindex ? 'noindex, follow' : 'index, follow, max-image-preview:large, max-snippet:-1'} />
+<meta name="robots" content={PREVIEW ? 'noindex, nofollow' : noindex ? 'noindex, follow' : 'index, follow, max-image-preview:large, max-snippet:-1'} />
 
 <meta property="og:type" content={ogType} />
 <meta property="og:site_name" content={SITE.name} />
