@@ -174,9 +174,7 @@
   services: [growth-strategy]
   order: 11
 
-# PENDING APPROVAL: draft sent to SADP Nepal. Stays a draft (never published) until they approve the
-# wording. When they reply: paste their exact approved text into `quote`, set source (google if they
-# post it there), then set draft: false.
+# Approved by SADP Nepal (confirmed by Aashish, 2026-10-26). If they also post it on Google, set source: google.
 - id: sadp-nepal
   client: sadp-nepal
   quote: 'Aashish and his team designed and developed our new website, and they did a really good job. They understood our mission from the start, kept us updated at every step, and delivered on time.'
@@ -186,4 +184,3 @@
   services: [website-development, branding, seo]
   featured: true
   order: 7
-  draft: true
