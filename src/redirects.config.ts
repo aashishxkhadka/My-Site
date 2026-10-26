@@ -1,13 +1,14 @@
 /**
  * Redirect map — the source of truth for migrating off WordPress.
  *
- * Step 5 turns PATH_REDIRECTS into public/_redirects at build time and fails
- * the build if any `to` doesn't resolve to a built page.
- *
- * Cloudflare Pages `_redirects` matches the PATH ONLY and ignores query
- * strings, so WordPress `?page_id=` / `?p=` URLs can't live there. They go in
- * QUERY_REDIRECTS, which become zone-level Cloudflare Redirect Rules
- * (Rules → Redirect Rules). Those are documented in the README in step 7.
+ * Hosting is GitHub Pages (no server-side redirects), so:
+ *   - exact paths in PATH_REDIRECTS become static redirect pages
+ *     (src/pages/[...legacy].astro: meta refresh + canonical + noindex);
+ *   - old WordPress sitemap URLs (*.xml) serve a sitemap index pointing at the
+ *     real sitemap (src/pages/[legacy].xml.ts);
+ *   - splats (/x/*) are only documented here; list each known URL explicitly.
+ * QUERY_REDIRECTS (?page_id=) can't be done on GitHub Pages; those URLs load
+ * the homepage. They'd need Cloudflare Redirect Rules if DNS moves there.
  */
 
 export type PathRedirect = {
@@ -57,6 +58,10 @@ export const PATH_REDIRECTS: PathRedirect[] = [
   { from: '/tag/*', to: '/blog/', status: 301 },
   { from: '/author/*', to: '/about/', status: 301 },
   { from: '/page/*', to: '/blog/', status: 301, note: 'WP homepage pagination' },
+
+  // Known archive URLs from the old WordPress sitemap (splats above don't work on GitHub Pages).
+  { from: '/category/digital-marketing', to: '/blog/', status: 301 },
+  { from: '/author/moon', to: '/about/', status: 301 },
 
   // Old WordPress post/page slugs (posts at the root → /blog/[slug]/).
   // TODO: fill from the Search Console export. Never let an indexed URL 404.

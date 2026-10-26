@@ -1,0 +1,20 @@
+---
+/**
+ * Static redirects for old WordPress URLs (exact paths in PATH_REDIRECTS).
+ * GitHub Pages has no server-side redirects, so each one is a tiny page that
+ * forwards instantly, with a canonical to the new URL and noindex.
+ */
+import type { GetStaticPaths } from 'astro';
+import RedirectPage from '@/components/seo/RedirectPage.astro';
+import { PATH_REDIRECTS } from '@/redirects.config';
+
+export const getStaticPaths = (() =>
+  PATH_REDIRECTS.filter((r) => !r.from.includes('*') && !r.from.endsWith('.xml')).map((r) => ({
+    params: { legacy: r.from.replace(/^\/|\/$/g, '') },
+    props: { to: r.to },
+  }))) satisfies GetStaticPaths;
+
+const { to } = Astro.props;
+---
+
+<RedirectPage to={to} />
