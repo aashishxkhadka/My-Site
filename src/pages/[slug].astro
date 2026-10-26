@@ -18,7 +18,7 @@ const path = `/${page.id}/`;
 const crumbs = [{ label: d.title, href: path }];
 ---
 
-<Layout title={d.title} rawTitle={d.seo.title} description={d.description} noindex={d.seo.noindex} breadcrumbs={crumbs}>
+<Layout title={d.title} rawTitle={d.seo.title} description={d.description} noindex={d.seo.noindex} lastModified={d.updatedDate} breadcrumbs={crumbs}>
   <PageHeader title={d.title} breadcrumbs={crumbs}>
     <p class="mt-6 text-step--1 text-muted">Last updated <time datetime={isoDate(d.updatedDate)}>{formatDate(d.updatedDate)}</time></p>
   </PageHeader>

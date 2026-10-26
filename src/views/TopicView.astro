@@ -7,7 +7,7 @@ import PageHeader from '@/designs/d4/components/PageHeader.astro';
 import PostCard from '@/designs/d4/components/PostCard.astro';
 import Faq from '@/designs/d4/components/Faq.astro';
 import CtaPanel from '@/designs/d4/components/CtaPanel.astro';
-import { byNewest } from '@/lib/content';
+import { byNewest, latestDate } from '@/lib/content';
 import { topicsInfo, type TopicInfo } from '@/lib/taxonomy';
 import { itemListNode, faqNode } from '@/lib/schema';
 import { postPath } from '@/lib/posts';
@@ -32,6 +32,7 @@ const thin = !topic.live;
 <Layout
   title={hub.data.title ?? topic.label}
   rawTitle={hub.data.seo.title}
+  lastModified={latestDate([...posts, { data: { pubDate: hub.data.updatedDate } }])}
   description={hub.data.description}
   noindex={hub.data.seo.noindex || thin}
   pageType="CollectionPage"

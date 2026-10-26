@@ -18,6 +18,7 @@ export interface Props {
   ogType?: 'website' | 'article' | 'profile' | undefined;
   publishedTime?: Date | undefined;
   modifiedTime?: Date | undefined;
+  lastModified?: Date | undefined;
   /** schema.org type of the page node (WebPage, ProfilePage, CollectionPage…) */
   pageType?: string | undefined;
   /** Extra JSON-LD nodes (Service, BlogPosting…) */
@@ -64,5 +65,6 @@ const nodes: JsonLdNode[] = [
   ogType={p.ogType ?? 'website'}
   publishedTime={p.publishedTime}
   modifiedTime={p.modifiedTime}
+  lastModified={p.lastModified}
 />
 <JsonLd nodes={nodes} />

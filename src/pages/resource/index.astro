@@ -2,7 +2,7 @@
 import Layout from '@/designs/d4/Layout.astro';
 import PageHeader from '@/designs/d4/components/PageHeader.astro';
 import CtaPanel from '@/designs/d4/components/CtaPanel.astro';
-import { getPublished, byNewest } from '@/lib/content';
+import { getPublished, byNewest, latestDate } from '@/lib/content';
 import { itemListNode } from '@/lib/schema';
 import { Image } from 'astro:assets';
 import { formatDate, isoDate } from '@/lib/format';
@@ -16,6 +16,7 @@ const crumbs = [{ label: 'Resources', href: '/resource/' }];
   rawTitle="Free SEO & Marketing Resources | Aashish Khadka"
   description="Free guides, templates and checklists from Aashish Khadka on SEO, digital marketing and growing a business online."
   noindex={resources.length === 0}
+  lastModified={latestDate(resources)}
   pageType="CollectionPage"
   breadcrumbs={crumbs}
   schema={resources.length ? [itemListNode('/resource/', resources.map((r) => ({ name: r.data.title, url: `/resource/${r.id}/` })))] : []}

@@ -8,15 +8,18 @@ import { readFileSync, writeFileSync, existsSync, rmSync } from 'node:fs';
 
 const outDir = new URL('./dist/', import.meta.url);
 
-/** Pages marked noindex (thin hubs, redirect stubs, empty sections) stay out of the sitemap. */
-const isNoindex = (/** @type {string} */ page) => {
+/** A built page's HTML ('' if it isn't there). */
+const builtHtml = (/** @type {string} */ page) => {
   try {
-    const html = readFileSync(new URL(`.${new URL(page).pathname}index.html`, outDir), 'utf8');
-    return /<meta name="robots" content="noindex/.test(html);
+    return readFileSync(new URL(`.${new URL(page).pathname}index.html`, outDir), 'utf8');
   } catch {
-    return false;
+    return '';
   }
 };
+/** Pages marked noindex (thin hubs, redirect stubs, empty sections) stay out of the sitemap. */
+const isNoindex = (/** @type {string} */ page) => /<meta name="robots" content="noindex/.test(builtHtml(page));
+/** <lastmod> from the page's real content date (SEO.astro's last-modified meta); pages without one get none. */
+const lastmodOf = (/** @type {string} */ page) => builtHtml(page).match(/<meta name="last-modified" content="([^"]+)"/)?.[1];
 
 /**
  * Makes /sitemap.xml the one real sitemap: @astrojs/sitemap writes sitemap-0.xml
@@ -48,7 +51,13 @@ export default defineConfig({
   // No prefetch, no client router: plain multi-page HTML.
   integrations: [
     mdx(),
-    sitemap({ filter: (page) => !page.includes('/404') && !isNoindex(page) }),
+    sitemap({
+      filter: (page) => !page.includes('/404') && !isNoindex(page),
+      serialize: (item) => {
+        const lastmod = lastmodOf(item.url);
+        return lastmod ? { ...item, lastmod } : item;
+      },
+    }),
     mainSitemap(),
     ogImages(),
   ],

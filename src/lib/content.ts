@@ -22,3 +22,10 @@ export const byOrder = (a: Ordered, b: Ordered) => a.data.order - b.data.order;
  */
 export const hasCaseStudy = (item: CollectionEntry<'work'>) => (item.body ?? '').replace(/\{\/\*[\s\S]*?\*\/\}/g, '').trim().length > 0;
 export const workHref = (item: CollectionEntry<'work'>) => (hasCaseStudy(item) ? `/work/${item.id}/` : (item.data.clientUrl ?? '/work/'));
+
+/** Newest content date (updatedDate, else pubDate) of a list: the page's <lastmod> in the sitemap. */
+export const latestDate = (items: { data: { pubDate: Date; updatedDate?: Date | undefined } }[]): Date | undefined =>
+  items.reduce<Date | undefined>((max, i) => {
+    const d = i.data.updatedDate ?? i.data.pubDate;
+    return !max || d > max ? d : max;
+  }, undefined);

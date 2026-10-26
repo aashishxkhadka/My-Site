@@ -21,7 +21,7 @@ import { HOW_I_WORK, HOME_FAQ } from '@/data/home';
 import { faqNode } from '@/lib/schema';
 import portrait from '@/assets/aashish.jpg';
 import { getCollection } from 'astro:content';
-import { getPublished, byNewest, byOrder } from '@/lib/content';
+import { getPublished, byNewest, byOrder, latestDate } from '@/lib/content';
 import { SITE, CONTACT, BASILPOT } from '@/site.config';
 
 export interface Props {
@@ -46,7 +46,7 @@ const testimonials = (await getPublished('testimonials')).filter((t) => t.data.f
 
 ---
 
-<BaseLayout rawTitle={SITE.defaultTitle} description={SITE.defaultDescription} noindex={noindex} schema={[faqNode('/', HOME_FAQ)]}>
+<BaseLayout rawTitle={SITE.defaultTitle} description={SITE.defaultDescription} noindex={noindex} lastModified={latestDate(posts)} schema={[faqNode('/', HOME_FAQ)]}>
   <!-- 1 · Who I am -->
   <Hero clients={clients} />
 

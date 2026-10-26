@@ -2,7 +2,7 @@
 import Layout from '@/designs/d4/Layout.astro';
 import BlogIndex from '@/designs/d4/components/BlogIndex.astro';
 import CtaPanel from '@/designs/d4/components/CtaPanel.astro';
-import { getPublished, byNewest } from '@/lib/content';
+import { getPublished, byNewest, latestDate } from '@/lib/content';
 import { SECTIONS } from '@/site.config';
 
 const size = SECTIONS.stories.pageSize;
@@ -14,6 +14,7 @@ const last = Math.max(1, Math.ceil(all.length / size));
   rawTitle="Stories: Building a Business in Nepal | Aashish Khadka"
   description="Stories from Aashish Khadka: starting Basilpot, building products, working with businesses in Nepal and abroad, and lessons learned."
   noindex={all.length === 0}
+  lastModified={latestDate(all)}
   pageType="CollectionPage"
   breadcrumbs={[{ label: 'Stories', href: '/stories/' }]}
 >

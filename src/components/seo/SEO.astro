@@ -18,9 +18,12 @@ export interface Props {
   ogType?: 'website' | 'article' | 'profile';
   publishedTime?: Date | undefined;
   modifiedTime?: Date | undefined;
+  /** When the page's content last changed; becomes <lastmod> in sitemap.xml. Defaults to modifiedTime ?? publishedTime. */
+  lastModified?: Date | undefined;
 }
 
-const { title, rawTitle, description, noindex = false, ogImage, ogType = 'website', publishedTime, modifiedTime } = Astro.props;
+const { title, rawTitle, description, noindex = false, ogImage, ogType = 'website', publishedTime, modifiedTime, lastModified } = Astro.props;
+const lastmod = lastModified ?? modifiedTime ?? publishedTime;
 
 const pageTitle = rawTitle ?? (title ? fullTitle(title, SITE.titleSuffix) : SITE.defaultTitle);
 const canonical = new URL(Astro.url.pathname, SITE.url).href;
@@ -51,6 +54,7 @@ if (import.meta.env.DEV) {
 <meta property="og:image:alt" content={pageTitle} />
 {publishedTime && <meta property="article:published_time" content={publishedTime.toISOString()} />}
 {modifiedTime && <meta property="article:modified_time" content={modifiedTime.toISOString()} />}
+{lastmod && <meta name="last-modified" content={lastmod.toISOString()} />}
 
 <meta name="twitter:card" content="summary_large_image" />
 {xHandle && <meta name="twitter:site" content={xHandle} />}
