@@ -236,7 +236,7 @@ const projects = defineCollection({
 /* ------------------------------------------------------------------ */
 
 const resources = defineCollection({
-  loader: mdx('resources'),
+  loader: withFullbleedPosts(mdx('resources'), 'resources'),
   schema: ({ image }) =>
     z.object({
       title: z.string().max(100),

@@ -195,6 +195,8 @@ export const TOPIC_MIN_POSTS = 3;
 
 /** Fullbleed category slug that sends a post to /stories/ instead of /blog/. */
 export const STORIES_CATEGORY = 'stories';
+/** Fullbleed category whose posts become Resources (/resource/[slug]/). A tag naming the kind (Guide, Template, Checklist, Tool) sets it; default Guide. */
+export const RESOURCES_CATEGORY = 'resources';
 
 /* ------------------------------------------------------------------ */
 /* Sections — the extension point.                                     */

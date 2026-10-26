@@ -12,7 +12,7 @@ import type { Loader, LoaderContext } from 'astro/loaders';
 import type { MarkdownHeading } from 'astro';
 import { loadEnv } from 'vite';
 import { execFile } from 'node:child_process';
-import { TOPIC_KEYS, STORIES_CATEGORY } from '@/site.config';
+import { TOPIC_KEYS, STORIES_CATEGORY, RESOURCES_CATEGORY } from '@/site.config';
 
 const BASE = process.env.FULLBLEED_API_URL ?? 'https://fullbleed.basilpot.com/api/v1';
 
@@ -126,7 +126,7 @@ function describe(item: FullbleedItem, text: string): string {
  * Wraps another loader (the local MDX glob) and adds published Fullbleed posts
  * to the same collection, so templates treat both sources the same way.
  *
- * Routing: category "stories" → the stories collection; everything else → blog.
+ * Routing: category "stories" → stories, "resources" → resources; everything else → blog.
  *
  * Mapping (Fullbleed → post schema):
  *   category slug matching a topic key → topics (e.g. "seo" → /blog/seo/)
@@ -146,7 +146,13 @@ const fetchPosts = (key: string) => {
   return cache.posts;
 };
 
-export function withFullbleedPosts(base: Loader, target: 'blog' | 'stories'): Loader {
+type Target = 'blog' | 'stories' | 'resources';
+/** Which section a Fullbleed post belongs to, by its category. */
+const sectionOf = (item: FullbleedItem): Target =>
+  item.category?.slug === STORIES_CATEGORY ? 'stories' : item.category?.slug === RESOURCES_CATEGORY ? 'resources' : 'blog';
+const KINDS = ['guide', 'template', 'checklist', 'tool'] as const;
+
+export function withFullbleedPosts(base: Loader, target: Target): Loader {
   return {
     name: `fullbleed-${target}`,
     load: async (ctx: LoaderContext) => {
@@ -172,9 +178,8 @@ export function withFullbleedPosts(base: Loader, target: 'blog' | 'stories'): Lo
 
       const topicKeys = TOPIC_KEYS as readonly string[];
       const reserved = target === 'blog' ? [...topicKeys, 'page'] : ['page'];
-      const isStory = (item: FullbleedItem) => item.category?.slug === STORIES_CATEGORY;
       let added = 0;
-      for (const item of posts.filter((p) => (target === 'stories') === isStory(p))) {
+      for (const item of posts.filter((p) => sectionOf(p) === target)) {
         const id = slugify(item.slug) || item.id;
         if (reserved.includes(id)) {
           ctx.logger.warn(`Fullbleed post "${item.slug}" skipped: /${target}/${id}/ is reserved. Give it a different slug.`);
@@ -194,7 +199,18 @@ export function withFullbleedPosts(base: Loader, target: 'blog' | 'stories'): Lo
         const updated = new Date(item.updatedAt);
         const metaTitle = item.metaTitle?.trim();
 
-        const raw = {
+        // Resources: a tag naming the kind (Guide, Template, Checklist, Tool) sets it; default Guide.
+        const kind = KINDS.find((k) => item.tags.some((t) => t.slug === k || t.name.toLowerCase() === k)) ?? 'guide';
+        const raw = target === 'resources' ? {
+          title: item.title.slice(0, 100),
+          description: describe(item, text),
+          kind,
+          pubDate: published,
+          ...(updated.valueOf() - published.valueOf() > 86_400_000 ? { updatedDate: updated } : {}),
+          ...(item.coverImage ? { coverImageUrl: item.coverImage, heroAlt: item.title } : {}),
+          draft: false,
+          seo: metaTitle && metaTitle.length <= 60 ? { title: metaTitle } : {},
+        } : {
           title: item.title.slice(0, 100),
           description: describe(item, text),
           pubDate: published,
