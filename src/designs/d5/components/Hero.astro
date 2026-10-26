@@ -104,8 +104,8 @@ const [cutAvif, cutWebp, fullAvif, fullWebp, fallback] = await Promise.all([
 
     <!-- Text (left) -->
     <div class="relative z-10 -mt-[min(30vw,8rem)] pb-12 md:col-span-7 md:mt-0 md:self-center md:pb-24 md:pt-16 lg:col-span-6">
-      <p class="reveal label flex items-center gap-3 text-ink">
-        <span class="h-px w-8 bg-accent" aria-hidden="true"></span>
+      <p class="reveal label flex items-center gap-2 text-ink md:gap-3">
+        <span class="hidden h-px w-8 bg-accent md:block" aria-hidden="true"></span>
         <svg class="size-3.5 text-accent" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5Z"/></svg>
         {CONTACT.address.display}
       </p>
