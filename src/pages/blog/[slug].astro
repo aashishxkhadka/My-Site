@@ -1,113 +1,50 @@
 ---
+/**
+ * /blog/[slug]/ serves three kinds of page:
+ *   - posts without a topic:  /blog/my-post/
+ *   - topic hubs:             /blog/seo/ (built once the topic has a post)
+ *   - redirects:              /blog/what-is-technical-seo/ → /blog/seo/what-is-technical-seo/
+ * Posts with a topic live in ./[topic]/[slug].astro.
+ * Topic keys and "page" are reserved, so a post slug can never shadow them.
+ */
 import type { GetStaticPaths } from 'astro';
-import { getEntry, render, type CollectionEntry } from 'astro:content';
-import { Image } from 'astro:assets';
-import Layout from '@/designs/d4/Layout.astro';
-import PageHeader from '@/designs/d4/components/PageHeader.astro';
-import Toc from '@/designs/d4/components/Toc.astro';
-import Faq from '@/designs/d4/components/Faq.astro';
-import AuthorBox from '@/designs/d4/components/AuthorBox.astro';
-import PostRow from '@/designs/d4/components/PostRow.astro';
-import CtaPanel from '@/designs/d4/components/CtaPanel.astro';
+import { getCollection, type CollectionEntry } from 'astro:content';
+import PostView from '@/views/PostView.astro';
+import TopicView from '@/views/TopicView.astro';
+import RedirectPage from '@/components/seo/RedirectPage.astro';
 import { getPublished } from '@/lib/content';
-import { relatedPosts, tocFor, readingMinutes } from '@/lib/posts';
-import { blogPostingNode, faqNode } from '@/lib/schema';
-import { formatDate, isoDate } from '@/lib/format';
-import { TOPICS } from '@/site.config';
+import { postPath, postTopic } from '@/lib/posts';
+import { topicsInfo, type TopicInfo } from '@/lib/taxonomy';
+import { TOPICS, TOPIC_KEYS } from '@/site.config';
 
 export const getStaticPaths = (async () => {
   const posts = await getPublished('blog');
-  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+  const reserved = [...TOPIC_KEYS, 'page'] as string[];
+  const clash = posts.find((p) => reserved.includes(p.id));
+  if (clash) throw new Error(`Blog post slug "${clash.id}" is reserved (topic hub or pagination). Rename the post.`);
+
+  const hubs = await getCollection('topics');
+  const missing = TOPICS.find((t) => !hubs.some((h) => h.id === t.key));
+  if (missing) throw new Error(`Topic "${missing.key}" has no intro file at src/content/topics/${missing.key}.mdx`);
+
+  const topics = (await topicsInfo()).filter((t) => t.hasPage);
+  return [
+    ...posts.map((post) =>
+      postTopic(post)
+        ? { params: { slug: post.id }, props: { kind: 'redirect' as const, to: postPath(post) } }
+        : { params: { slug: post.id }, props: { kind: 'post' as const, post } },
+    ),
+    ...topics.map((topic) => ({ params: { slug: topic.key }, props: { kind: 'topic' as const, topic, hub: hubs.find((h) => h.id === topic.key)! } })),
+  ];
 }) satisfies GetStaticPaths;
 
-const { post } = Astro.props as { post: CollectionEntry<'blog'> };
-const d = post.data;
-const { Content, headings } = await render(post);
-const path = `/blog/${post.id}/`;
-const toc = tocFor(headings, d.toc);
-const minutes = readingMinutes(post.body);
-const topics = TOPICS.filter((t) => (d.topics as string[]).includes(t.key));
-const primary = topics.find((t) => t.key === d.topics[0]);
-const related = relatedPosts(post, await getPublished('blog'));
-const service = d.service ? await getEntry(d.service) : undefined;
-const crumbs = [
-  { label: 'Blog', href: '/blog/' },
-  ...(primary ? [{ label: primary.label, href: `/topics/${primary.key}/` }] : []),
-  { label: d.title, href: path },
-];
+type Props =
+  | { kind: 'post'; post: CollectionEntry<'blog'> }
+  | { kind: 'topic'; topic: TopicInfo; hub: CollectionEntry<'topics'> }
+  | { kind: 'redirect'; to: string };
+const props = Astro.props as Props;
 ---
 
-<Layout
-  title={d.title}
-  rawTitle={d.seo.title}
-  description={d.description}
-  noindex={d.seo.noindex}
-  ogType="article"
-  publishedTime={d.pubDate}
-  modifiedTime={d.updatedDate}
-  breadcrumbs={crumbs}
-  schema={[
-    blogPostingNode({ path, title: d.title, description: d.description, pubDate: d.pubDate, updatedDate: d.updatedDate, image: d.heroImage?.src ?? d.coverImageUrl, keywords: [d.primaryKeyword, ...d.secondaryKeywords], about: topics.map((t) => t.label), mentions: d.mentions }),
-    ...(d.faq.length ? [faqNode(path, d.faq)] : []),
-  ]}
->
-  <PageHeader title={d.title} kicker={primary?.label} breadcrumbs={crumbs}>
-    <p class="mt-8 flex flex-wrap gap-x-5 gap-y-1 text-step--1 text-muted">
-      <span>By <a class="link text-ink" href="/about/">Aashish Khadka</a></span>
-      <span>Published <time datetime={isoDate(d.pubDate)}>{formatDate(d.pubDate)}</time></span>
-      {d.updatedDate && <span class="font-semibold text-ink">Last updated <time datetime={isoDate(d.updatedDate)}>{formatDate(d.updatedDate)}</time></span>}
-      <span>{minutes} min read</span>
-    </p>
-  </PageHeader>
-
-  <div class="wrap grid gap-12 pt-14 md:pt-20 lg:grid-cols-12">
-    <article class="lg:col-span-8">
-      {
-        d.answer && (
-          <p class="mb-10 rounded-2xl border-l-4 border-accent bg-paper p-6 text-step-1 leading-snug" data-answer>
-            {d.answer}
-          </p>
-        )
-      }
-      {d.heroImage && <Image src={d.heroImage} alt={d.heroAlt ?? ''} widths={[640, 960, 1280]} sizes="(min-width: 1024px) 760px, 92vw" loading="eager" class="mb-10 h-auto w-full rounded-2xl" />}
-      {!d.heroImage && d.coverImageUrl && <img src={d.coverImageUrl} alt={d.heroAlt ?? ''} loading="eager" decoding="async" class="mb-10 aspect-[16/9] h-auto w-full rounded-2xl object-cover" />}
-      {toc.length > 0 && <div class="mb-10 lg:hidden"><Toc headings={toc} /></div>}
-
-      <div class="prose"><Content /></div>
-
-      {
-        d.keyTakeaways.length > 0 && (
-          <section class="mt-14 rounded-2xl bg-stage p-8 text-[#f4f2ee]" aria-labelledby="takeaways">
-            <h2 id="takeaways" class="title text-step-2">Key takeaways</h2>
-            <ul class="mt-5 space-y-3">
-              {d.keyTakeaways.map((k) => <li class="flex gap-3"><span class="text-[#ff7a3d]" aria-hidden="true">→</span>{k}</li>)}
-            </ul>
-          </section>
-        )
-      }
-
-      <div class="mt-16"><Faq items={d.faq} /></div>
-
-      <div class="mt-16 space-y-6">
-        <AuthorBox />
-        <div class="flex flex-wrap gap-3 text-step--1">
-          {topics.map((t) => <a class="rounded-full border border-line px-4 py-2 font-semibold hover:border-ink" href={`/topics/${t.key}/`}>More on {t.label} →</a>)}
-          {service && <a class="rounded-full bg-accent px-4 py-2 font-semibold text-on-accent" href={`/services/${service.id}/`}>Need help? {service.data.title} →</a>}
-        </div>
-      </div>
-    </article>
-
-    {toc.length > 0 && <aside class="hidden lg:col-span-4 lg:block"><div class="sticky top-28"><Toc headings={toc} /></div></aside>}
-  </div>
-
-  {
-    related.length > 0 && (
-      <section class="wrap pt-24" aria-labelledby="related">
-        <h2 id="related" class="display text-step-3">Related reading</h2>
-        <div class="mt-8 border-b border-line">{related.map((p) => <PostRow post={p} />)}</div>
-      </section>
-    )
-  }
-
-  <CtaPanel />
-</Layout>
+{props.kind === 'post' && <PostView post={props.post} />}
+{props.kind === 'topic' && <TopicView topic={props.topic} hub={props.hub} />}
+{props.kind === 'redirect' && <RedirectPage to={props.to} />}

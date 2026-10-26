@@ -1,0 +1,114 @@
+---
+/** Shared template for a blog post (/blog/[slug]/) and a story (/stories/[slug]/). */
+import { getEntry, render } from 'astro:content';
+import { Image } from 'astro:assets';
+import Layout from '@/designs/d4/Layout.astro';
+import PageHeader from '@/designs/d4/components/PageHeader.astro';
+import Toc from '@/designs/d4/components/Toc.astro';
+import Faq from '@/designs/d4/components/Faq.astro';
+import PostCard from '@/designs/d4/components/PostCard.astro';
+import CtaPanel from '@/designs/d4/components/CtaPanel.astro';
+import { getPublished } from '@/lib/content';
+import { relatedPosts, tocFor, readingMinutes, postPath, type Post } from '@/lib/posts';
+import { topicsInfo } from '@/lib/taxonomy';
+import { blogPostingNode, faqNode } from '@/lib/schema';
+import { formatDate, isoDate } from '@/lib/format';
+import { SECTIONS } from '@/site.config';
+
+export interface Props {
+  post: Post;
+}
+const { post } = Astro.props;
+const d = post.data;
+const section = SECTIONS[post.collection];
+const { Content, headings } = await render(post);
+const path = postPath(post);
+const toc = tocFor(headings, d.toc);
+const minutes = readingMinutes(post.body);
+// Topics only apply to the blog; link a hub only once its page exists.
+const topics = post.collection === 'blog' ? (await topicsInfo()).filter((t) => (d.topics as string[]).includes(t.key)) : [];
+const primary = topics.find((t) => t.key === d.topics[0]);
+const related = relatedPosts<Post>(post, await getPublished(post.collection));
+// "Need help?" link: the post's own service, else the one its topic maps to.
+const service = d.service ? await getEntry(d.service) : primary ? await getEntry('services', primary.service) : undefined;
+const crumbs = [
+  { label: section.label, href: section.base },
+  ...(primary?.hasPage ? [{ label: primary.label, href: primary.href }] : []),
+  { label: d.title, href: path },
+];
+---
+
+<Layout
+  title={d.title}
+  rawTitle={d.seo.title}
+  description={d.description}
+  noindex={d.seo.noindex}
+  ogType="article"
+  publishedTime={d.pubDate}
+  modifiedTime={d.updatedDate}
+  breadcrumbs={crumbs}
+  schema={[
+    blogPostingNode({ path, title: d.title, description: d.description, pubDate: d.pubDate, updatedDate: d.updatedDate, image: d.heroImage?.src ?? d.coverImageUrl, keywords: [d.primaryKeyword, ...d.secondaryKeywords], about: topics.map((t) => t.label), mentions: d.mentions }),
+    ...(d.faq.length ? [faqNode(path, d.faq)] : []),
+  ]}
+>
+  <PageHeader title={d.title} kicker={primary?.label ?? (post.collection === 'stories' ? 'Story' : undefined)} breadcrumbs={crumbs}>
+    <p class="mt-8 flex flex-wrap gap-x-5 gap-y-1 text-step--1 text-muted">
+      <span>By <a class="link text-ink" href="/about/">Aashish Khadka</a></span>
+      <span>Published <time datetime={isoDate(d.pubDate)}>{formatDate(d.pubDate)}</time></span>
+      {d.updatedDate && <span class="font-semibold text-ink">Last updated <time datetime={isoDate(d.updatedDate)}>{formatDate(d.updatedDate)}</time></span>}
+      <span>{minutes} min read</span>
+    </p>
+  </PageHeader>
+
+  <div class="wrap grid gap-12 pt-14 md:pt-20 lg:grid-cols-12">
+    <article class="lg:col-span-8">
+      {
+        d.answer && (
+          <p class="mb-10 rounded-2xl border-l-4 border-accent bg-paper p-6 text-step-1 leading-snug" data-answer>
+            {d.answer}
+          </p>
+        )
+      }
+      {d.heroImage && <Image src={d.heroImage} alt={d.heroAlt ?? ''} widths={[640, 960, 1280]} sizes="(min-width: 1024px) 760px, 92vw" loading="eager" class="mb-10 h-auto w-full rounded-2xl" />}
+      {!d.heroImage && d.coverImageUrl && <img src={d.coverImageUrl} alt={d.heroAlt ?? ''} loading="eager" decoding="async" class="mb-10 aspect-[16/9] h-auto w-full rounded-2xl object-cover" />}
+      {toc.length > 0 && <div class="mb-10 lg:hidden"><Toc headings={toc} /></div>}
+
+      <div class="prose"><Content /></div>
+
+      {
+        d.keyTakeaways.length > 0 && (
+          <section class="mt-14 rounded-2xl bg-stage p-8 text-[#f4f2ee]" aria-labelledby="takeaways">
+            <h2 id="takeaways" class="title text-step-2">Key takeaways</h2>
+            <ul class="mt-5 space-y-3">
+              {d.keyTakeaways.map((k) => <li class="flex gap-3"><span class="text-[#ff7a3d]" aria-hidden="true">→</span>{k}</li>)}
+            </ul>
+          </section>
+        )
+      }
+
+      <div class="mt-16"><Faq items={d.faq} /></div>
+
+      <div class="mt-16 space-y-6">
+        <div class="flex flex-wrap gap-3 text-step--1">
+          {topics.filter((t) => t.hasPage).map((t) => <a class="rounded-full border border-line px-4 py-2 font-semibold hover:border-ink" href={t.href}>More on {t.label} →</a>)}
+          {post.collection === 'stories' && <a class="rounded-full border border-line px-4 py-2 font-semibold hover:border-ink" href="/stories/">More stories →</a>}
+          {service && <a class="rounded-full bg-accent px-4 py-2 font-semibold text-on-accent" href={`/services/${service.id}/`}>Need help? {service.data.title} →</a>}
+        </div>
+      </div>
+    </article>
+
+    {toc.length > 0 && <aside class="hidden lg:col-span-4 lg:block"><div class="sticky top-28"><Toc headings={toc} /></div></aside>}
+  </div>
+
+  {
+    related.length > 0 && (
+      <section class="wrap pt-24" aria-labelledby="related">
+        <h2 id="related" class="display text-step-3">{post.collection === 'stories' ? 'More stories' : 'Related reading'}</h2>
+        <ul class="mt-8 grid gap-10 sm:grid-cols-2 lg:grid-cols-3">{related.map((p) => <li><PostCard post={p} /></li>)}</ul>
+      </section>
+    )
+  }
+
+  <CtaPanel />
+</Layout>

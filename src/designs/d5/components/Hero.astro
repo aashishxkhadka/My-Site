@@ -14,13 +14,13 @@ import portrait from '@/assets/aashish.jpg';
 // Subject cutout (transparent background, made on-device with Apple Vision).
 // Used on phones so the name watermark can sit genuinely behind the portrait.
 import portraitCutout from '@/assets/aashish-cutout.png';
-import { CONTACT, BASILPOT, STATS } from '@/site.config';
+import { CONTACT, BASILPOT, STATS, PERSON, SOCIALS } from '@/site.config';
 
 export interface Props {
   clients: CollectionEntry<'clients'>[];
-  productCount: number;
 }
-const { clients, productCount } = Astro.props;
+const { clients } = Astro.props;
+const google = SOCIALS.find((s) => s.key === 'gbp')?.url;
 const logos = clients.filter((c) => c.data.logo);
 const brandCount = STATS.businessesWorkedWith;
 const stack = logos.slice(0, 4);
@@ -77,7 +77,7 @@ const [cutAvif, cutWebp, fullAvif, fullWebp, fallback] = await Promise.all([
         <span class="label block text-[0.6875rem]">Founder of</span>
         <span class="title mt-1 block text-step-2">Basilpot</span>
         <span class="mt-2 flex items-center justify-between text-step--1 text-muted">
-          Design & development studio <span aria-hidden="true" class="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5">↗</span>
+          {BASILPOT.tagline} <span aria-hidden="true" class="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5">↗</span>
         </span>
       </a>
 
@@ -96,10 +96,10 @@ const [cutAvif, cutWebp, fullAvif, fullWebp, fallback] = await Promise.all([
         <p class="text-step--1 text-muted">businesses worked with</p>
       </div>
 
-      <div class="float-card float-c glass-card absolute -right-[8%] bottom-[7%] hidden items-center gap-3 px-4 py-3 xl:flex">
-        <span class="display text-step-2 text-accent">{productCount}</span>
-        <span class="text-step--1 leading-tight text-muted">products<br />built & running</span>
-      </div>
+      <a href={google ?? '#testimonials'} {...(google ? { target: '_blank', rel: 'noopener' } : {})} class="float-card float-c glass-card absolute -right-[8%] bottom-[7%] hidden items-center gap-3 px-4 py-3 xl:flex" aria-label={`${STATS.googleRating.toFixed(1)} star rating on Google`}>
+        <span class="display text-step-2 text-accent">★ {STATS.googleRating.toFixed(1)}</span>
+        <span class="text-step--1 leading-tight text-muted">rating on<br />Google</span>
+      </a>
     </div>
 
     <!-- Text (left) -->
@@ -109,23 +109,32 @@ const [cutAvif, cutWebp, fullAvif, fullWebp, fallback] = await Promise.all([
         <svg class="size-3.5 text-accent" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5Z"/></svg>
         {CONTACT.address.display}
       </p>
-      <p class="reveal title mt-6 text-step-1 text-muted" style="--i:1">Hi, I'm Aashish Khadka.</p>
-      <h1 id="intro" class="reveal display mt-3 text-[11.2vw] leading-[1.02] md:text-[clamp(2.75rem,0.9rem+4.4vw,5.25rem)]" style="--i:2">
-        <span class="block whitespace-nowrap">I help businesses</span>{' '}
-        <span class="block">grow, <span class="underline-accent text-accent">properly.</span></span>
+      <!-- H1 = name + what I do (for search) + the headline (for people). -->
+      <h1 id="intro">
+        <span class="reveal title mt-6 block text-step-1 text-muted" style="--i:1"><span class="block sm:inline">{PERSON.name}</span><span class="hidden sm:inline"> · </span>SEO & Digital Marketing Expert<span class="sr-only">:</span></span>{' '}
+        <span class="reveal display mt-3 block text-[10vw] leading-[1.04] md:text-[clamp(2.5rem,0.9rem+3.4vw,4.25rem)]" style="--i:2">
+          <span class="block whitespace-nowrap">I help businesses</span>{' '}
+          <span class="block">grow, <span class="underline-accent text-accent">properly.</span></span>
+        </span>
       </h1>
       <p class="reveal mt-6 max-w-md text-step-1 leading-normal text-muted" style="--i:3">
-        Strategy, a growth plan your team can follow, and the SEO, digital marketing, branding and web to back it up.
+        Strategy, SEO, digital marketing, branding and websites that bring in real customers, for businesses in Nepal and abroad.
       </p>
       <div class="reveal mt-8 flex flex-wrap gap-3" style="--i:4">
         <Button href="/contact/">Work with me</Button>
         <Button href="#work" variant="outline">See my work</Button>
       </div>
-      <!-- Mobile facts (cards are desktop-only) -->
-      <dl class="reveal mt-10 grid grid-cols-2 gap-4 border-t border-line pt-6 lg:hidden" style="--i:5">
-        <div class="flex flex-col-reverse"><dt class="text-step--1 text-muted">businesses worked with</dt><dd class="display text-step-3">{brandCount}+</dd></div>
-        <div class="flex flex-col-reverse"><dt class="text-step--1 text-muted">products built</dt><dd class="display text-step-3">{productCount}</dd></div>
-      </dl>
+      <!-- Proof, above the fold on every screen size -->
+      <p class="reveal mt-8 flex flex-wrap items-center gap-x-3 gap-y-1 text-step--1 text-muted" style="--i:5">
+        <a href={google ?? '#testimonials'} {...(google ? { target: '_blank', rel: 'noopener' } : {})} class="inline-flex items-center gap-1.5 font-semibold text-ink hover:text-accent">
+          <span class="flex text-accent" aria-hidden="true">{Array.from({ length: 5 }, () => <svg class="size-3.5" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.5l2.6 5.3 5.9.9-4.25 4.1 1 5.85L10 14.9l-5.25 2.75 1-5.85L1.5 7.7l5.9-.9z" /></svg>)}</span>
+          {STATS.googleRating.toFixed(1)} on Google
+        </a>
+        <span aria-hidden="true">·</span>
+        <span><span class="font-semibold text-ink">{brandCount}+</span> businesses</span>
+        <span aria-hidden="true">·</span>
+        <span>Since {STATS.workingSince}</span>
+      </p>
     </div>
   </div>
 

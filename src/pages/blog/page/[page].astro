@@ -22,10 +22,10 @@ const { posts, current, last } = Astro.props;
 
 <Layout
   title={`Blog, page ${current}`}
-  description={`Page ${current} of writing by Aashish Khadka on SEO, AI search, digital marketing and building products.`}
+  description={`Page ${current} of writing by Aashish Khadka on strategy, marketing and SEO.`}
   pageType="CollectionPage"
   breadcrumbs={[{ label: 'Blog', href: '/blog/' }, { label: `Page ${current}`, href: `/blog/page/${current}/` }]}
 >
-  <BlogIndex posts={posts} current={current} last={last} />
+  <BlogIndex section="blog" posts={posts} current={current} last={last} />
   <CtaPanel />
 </Layout>

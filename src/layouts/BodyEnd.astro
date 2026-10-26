@@ -1,10 +1,8 @@
 ---
-/** Shared end-of-body: deferred third-party scripts + dev-only design switcher. */
+/** Shared end-of-body: deferred third-party scripts. */
 import MetaPixel from '@/components/analytics/MetaPixel.astro';
 import CloudflareAnalytics from '@/components/analytics/CloudflareAnalytics.astro';
-import DesignSwitcher from '@/components/dev/DesignSwitcher.astro';
 ---
 
 <MetaPixel />
 <CloudflareAnalytics />
-{import.meta.env.DEV && <DesignSwitcher />}

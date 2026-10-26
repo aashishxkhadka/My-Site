@@ -1,0 +1,19 @@
+---
+/** What was delivered for this client (our description, shown beside a quote, never inside it). Compact: one small line. */
+import type { CollectionEntry } from 'astro:content';
+
+export interface Props {
+  item: CollectionEntry<'testimonials'>;
+}
+const { since, delivered } = Astro.props.item.data;
+---
+
+{
+  delivered.length > 0 && (
+    <p class="mt-4 text-[0.75rem] leading-relaxed text-muted">
+      <span class="font-semibold uppercase tracking-[0.08em] text-ink">{since ? `Since ${since}` : 'Services'}</span>
+      <span aria-hidden="true" class="mx-1.5 text-accent">/</span>
+      {delivered.join(' · ')}
+    </p>
+  )
+}

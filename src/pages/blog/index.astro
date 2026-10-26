@@ -11,11 +11,12 @@ const last = Math.max(1, Math.ceil(all.length / size));
 ---
 
 <Layout
-  title="Blog"
-  description="Writing by Aashish Khadka on SEO, AI search, local SEO, digital marketing and building products, for businesses in Nepal and abroad."
+  rawTitle="Blog: SEO, Marketing & Strategy | Aashish Khadka"
+  description="Writing by Aashish Khadka on growth strategy, branding, digital marketing and SEO, for businesses in Nepal and abroad."
+  noindex={all.length === 0}
   pageType="CollectionPage"
   breadcrumbs={[{ label: 'Blog', href: '/blog/' }]}
 >
-  <BlogIndex posts={all.slice(0, size)} current={1} last={last} />
+  <BlogIndex section="blog" posts={all.slice(0, size)} current={1} last={last} />
   <CtaPanel />
 </Layout>

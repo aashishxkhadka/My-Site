@@ -1,31 +1,48 @@
 ---
-/** Shared body for /blog/ and /blog/page/N/. */
-import type { CollectionEntry } from 'astro:content';
+/** Shared body for /blog/, /stories/ and their /page/N/ pages. */
 import PageHeader from './PageHeader.astro';
-import PostRow from './PostRow.astro';
+import PostCard from './PostCard.astro';
 import Pagination from './Pagination.astro';
-import { TOPICS } from '@/site.config';
+import { topicsInfo } from '@/lib/taxonomy';
+import type { Post } from '@/lib/posts';
+import { SECTIONS } from '@/site.config';
 
 export interface Props {
-  posts: CollectionEntry<'blog'>[];
+  section: 'blog' | 'stories';
+  posts: Post[];
   current: number;
   last: number;
 }
-const { posts, current, last } = Astro.props;
-const crumbs = [{ label: 'Blog', href: '/blog/' }, ...(current > 1 ? [{ label: `Page ${current}`, href: `/blog/page/${current}/` }] : [])];
+const { section, posts, current, last } = Astro.props;
+const { base, label } = SECTIONS[section];
+const crumbs = [{ label, href: base }, ...(current > 1 ? [{ label: `Page ${current}`, href: `${base}page/${current}/` }] : [])];
+const copy = {
+  blog: { title: 'Notes on growth.', lead: 'Practical writing on strategy, marketing and SEO, from the work itself.', empty: 'First posts are on the way.' },
+  stories: { title: 'Stories.', lead: 'Starting Basilpot, building products, working with clients, and what I learned along the way.', empty: 'First stories are on the way.' },
+}[section];
+// Topic chips only for topics with enough posts to deserve a page in navigation.
+const topics = section === 'blog' ? (await topicsInfo()).filter((t) => t.live) : [];
 ---
 
-<PageHeader title="Notes on growth." kicker="Blog" lead="Practical writing on SEO, marketing, branding and building products, from the work itself." breadcrumbs={crumbs} />
+<PageHeader title={copy.title} kicker={label} lead={copy.lead} breadcrumbs={crumbs} />
 
 <div class="wrap pt-12 md:pt-16">
-  <nav aria-label="Topics" class="flex flex-wrap items-center gap-2">
-    <span class="label mr-2">Topics</span>
-    {TOPICS.map((t) => <a class="rounded-full border border-line px-4 py-2 text-step--1 font-semibold hover:border-ink" href={`/topics/${t.key}/`}>{t.label}</a>)}
-  </nav>
+  {
+    topics.length > 0 && (
+      <nav aria-label="Topics" class="mb-12 flex flex-wrap items-center gap-2">
+        <span class="label mr-2">Topics</span>
+        {topics.map((t) => <a class="rounded-full border border-line px-4 py-2 text-step--1 font-semibold hover:border-ink" href={t.href}>{t.label}</a>)}
+      </nav>
+    )
+  }
 
-  <div class="mt-12 border-b border-line">
-    {posts.length > 0 ? posts.map((p) => <PostRow post={p} />) : <p class="border-t border-line py-10 text-muted">First posts are on the way.</p>}
-  </div>
+  {
+    posts.length > 0 ? (
+      <ul class="grid gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">{posts.map((p) => <li><PostCard post={p} /></li>)}</ul>
+    ) : (
+      <p class="border-t border-line py-10 text-muted">{copy.empty}</p>
+    )
+  }
 
-  <Pagination current={current} last={last} base="/blog/" />
+  <Pagination current={current} last={last} base={base} />
 </div>

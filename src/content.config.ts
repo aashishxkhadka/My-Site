@@ -4,7 +4,7 @@
  * URLs come from the entry id (filename), never from frontmatter taxonomy,
  * so moving a post between topics / groups never changes its URL.
  */
-import { defineCollection, reference } from 'astro:content';
+import { defineCollection, reference, type SchemaContext } from 'astro:content';
 import { file, glob } from 'astro/loaders';
 import { z } from 'astro/zod';
 import { SERVICE_GROUP_KEYS, TOPIC_KEYS } from './site.config';
@@ -27,7 +27,7 @@ const faq = z
 const seo = z
   .object({
     /** Full <title> override, used without the site suffix. */
-    title: z.string().max(60).optional(),
+    title: z.string().max(65).optional(), // Google cuts by pixel width (~580px); keep under ~60 where possible
     noindex: z.boolean().default(false),
     /** Custom OG image; otherwise generated with satori. */
     ogImage: z.string().optional(),
@@ -50,53 +50,61 @@ export const entryBase = z.object({
 });
 
 /* ------------------------------------------------------------------ */
-/* blog → /blog/[slug]/                                                */
+/* Posts: blog → /blog/[slug]/, stories → /stories/[slug]/             */
+/* Same shape; local MDX + published Fullbleed posts (src/lib/fullbleed.ts). */
+/* Fullbleed category "stories" → stories, everything else → blog.     */
 /* ------------------------------------------------------------------ */
 
-const blog = defineCollection({
-  // Local MDX posts + published posts from the Fullbleed CMS (see src/lib/fullbleed.ts).
-  loader: withFullbleedPosts(mdx('blog')),
-  schema: ({ image }) =>
-    z
-      .object({
-        title: z.string().max(100),
-        description,
-        pubDate: z.coerce.date(),
-        updatedDate: z.coerce.date().optional(),
-        /** First topic = primary hub (breadcrumb + "more on X" link). CMS posts get topics from category/tags. */
-        topics: topics.default([]),
-        /** Free-form, used for on-page filtering only. No tag pages (thin content). */
-        tags: z.array(z.string()).default([]),
-        primaryKeyword: z.string(),
-        secondaryKeywords: z.array(z.string()).default([]),
-        heroImage: image().optional(),
-        heroAlt: z.string().optional(),
-        /** Remote cover image (Fullbleed media domain). */
-        coverImageUrl: z.url().optional(),
-        /** Where the post comes from. */
-        source: z.enum(['mdx', 'fullbleed']).default('mdx'),
-        draft: z.boolean().default(false),
-        faq,
+const postSchema = ({ image }: SchemaContext) =>
+  z
+    .object({
+      title: z.string().max(100),
+      description,
+      pubDate: z.coerce.date(),
+      updatedDate: z.coerce.date().optional(),
+      /** First topic = primary hub (breadcrumb + "more on X" link). CMS posts get it from their category. Unused on stories. */
+      topics: topics.default([]),
+      /** Free-form, used for on-page filtering only. No tag pages (thin content). */
+      tags: z.array(z.string()).default([]),
+      primaryKeyword: z.string(),
+      secondaryKeywords: z.array(z.string()).default([]),
+      heroImage: image().optional(),
+      heroAlt: z.string().optional(),
+      /** Remote cover image (Fullbleed media domain). */
+      coverImageUrl: z.url().optional(),
+      /** Where the post comes from. */
+      source: z.enum(['mdx', 'fullbleed']).default('mdx'),
+      draft: z.boolean().default(false),
+      faq,
 
-        /** 2–3 sentence direct answer rendered under the H1. */
-        answer: z.string().max(500).optional(),
-        keyTakeaways: z.array(z.string()).default([]),
-        /** Hand-picked related posts; topped up automatically by shared topics. */
-        related: z.array(reference('blog')).max(3).default([]),
-        /** The one relevant service to link to. */
-        service: reference('services').optional(),
-        /** BlogPosting.mentions — real entities only. */
-        mentions: z.array(z.object({ name: z.string(), url: z.url().optional() })).default([]),
-        /** Force TOC on/off. Default: auto when the post has ≥ 4 H2s. */
-        toc: z.boolean().optional(),
-        seo,
-      })
-      .refine((d) => !d.heroImage || !!d.heroAlt, { message: 'heroAlt is required when heroImage is set', path: ['heroAlt'] })
-      .refine((d) => !d.updatedDate || d.updatedDate >= d.pubDate, { message: 'updatedDate is before pubDate', path: ['updatedDate'] }),
+      /** 2–3 sentence direct answer rendered under the H1. */
+      answer: z.string().max(500).optional(),
+      keyTakeaways: z.array(z.string()).default([]),
+      /** Hand-picked related posts (same collection); topped up automatically by shared topics/tags. */
+      related: z.array(z.string()).max(3).default([]),
+      /** The one relevant service to link to. */
+      service: reference('services').optional(),
+      /** BlogPosting.mentions — real entities only. */
+      mentions: z.array(z.object({ name: z.string(), url: z.url().optional() })).default([]),
+      /** Force TOC on/off. Default: auto when the post has ≥ 4 H2s. */
+      toc: z.boolean().optional(),
+      seo,
+    })
+    .refine((d) => !d.heroImage || !!d.heroAlt, { message: 'heroAlt is required when heroImage is set', path: ['heroAlt'] })
+    .refine((d) => !d.updatedDate || d.updatedDate >= d.pubDate, { message: 'updatedDate is before pubDate', path: ['updatedDate'] });
+
+const blog = defineCollection({
+  loader: withFullbleedPosts(mdx('blog'), 'blog'),
+  schema: postSchema,
+});
+
+const stories = defineCollection({
+  loader: withFullbleedPosts(mdx('stories'), 'stories'),
+  schema: postSchema,
 });
 
 /* ------------------------------------------------------------------ */
-/* topics → /topics/[key]/  (hub intro copy; registry in site.config)  */
+/* topics → /blog/[key]/  (hub intro copy; registry in site.config)   */
 /* ------------------------------------------------------------------ */
 
 const topicHubs = defineCollection({
@@ -242,6 +250,8 @@ const resources = defineCollection({
       externalUrl: z.url().optional(),
       heroImage: image().optional(),
       heroAlt: z.string().optional(),
+      /** Remote cover image (e.g. from a CMS). */
+      coverImageUrl: z.url().optional(),
       faq,
       draft: z.boolean().default(false),
       seo,
@@ -272,6 +282,42 @@ const clients = defineCollection({
 });
 
 /* ------------------------------------------------------------------ */
+/* testimonials → homepage (data only, no pages)                       */
+/* Real words only: copy Google reviews (or messages you have          */
+/* permission to quote) exactly. Never edit or invent them.            */
+/* ------------------------------------------------------------------ */
+
+const testimonials = defineCollection({
+  loader: file('src/content/testimonials.yaml'),
+  schema: z.object({
+    /** The client's logo is shown when set (id in clients.yaml); otherwise initials. */
+    client: reference('clients').optional(),
+    /** Shown on the site: the client's exact words, shortened only by cutting sentences (marked …). ≤ 200 chars so cards stay equal. */
+    quote: z.string().min(20).max(200),
+    /** The full review as written, kept for reference. */
+    original: z.string().optional(),
+    name: z.string(),
+    /** e.g. "Founder" or "Marketing Manager" */
+    role: z.string().optional(),
+    company: z.string().optional(),
+    /** Where the words come from. Google reviews link to the profile. */
+    source: z.enum(['google', 'linkedin', 'direct']),
+    /** Star rating, for Google reviews. */
+    rating: z.number().int().min(1).max(5).optional(),
+    date: z.coerce.date().optional(),
+    /** Our own description of the engagement, shown as context beside the quote (never inside it). */
+    since: z.number().int().optional(),
+    delivered: z.array(z.string()).default([]),
+    /** Service pages show up to 3 testimonials that list the service. */
+    services: z.array(reference('services')).default([]),
+    /** Shown on the homepage (max 6). */
+    featured: z.boolean().default(false),
+    order: z.number().default(100),
+    draft: z.boolean().default(false),
+  }),
+});
+
+/* ------------------------------------------------------------------ */
 /* pages → /now/, /privacy/, /terms/  (single prose pages)             */
 /* ------------------------------------------------------------------ */
 
@@ -285,4 +331,4 @@ const pages = defineCollection({
   }),
 });
 
-export const collections = { blog, topics: topicHubs, services, work, projects, resources, clients, pages };
+export const collections = { blog, stories, topics: topicHubs, services, work, projects, resources, clients, testimonials, pages };

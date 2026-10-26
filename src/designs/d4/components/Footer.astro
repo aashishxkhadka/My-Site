@@ -1,9 +1,13 @@
 ---
 import { NAV, SITE, SOCIALS, CONTACT, BASILPOT } from '@/site.config';
+import { emptySectionHrefs } from '@/lib/taxonomy';
 
 const year = new Date().getFullYear();
 const socials = SOCIALS.filter((s) => s.visible && s.url);
 const isExternal = (href: string) => /^https?:\/\//.test(href);
+// Writing sections with nothing published yet stay out of the footer.
+const hidden = await emptySectionHrefs();
+const groups = NAV.footer.map((g) => ({ ...g, links: g.links.filter((l) => !hidden.includes(l.href)) }));
 ---
 
 <footer class="border-t border-line">
@@ -35,7 +39,7 @@ const isExternal = (href: string) => /^https?:\/\//.test(href);
 
     <nav aria-label="Footer" class="grid grid-cols-2 gap-8 sm:grid-cols-3 md:col-span-7">
       {
-        NAV.footer.map((group) => (
+        groups.map((group) => (
           <div>
             <p class="label mb-4">{group.heading}</p>
             <ul class="space-y-2.5 text-[0.9375rem]">

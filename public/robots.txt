@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://aashishkhadka.com.np/sitemap-index.xml

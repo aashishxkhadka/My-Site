@@ -13,7 +13,7 @@ export interface Props {
   rawTitle?: string | undefined;
   description: string;
   noindex?: boolean | undefined;
-  /** Absolute or root-relative. Step 5 generates one per page. */
+  /** Absolute or root-relative. Defaults to the generated card at /og/<path>.png (src/integrations/og-images.mjs). */
   ogImage?: string | undefined;
   ogType?: 'website' | 'article' | 'profile';
   publishedTime?: Date | undefined;
@@ -24,7 +24,8 @@ const { title, rawTitle, description, noindex = false, ogImage, ogType = 'websit
 
 const pageTitle = rawTitle ?? (title ? fullTitle(title, SITE.titleSuffix) : SITE.defaultTitle);
 const canonical = new URL(Astro.url.pathname, SITE.url).href;
-const image = ogImage ? new URL(ogImage, SITE.url).href : undefined;
+const ogPath = Astro.url.pathname === '/' ? '/og/home.png' : `/og${Astro.url.pathname.replace(/\/$/, '')}.png`;
+const image = new URL(ogImage ?? ogPath, SITE.url).href;
 const xHandle = SOCIALS.find((s) => s.key === 'x')?.handle;
 
 if (import.meta.env.DEV) {
@@ -44,16 +45,17 @@ if (import.meta.env.DEV) {
 <meta property="og:title" content={pageTitle} />
 <meta property="og:description" content={description} />
 <meta property="og:url" content={canonical} />
-{image && <meta property="og:image" content={image} />}
-{image && <meta property="og:image:width" content="1200" />}
-{image && <meta property="og:image:height" content="630" />}
+<meta property="og:image" content={image} />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content={pageTitle} />
 {publishedTime && <meta property="article:published_time" content={publishedTime.toISOString()} />}
 {modifiedTime && <meta property="article:modified_time" content={modifiedTime.toISOString()} />}
 
-<meta name="twitter:card" content={image ? 'summary_large_image' : 'summary'} />
+<meta name="twitter:card" content="summary_large_image" />
 {xHandle && <meta name="twitter:site" content={xHandle} />}
 {xHandle && <meta name="twitter:creator" content={xHandle} />}
 
-<link rel="alternate" type="application/rss+xml" title={`${SITE.name} — Blog`} href="/rss.xml" />
+<link rel="alternate" type="application/rss+xml" title={`${SITE.name}: Blog & Stories`} href="/rss.xml" />
 <link rel="sitemap" href="/sitemap-index.xml" />
 {INTEGRATIONS.gscVerification && <meta name="google-site-verification" content={INTEGRATIONS.gscVerification} />}

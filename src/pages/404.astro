@@ -1,7 +1,9 @@
 ---
 import Layout from '@/designs/d4/Layout.astro';
 import Button from '@/designs/d4/components/Button.astro';
-import { NAV, TOPICS } from '@/site.config';
+import { NAV } from '@/site.config';
+import { topicsInfo } from '@/lib/taxonomy';
+const topics = (await topicsInfo()).filter((t) => t.live);
 ---
 
 <Layout title="Page not found" description="This page doesn't exist or has moved. Here are the best places to go next on Aashish Khadka's website." noindex>
@@ -26,8 +28,11 @@ import { NAV, TOPICS } from '@/site.config';
       <ul class="mt-4 space-y-2 text-step-1">{NAV.primary.map((l) => <li><a class="link" href={l.href}>{l.label}</a></li>)}</ul>
     </nav>
     <nav aria-labelledby="nf-topics">
-      <h2 id="nf-topics" class="label">Topics</h2>
-      <ul class="mt-4 space-y-2 text-step-1">{TOPICS.map((t) => <li><a class="link" href={`/topics/${t.key}/`}>{t.label}</a></li>)}</ul>
+      <h2 id="nf-topics" class="label">Writing</h2>
+      <ul class="mt-4 space-y-2 text-step-1">
+        <li><a class="link" href="/blog/">Blog</a></li>
+        {topics.map((t) => <li><a class="link" href={t.href}>{t.label}</a></li>)}
+      </ul>
     </nav>
   </div>
 </Layout>

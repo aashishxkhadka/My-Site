@@ -14,11 +14,15 @@ import ServiceItem from '../d4/components/ServiceItem.astro';
 import WorkCard from '../d4/components/WorkCard.astro';
 import ProductCard from '../d4/components/ProductCard.astro';
 import ClientWall from '../d4/components/ClientWall.astro';
-import PostRow from '../d4/components/PostRow.astro';
+import PostCard from '../d4/components/PostCard.astro';
+import Testimonials from '../d4/components/Testimonials.astro';
+import Faq from '../d4/components/Faq.astro';
+import { HOW_I_WORK, HOME_FAQ } from '@/data/home';
+import { faqNode } from '@/lib/schema';
 import portrait from '@/assets/aashish.jpg';
 import { getCollection } from 'astro:content';
 import { getPublished, byNewest, byOrder } from '@/lib/content';
-import { SITE, CONTACT, BASILPOT, STATS } from '@/site.config';
+import { SITE, CONTACT, BASILPOT } from '@/site.config';
 
 export interface Props {
   /** True on /designs/<id>/ previews. */
@@ -37,13 +41,14 @@ const featuredClients = clients.filter((c) => c.data.logo && c.data.featured).sl
 // One line of products here; the full list lives on /projects/.
 const productRow = projects.slice(0, 4);
 
-const serviceTitle = (id: string) => allServices.find((s) => s.id === id)?.data.title ?? id;
+// Homepage reviews: featured: true in testimonials.yaml, in order.
+const testimonials = (await getPublished('testimonials')).filter((t) => t.data.featured).sort(byOrder).slice(0, 7);
 
 ---
 
-<BaseLayout rawTitle={SITE.defaultTitle} description={SITE.defaultDescription} noindex={noindex}>
+<BaseLayout rawTitle={SITE.defaultTitle} description={SITE.defaultDescription} noindex={noindex} schema={[faqNode('/', HOME_FAQ)]}>
   <!-- 1 · Who I am -->
-  <Hero clients={clients} productCount={projects.length} />
+  <Hero clients={clients} />
 
   <!-- Proof · Client brands -->
   {
@@ -57,7 +62,7 @@ const serviceTitle = (id: string) => allServices.find((s) => s.id === id)?.data.
         />
         <ClientWall clients={featuredClients} mobileLimit={6} />
         <div class="mt-10 flex justify-center">
-          <Button href="/work/#clients" variant="outline">Explore all {STATS.businessesWorkedWith}+ clients</Button>
+          <Button href="/work/#clients" variant="outline">Explore Clients</Button>
         </div>
       </section>
     )
@@ -91,7 +96,24 @@ const serviceTitle = (id: string) => allServices.find((s) => s.id === id)?.data.
     )
   }
 
-  <!-- How I work -->
+  <!-- How we'd work together -->
+  <section class="wrap pt-24 md:pt-36" aria-labelledby="process">
+    <SectionHeader id="process" kicker="Process" title="How we'd work together." lead="Simple and clear, so you always know what's happening and why." />
+    <ol class="grid gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
+      {HOW_I_WORK.map((step, i) => (
+        <li class="flex flex-col bg-paper p-7 md:p-8">
+          <span class="display text-step-3 text-accent" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+          <h3 class="title mt-6 text-step-1">{step.title}</h3>
+          <p class="mt-2 text-muted">{step.description}</p>
+        </li>
+      ))}
+    </ol>
+    <div class="mt-10 flex justify-center">
+      <Button href="/contact/">Start with a conversation</Button>
+    </div>
+  </section>
+
+  <!-- Quote -->
   <section class="wrap pt-24 md:pt-36" aria-label="How I work">
     <figure class="stage scroll-in relative overflow-hidden rounded-[2rem] border border-line px-6 py-14 md:px-16 md:py-20">
       <svg class="mb-8 h-10 w-12 text-accent md:h-12 md:w-14" viewBox="0 0 56 44" fill="currentColor" aria-hidden="true"><path d="M0 44V26.4C0 11.9 7.2 3.1 21.6 0l2.6 5.6C16.5 8 12.6 12.7 12.4 19.6H22V44H0Zm33.6 0V26.4C33.6 11.9 40.8 3.1 55.2 0l2.6 5.6c-7.7 2.4-11.6 7.1-11.8 14H56V44H33.6Z"/></svg>
@@ -117,7 +139,7 @@ const serviceTitle = (id: string) => allServices.find((s) => s.id === id)?.data.
         <SectionHeader id="work-title" kicker="Selected work" title="Recent work." />
         <div class="grid gap-14 sm:grid-cols-2 sm:gap-8 lg:grid-cols-3">
           {work.map((w) => (
-            <WorkCard item={w} serviceTitles={w.data.services.map((s) => serviceTitle(s.id))} />
+            <WorkCard item={w} compact />
           ))}
         </div>
         <div class="mt-12 flex justify-center">
@@ -126,6 +148,9 @@ const serviceTitle = (id: string) => allServices.find((s) => s.id === id)?.data.
       </section>
     )
   }
+
+  <!-- Proof · Testimonials (hidden until real ones are added) -->
+  {testimonials.length > 0 && <Testimonials items={testimonials} layout="bento" />}
 
   <!-- Proof · Products -->
   {
@@ -142,7 +167,7 @@ const serviceTitle = (id: string) => allServices.find((s) => s.id === id)?.data.
           ))}
         </ul>
         <div class="wrap mt-12 flex flex-wrap justify-center gap-3">
-          <Button href="/projects/" variant="outline">View all {projects.length} projects</Button>
+          <Button href="/projects/" variant="outline">View Projects</Button>
         </div>
       </section>
     )
@@ -153,17 +178,20 @@ const serviceTitle = (id: string) => allServices.find((s) => s.id === id)?.data.
     posts.length > 0 && (
       <section class="wrap pt-24 md:pt-36" aria-labelledby="writing">
         <SectionHeader id="writing" kicker="Writing" title="Notes on growth." lead="The latest from the blog." />
-        <div class="border-b border-line">
+        <ul class="grid gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
           {posts.map((p) => (
-            <PostRow post={p} />
+            <li><PostCard post={p} /></li>
           ))}
-        </div>
+        </ul>
         <div class="mt-12 flex justify-center">
           <Button href="/blog/" variant="outline">Read all posts</Button>
         </div>
       </section>
     )
   }
+
+  <!-- FAQ (also FAQPage structured data) -->
+  <div class="wrap pt-24 md:pt-36"><Faq items={HOME_FAQ} title="Questions people ask." /></div>
 
   <!-- 3 · How to work with me -->
   <section class="wrap py-24 md:py-36" aria-labelledby="cta">

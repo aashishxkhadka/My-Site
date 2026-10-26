@@ -3,7 +3,7 @@
  * site-wide entities (WebSite, Person, Organization) plus page nodes,
  * all linked by @id.
  */
-import { SITE, PERSON, BASILPOT, CONTACT, TOPICS, sameAs, absoluteUrl } from '@/site.config';
+import { SITE, PERSON, BASILPOT, CONTACT, sameAs, absoluteUrl } from '@/site.config';
 import portrait from '@/assets/aashish.jpg';
 
 export type JsonLdNode = Record<string, unknown> & { '@type': string | string[] };
@@ -24,9 +24,8 @@ export const websiteNode = (): JsonLdNode => ({
 });
 
 export const personNode = (): JsonLdNode => {
-  const alumniOf = PERSON.education
-    .filter((e) => e.institution)
-    .map((e) => ({ '@type': 'CollegeOrUniversity', name: e.institution }));
+  // alumniOf: completed studies only, one entry per institution.
+  const alumniOf = [...new Set(PERSON.education.filter((e) => e.status === 'completed' && e.institution).map((e) => e.institution))].map((name) => ({ '@type': 'CollegeOrUniversity', name }));
   return {
     '@type': 'Person',
     '@id': ids.person,
@@ -46,8 +45,7 @@ export const personNode = (): JsonLdNode => {
     },
     image: absoluteUrl(portrait.src),
     ...(alumniOf.length ? { alumniOf } : {}),
-    // TODO(step 3): append service titles once services are confirmed.
-    knowsAbout: TOPICS.map((t) => t.label),
+    knowsAbout: [...PERSON.knowsAbout],
     sameAs: sameAs(),
   };
 };

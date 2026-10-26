@@ -1,0 +1,30 @@
+---
+/**
+ * /blog/[topic]/[slug]/: a post in its topic, e.g. /blog/seo/what-is-technical-seo/.
+ * The same slug under every other topic redirects here, so moving a post to
+ * another category (or removing it) keeps old links working.
+ */
+import type { GetStaticPaths } from 'astro';
+import type { CollectionEntry } from 'astro:content';
+import PostView from '@/views/PostView.astro';
+import RedirectPage from '@/components/seo/RedirectPage.astro';
+import { getPublished } from '@/lib/content';
+import { postPath, postTopic } from '@/lib/posts';
+import { TOPIC_KEYS } from '@/site.config';
+
+export const getStaticPaths = (async () => {
+  const posts = await getPublished('blog');
+  return posts.flatMap((post) =>
+    TOPIC_KEYS.map((topic) =>
+      topic === postTopic(post)
+        ? { params: { topic, slug: post.id }, props: { kind: 'post' as const, post } }
+        : { params: { topic, slug: post.id }, props: { kind: 'redirect' as const, to: postPath(post) } },
+    ),
+  );
+}) satisfies GetStaticPaths;
+
+type Props = { kind: 'post'; post: CollectionEntry<'blog'> } | { kind: 'redirect'; to: string };
+const props = Astro.props as Props;
+---
+
+{props.kind === 'post' ? <PostView post={props.post} /> : <RedirectPage to={props.to} />}

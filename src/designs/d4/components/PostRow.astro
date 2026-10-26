@@ -1,19 +1,19 @@
 ---
-import type { CollectionEntry } from 'astro:content';
 import { TOPICS } from '@/site.config';
 import { formatDate, isoDate } from '@/lib/format';
+import { postPath, type Post } from '@/lib/posts';
 
 export interface Props {
-  post: CollectionEntry<'blog'>;
+  post: Post;
 }
 const { post } = Astro.props;
-const topic = TOPICS.find((t) => t.key === post.data.topics[0]);
+const label = post.collection === 'stories' ? 'Story' : TOPICS.find((t) => t.key === post.data.topics[0])?.label;
 ---
 
 <article class="group relative grid gap-2 border-t border-line py-6 md:grid-cols-12 md:items-baseline md:gap-8">
   <p class="text-step--1 text-muted md:col-span-2"><time datetime={isoDate(post.data.pubDate)}>{formatDate(post.data.pubDate)}</time></p>
   <h3 class="title text-step-1 md:col-span-7">
-    <a href={`/blog/${post.id}/`} class="after:absolute after:inset-0 transition-colors group-hover:text-accent">{post.data.title}</a>
+    <a href={postPath(post)} class="after:absolute after:inset-0 transition-colors group-hover:text-accent">{post.data.title}</a>
   </h3>
-  {topic && <p class="label md:col-span-3 md:text-right">{topic.label}</p>}
+  {label && <p class="label md:col-span-3 md:text-right">{label}</p>}
 </article>

@@ -1,0 +1,189 @@
+# Client testimonials. Homepage: entries with featured: true (first 6 by order). Service pages: up to 3 matching `services`.
+# `quote` is what the site shows: the client's exact words, shortened only by cutting sentences (marked …).
+# `original` keeps the full review as written. Never reword or invent.
+#
+# Fields: id, client? (id in clients.yaml, shows their logo), since? / delivered? (what we provided, shown beside the quote, never inside it), quote, original?, name, role?, company?, source (google | linkedin | direct), rating? (1–5),
+#         services? (service ids), featured, order (lower = first), draft
+
+- id: begnas-aqua-park
+  client: begnas-aqua-park
+  quote: 'Our reach has grown significantly and the ads are performing really well. … They truly understand what our business needs and deliver results that speak for themselves.'
+  original: |
+    We have been working with Aashish and his team for our digital marketing and IT services at Begnas Aqua Park & Resort, Pokhara, and we are extremely happy with the results!
+
+    They handle everything for us Social Media Marketing, SEO, Meta Ads, our Website and our overall web presence and the improvement we have seen in our online presence has been outstanding. Our reach has grown significantly and the ads are performing really well.
+
+    Aashish is very supportive, professional, and always ready to help. His team is passionate, creative, and dedicated to their work. They truly understand what our business needs and deliver results that speak for themselves.
+
+    If you are looking for reliable and result-driven Digital Marketing and IT services in Pokhara or anywhere in Nepal, we highly recommend Aashish and his team! 🙏
+  name: 'Begnas Aqua Park & Resort'
+  company: 'Pokhara'
+  source: google # TODO: confirm source (Google review?)
+  rating: 5
+  delivered: [Social media marketing, Video production, Graphic design, SEO, Local SEO, Meta ads, Website, Business & IT support]
+  services: [digital-marketing, seo, website-development]
+  featured: true
+  order: 1
+
+- id: happyface-clinic
+  client: happy-face
+  quote: 'Before working with them, we had no idea how to reach patients online. Now our clinic has a strong presence and more patients are finding us through Google search and social media every day.'
+  original: |
+    We are so happy with Aashish Khadka and his team for managing our complete digital marketing. They handle everything social media, video production, photo editing, ad campaigns, Google Business Profile, SEO and more. Before working with them, we had no idea how to reach patients online. Now our clinic has a strong presence and more patients are finding us through Google search and social media every day. Our ads are running well and getting real results.
+    What we love most is how professional, kind, and dedicated they are they treat our clinic like their own. If you are looking for a digital marketing expert in Pokhara for your healthcare or clinic business, we highly recommend Aashish and his team without any doubt.👍
+  name: 'Happyface Aesthetic Clinic'
+  company: 'Pokhara'
+  source: google
+  rating: 5
+  delivered: [Social media marketing, Video production, Graphic design, SEO, Local SEO, Meta ads, Website, Business & IT support]
+  services: [digital-marketing, seo, website-development]
+  featured: true
+  order: 2
+
+- id: lakshmi-shrestha
+  quote: 'His all-round digital strategy helped us gain over 250K+ views on TikTok and grow our Facebook page to nearly 10,000 followers.'
+  original: |
+    We've been working with Aashish Khadka for almost a year, and the results have been outstanding!
+
+    From video shoots, editing, and graphic design to social media management, website updates, SEO, Facebook ads, and TikTok marketing — Aashish has handled everything with full dedication and creativity. His all-round digital strategy helped us gain over 250K+ views on TikTok and grow our Facebook page to nearly 10,000 followers.
+
+    The professionalism, consistency, and result-driven approach Aashish and his team bring to the table have truly taken our online presence to the next level. Communication is always smooth, and he genuinely cares about our brand's growth.
+
+    Highly recommended for anyone looking to build a strong digital presence — he provides the best digital marketing service in Pokhara, Nepal.
+    Excited to continue growing together!
+  name: 'Dr Lakshmi Shrestha' # Google shows the reviewer as "lakshmi sunar". TODO: confirm name and add the business.
+  source: google
+  rating: 5
+  date: 2025-07-29
+  services: [digital-marketing, seo]
+  order: 3
+
+- id: unistar-education
+  client: unistar-education
+  quote: 'Aashish Khadka has greatly improved our online presence at Unistar Education. His skills in social media lead generation and local SEO have brought in many new clients.'
+  original: |
+    Aashish Khadka has greatly improved our online presence at Unistar Education. His skills in social media lead generation and local SEO have brought in many new clients. Aashish also used Pinterest to boost our visibility even more.
+
+    He is professional, responsive, and understands our needs. Aashish's work has been key to our success. We highly recommend him for his expertise in Digital Marketing. Best Digital Marketing & SEO Service in Pokhara.
+  name: 'Unistar Education'
+  company: 'Pokhara'
+  source: google
+  rating: 5
+  date: 2024-07-29
+  delivered: [Video production, Meta ads, Graphic design, Digital strategy, Website, SEO]
+  services: [digital-marketing, seo, website-development, growth-strategy]
+  featured: true
+  order: 4
+
+- id: jeevan-upadhaya
+  quote: 'At first, we did a digital marketing consultation with Aashish, and that meeting really helped us understand what was actually happening in our business and what we were missing.'
+  original: |
+    At first, we did a digital marketing consultation with Aashish, and that meeting really helped us understand what was actually happening in our business and what we were missing. He provided clear insights about the Nepal market, including online marketing strategy, local SEO, and areas we needed to improve.
+    After that, we decided to move forward with SEO and Google Business Profile optimization service, and it has been going really well so far. Local SEO, search engine optimization, and online visibility ko lagi usko guidance ekdam practical ra effective cha.
+    He explains everything in a simple and easy understandable way, and is very professional while providing valuable business and digital marketing insights. Overall, ekdam ramro experience hudai cha working with him. Highly recommended for anyone looking for SEO and digital marketing services in Nepal 👍
+  name: 'Jeevan Upadhaya'
+  source: google
+  rating: 5
+  services: [growth-strategy, seo]
+  featured: false # kept off the homepage (still shown on service pages)
+  order: 12
+
+- id: hope-fertility
+  client: hope-fertility
+  quote: 'Aashish helped us with digital marketing and social media management. Thanks to his work, we reached more people and grew our online presence.'
+  original: |
+    Aashish helped us with digital marketing and social media management. Thanks to his work, we reached more people and grew our online presence.
+
+    He is professional, easy to work with, and delivers great results. Highly recommended for anyone looking for digital marketing in Nepal!
+  name: 'Hope Fertility & IVF Centre'
+  company: 'Pokhara'
+  source: google # TODO: confirm source (Google review?)
+  rating: 5
+  since: 2024
+  delivered: [Social media marketing, Video production, Graphic design, SEO, Local SEO, Meta ads, Website, Business & IT support]
+  services: [digital-marketing, seo, website-development]
+  featured: true
+  order: 6
+
+- id: maret-migration
+  client: maret-migration
+  quote: 'He not only improved my website’s search rankings but also provided valuable insights to optimize my digital presence.'
+  original: |
+    I had the pleasure of working with Aashish Khadka for SEO and digital marketing services, and the results have been outstanding! His deep expertise in SEO, content marketing, and social media strategies helped my business grow significantly in online visibility and lead generation.
+
+    What sets Aashish apart is his data-driven approach, clear communication, and dedication to delivering measurable results. He not only improved my website's search rankings but also provided valuable insights to optimize my digital presence.
+
+    If you're looking for a reliable, knowledgeable, and results-oriented SEO expert in Nepal, I highly recommend Aashish Khadka. Five stars without hesitation!
+  name: 'Bobby J Maret'
+  company: 'Maret Migration'
+  source: google # TODO: confirm source (Google review?)
+  rating: 5
+  delivered: [Website, SEO, Social media marketing, Paid ads, Social media management]
+  services: [seo, digital-marketing, website-development]
+  featured: true
+  order: 5
+
+- id: jags-ojha
+  quote: 'What we appreciate most is how responsive and clear he is in communication. Every step is explained well, and we always know exactly what’s being done.'
+  original: |
+    We've recently started working with Aashish on our digital marketing, and the experience has been excellent so far. He is handling our SEO, content marketing, social media management, and paid advertising with full dedication and professionalism.
+    What we appreciate most is how responsive and clear he is in communication. Every step is explained well, and we always know exactly what's being done. The results are already positive, and we feel confident about growing even more together.
+    Highly recommended for anyone looking for a reliable partner in overall digital marketing.
+  name: 'Jags Ojha'
+  source: google
+  rating: 5
+  date: 2025-08-22
+  services: [digital-marketing, seo]
+  order: 8
+
+- id: pristina-beauty
+  quote: 'He took the time to understand our needs and created a custom digital marketing plan that really worked for us.'
+  original: |
+    Hello my name is indu Chhetri iam a business women in beauty sector Pokhara Nepal. Today market is a digital market with unprofessional service providers until we started working with Aashish Khadka. He took the time to understand our needs and created a custom digital marketing plan that really worked for us. Aashish's expertise in Social Media Marketing and local SEO has made a big difference for us. He was always available to answer our questions and provide guidance.
+    Thank you 🙏 🙏
+
+    We highly reneeding effective and professional digital marketing services. Best Digital Marketing Service Provider in Pokhara, Nepal.
+  name: 'Indu Chhetri'
+  company: 'Pristina Beauty Parlour & Institute'
+  source: google
+  rating: 5
+  date: 2024-07-25
+  services: [digital-marketing, seo, growth-strategy]
+  order: 9
+
+- id: ihtc-pokhara
+  client: ihtc
+  quote: 'Recently i did my office website and business profile id by Ashish bhai and he did it so beautifully in time. … Fully satisfied.'
+  original: |
+    Recently i did my office website and business profile id by Ashish bhai and he did it so beautifully in time. He is highly recommeded website designer in Pokhara. Fully satisfied.
+  name: 'IHTC Pokhara'
+  source: google
+  rating: 5
+  services: [website-development]
+  order: 10
+
+- id: navraj-sharma
+  quote: 'He took time to understand our needs and shared practical strategies tailored to our goals.'
+  original: |
+    We had a wonderful meeting with Ashish Khadka from the digital marketing team.
+    He was insightful, professional, and clearly passionate about his work. He took time to understand our needs and shared practical strategies tailored to our goals. Looking forward to working together and implementing the ideas we discussed!
+  name: 'Navraj Sharma'
+  source: google
+  rating: 5
+  date: 2025-07-24
+  services: [growth-strategy]
+  order: 11
+
+# PENDING APPROVAL: draft sent to SADP Nepal. Stays a draft (never published) until they approve the
+# wording. When they reply: paste their exact approved text into `quote`, set source (google if they
+# post it there), then set draft: false.
+- id: sadp-nepal
+  client: sadp-nepal
+  quote: 'Aashish and his team designed and developed our new website, and they did a really good job. They understood our mission from the start, kept us updated at every step, and delivered on time.'
+  name: 'SADP Nepal'
+  source: direct
+  delivered: [Website design & development, Branding, SEO, Business & IT support]
+  services: [website-development, branding, seo]
+  featured: true
+  order: 7
+  draft: true

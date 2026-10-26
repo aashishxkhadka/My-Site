@@ -15,3 +15,10 @@ export const byNewest = (a: Dated, b: Dated) => b.data.pubDate.valueOf() - a.dat
 
 type Ordered = { data: { order: number } };
 export const byOrder = (a: Ordered, b: Ordered) => a.data.order - b.data.order;
+
+/**
+ * A work item gets its own case-study page only once its body has real text
+ * (TODO comments don't count). Until then its card links to the client's site.
+ */
+export const hasCaseStudy = (item: CollectionEntry<'work'>) => (item.body ?? '').replace(/\{\/\*[\s\S]*?\*\/\}/g, '').trim().length > 0;
+export const workHref = (item: CollectionEntry<'work'>) => (hasCaseStudy(item) ? `/work/${item.id}/` : (item.data.clientUrl ?? '/work/'));

@@ -1,0 +1,33 @@
+---
+/** Reviewer line: client logo (or initials), name, and role/company/source. */
+import type { CollectionEntry } from 'astro:content';
+import { Image } from 'astro:assets';
+
+export interface Props {
+  item: CollectionEntry<'testimonials'>;
+  client?: CollectionEntry<'clients'> | undefined;
+  class?: string;
+}
+const { item, client, class: className } = Astro.props;
+const t = item.data;
+const logo = client?.data.logo;
+const initials = t.name.replace(/^(Dr|Mr|Mrs|Ms)\.?\s+/i, '').split(/\s+/).slice(0, 2).map((w) => w[0]?.toUpperCase()).join('');
+const meta = [t.role, t.company].filter(Boolean).join(', ');
+const sourceLabel = { google: 'Google review', linkedin: 'LinkedIn', direct: 'Client' } as const;
+---
+
+<div class:list={['flex items-center gap-3.5', className]}>
+  {
+    logo ? (
+      <span class:list={['grid h-12 w-[4.5rem] shrink-0 place-items-center overflow-hidden rounded-xl px-2 py-1.5 ring-1 ring-line', client?.data.logoOnDark ? 'bg-[#111]' : 'bg-white']}>
+        <Image src={logo} alt="" widths={[144]} sizes="72px" class="h-9 w-full object-contain" />
+      </span>
+    ) : (
+      <span class="grid size-12 shrink-0 place-items-center rounded-full bg-accent font-bold text-on-accent" aria-hidden="true">{initials}</span>
+    )
+  }
+  <span class="min-w-0">
+    <span class="title block leading-tight">{t.name}</span>
+    <span class="mt-0.5 block text-step--1 text-muted">{meta ? `${meta} · ` : ''}{sourceLabel[t.source]}</span>
+  </span>
+</div>

@@ -1,0 +1,42 @@
+---
+/** Card for a blog post or story: cover image (local or CMS URL), topic, date, title, summary. */
+import { Image } from 'astro:assets';
+import { TOPICS } from '@/site.config';
+import { formatDate, isoDate } from '@/lib/format';
+import { postPath, type Post } from '@/lib/posts';
+
+export interface Props {
+  post: Post;
+  /** Larger image hint for the first card in a featured layout. */
+  sizes?: string;
+}
+const { post, sizes = '(min-width: 1024px) 30vw, (min-width: 640px) 45vw, 92vw' } = Astro.props;
+const d = post.data;
+const label = post.collection === 'stories' ? 'Story' : TOPICS.find((t) => t.key === d.topics[0])?.label;
+const imgClass = 'h-full w-full object-cover transition-transform duration-700 ease-[var(--ease-out-soft)] group-hover:scale-[1.04]';
+---
+
+<article class="group relative flex h-full flex-col">
+  <div class="aspect-[16/9] overflow-hidden rounded-xl border border-line bg-surface">
+    {
+      d.heroImage ? (
+        <Image src={d.heroImage} alt={d.heroAlt ?? ''} widths={[400, 640, 960]} sizes={sizes} class={imgClass} />
+      ) : d.coverImageUrl ? (
+        <img src={d.coverImageUrl} alt={d.heroAlt ?? ''} loading="lazy" decoding="async" class={imgClass} />
+      ) : (
+        // No cover yet: a typographic tile so the grid never shows an empty box.
+        <div class="stage grid h-full content-end p-5" aria-hidden="true">
+          <p class="label text-[#ff7a3d]">{label ?? 'Blog'}</p>
+        </div>
+      )
+    }
+  </div>
+  <p class="mt-4 flex flex-wrap gap-x-3 text-step--1 text-muted">
+    {label && <span class="font-semibold text-ink">{label}</span>}
+    <time datetime={isoDate(d.pubDate)}>{formatDate(d.pubDate)}</time>
+  </p>
+  <h3 class="title mt-2 text-step-1">
+    <a href={postPath(post)} class="after:absolute after:inset-0 transition-colors group-hover:text-accent">{d.title}</a>
+  </h3>
+  <p class="mt-2 line-clamp-2 text-step--1 leading-relaxed text-muted">{d.description}</p>
+</article>

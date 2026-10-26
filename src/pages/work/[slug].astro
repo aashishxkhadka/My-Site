@@ -7,12 +7,13 @@ import PageHeader from '@/designs/d4/components/PageHeader.astro';
 import CtaPanel from '@/designs/d4/components/CtaPanel.astro';
 import WorkCard from '@/designs/d4/components/WorkCard.astro';
 import Todo from '@/components/ui/Todo.astro';
-import { getPublished, byOrder } from '@/lib/content';
+import { getPublished, byOrder, hasCaseStudy } from '@/lib/content';
 import { caseStudyNode } from '@/lib/schema';
 import { formatDate, isoDate } from '@/lib/format';
 
 export const getStaticPaths = (async () => {
-  const work = await getPublished('work');
+  // Only items with a written case study get a page (see hasCaseStudy).
+  const work = (await getPublished('work')).filter(hasCaseStudy);
   return work.map((item) => ({ params: { slug: item.id }, props: { item } }));
 }) satisfies GetStaticPaths;
 
@@ -104,7 +105,7 @@ const crumbs = [{ label: 'Work', href: '/work/' }, { label: d.client ?? d.title,
       <section class="wrap pt-24 md:pt-32" aria-labelledby="more-work">
         <h2 id="more-work" class="display text-step-4">More work</h2>
         <div class="mt-10 grid gap-14 md:grid-cols-2 md:gap-10">
-          {more.map((w) => <WorkCard item={w} serviceTitles={w.data.services.map((s) => titleOf(s.id))} />)}
+          {more.map((w) => <WorkCard item={w} services={w.data.services.map((s) => ({ title: titleOf(s.id), href: `/services/${s.id}/` }))} />)}
         </div>
       </section>
     )

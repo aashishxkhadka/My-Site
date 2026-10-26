@@ -1,0 +1,16 @@
+---
+import type { GetStaticPaths } from 'astro';
+import PostView from '@/views/PostView.astro';
+import { getPublished } from '@/lib/content';
+
+export const getStaticPaths = (async () => {
+  const posts = await getPublished('stories');
+  const clash = posts.find((p) => p.id === 'page');
+  if (clash) throw new Error('Story slug "page" is reserved for /stories/page/N/. Rename the story.');
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+}) satisfies GetStaticPaths;
+
+const { post } = Astro.props;
+---
+
+<PostView post={post} />

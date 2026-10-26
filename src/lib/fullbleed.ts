@@ -1,7 +1,7 @@
 /**
  * Fullbleed CMS (https://fullbleed.basilpot.com) — read-only public API client
  * and an Astro content loader that turns published Fullbleed posts into
- * `blog` entries at build time.
+ * `blog` and `stories` entries at build time.
  *
  * Auth: a workspace-scoped publishable key (`kb_pub_…`) in FULLBLEED_API_KEY.
  * Locally: put it in `.env` (git-ignored). On GitHub: a repository secret.
@@ -11,7 +11,7 @@
 import type { Loader, LoaderContext } from 'astro/loaders';
 import type { MarkdownHeading } from 'astro';
 import { loadEnv } from 'vite';
-import { TOPIC_KEYS } from '@/site.config';
+import { TOPIC_KEYS, STORIES_CATEGORY } from '@/site.config';
 
 const BASE = process.env.FULLBLEED_API_URL ?? 'https://fullbleed.basilpot.com/api/v1';
 
@@ -102,16 +102,29 @@ function describe(item: FullbleedItem, text: string): string {
  * Wraps another loader (the local MDX glob) and adds published Fullbleed posts
  * to the same collection, so templates treat both sources the same way.
  *
- * Mapping (Fullbleed → blog schema):
- *   category slug / tag slugs matching a topic key → topics (e.g. "technical-seo")
- *   other tags                                      → tags
- *   metaTitle (≤ 60 chars)                          → seo.title
- *   coverImage                                      → coverImageUrl
- *   first tag that is not a topic, else category    → primaryKeyword
+ * Routing: category "stories" → the stories collection; everything else → blog.
+ *
+ * Mapping (Fullbleed → post schema):
+ *   category slug matching a topic key → topics (e.g. "seo" → /blog/seo/)
+ *   tags                               → tags
+ *   metaTitle (≤ 60 chars)             → seo.title
+ *   coverImage                         → coverImageUrl
+ *   first tag, else category           → primaryKeyword
+ *
+ * A published CMS post replaces a local *draft* with the same slug; it never
+ * replaces a published local post. Slugs equal to a topic key or "page" are
+ * skipped on the blog, since those URLs belong to hub and pagination pages.
  */
-export function withFullbleedPosts(base: Loader): Loader {
+/** One fetch shared by the blog and stories loaders within the same content sync. */
+let cache: { key: string; at: number; posts: Promise<FullbleedItem[]> } | undefined;
+const fetchPosts = (key: string) => {
+  if (cache?.key !== key || Date.now() - cache.at > 30_000) cache = { key, at: Date.now(), posts: listAll('/posts', key) };
+  return cache.posts;
+};
+
+export function withFullbleedPosts(base: Loader, target: 'blog' | 'stories'): Loader {
   return {
-    name: 'fullbleed-posts',
+    name: `fullbleed-${target}`,
     load: async (ctx: LoaderContext) => {
       await base.load(ctx);
       const key = process.env.FULLBLEED_API_KEY ?? loadEnv(process.env.NODE_ENV ?? 'production', process.cwd(), '').FULLBLEED_API_KEY;
@@ -121,8 +134,9 @@ export function withFullbleedPosts(base: Loader): Loader {
       }
       let posts: FullbleedItem[];
       try {
-        posts = await listAll('/posts', key);
+        posts = await fetchPosts(key);
       } catch (err) {
+        cache = undefined;
         // FULLBLEED_STRICT=1 (set in the deploy workflow once the API is reliably reachable from CI)
         // fails the build instead, so a broken key or outage never silently removes posts from the live site.
         const msg = (err as Error).message.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').slice(0, 160);
@@ -133,18 +147,25 @@ export function withFullbleedPosts(base: Loader): Loader {
       }
 
       const topicKeys = TOPIC_KEYS as readonly string[];
+      const reserved = target === 'blog' ? [...topicKeys, 'page'] : ['page'];
+      const isStory = (item: FullbleedItem) => item.category?.slug === STORIES_CATEGORY;
       let added = 0;
-      for (const item of posts) {
+      for (const item of posts.filter((p) => (target === 'stories') === isStory(p))) {
         const id = slugify(item.slug) || item.id;
-        if (ctx.store.get(id)) {
+        if (reserved.includes(id)) {
+          ctx.logger.warn(`Fullbleed post "${item.slug}" skipped: /${target}/${id}/ is reserved. Give it a different slug.`);
+          continue;
+        }
+        const local = ctx.store.get(id);
+        if (local && !(local.data as { draft?: boolean }).draft) {
           ctx.logger.warn(`Fullbleed post "${item.slug}" skipped: a local MDX post already uses that slug.`);
           continue;
         }
         const { html, headings } = withHeadingIds(item.bodyHtml ?? '');
         const text = stripTags(html);
-        const slugs = [item.category?.slug, ...item.tags.map((t) => t.slug)].filter((s): s is string => !!s);
-        const topics = [...new Set(slugs.filter((s) => topicKeys.includes(s)))];
-        const tags = item.tags.filter((t) => !topicKeys.includes(t.slug)).map((t) => t.name);
+        const category = item.category?.slug;
+        const topics = target === 'blog' && category && topicKeys.includes(category) ? [category] : [];
+        const tags = item.tags.map((t) => t.name);
         const published = new Date(item.publishedAt);
         const updated = new Date(item.updatedAt);
         const metaTitle = item.metaTitle?.trim();
@@ -177,7 +198,7 @@ export function withFullbleedPosts(base: Loader): Loader {
           ctx.logger.warn(`Fullbleed post "${item.slug}" skipped: ${(err as Error).message}`);
         }
       }
-      ctx.logger.info(`Loaded ${added} post${added === 1 ? '' : 's'} from Fullbleed.`);
+      ctx.logger.info(`Loaded ${added} ${target} post${added === 1 ? '' : 's'} from Fullbleed.`);
     },
   };
 }

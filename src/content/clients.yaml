@@ -12,13 +12,14 @@
   order: 1
 - id: sadp-nepal
   name: 'SADP Nepal'
+  logo: ../assets/clients/sadp-nepal.webp
   url: 'https://sadpnepal.org/'
   kind: [web]
   industry: 'Non-profit'
   order: 2
-- id: hex-healing-hub
-  name: 'Hex Healing Hub Pokhara'
-  url: 'https://hexhealinghubpokhara.com/'
+- id: sanjeevani-healing
+  name: 'Sanjeevani Healing Pokhara'
+  url: 'https://sanjeevanihealingpokhara.com/'
   kind: [web]
   industry: 'Wellness'
   order: 3

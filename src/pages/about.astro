@@ -4,25 +4,34 @@ import Layout from '@/designs/d4/Layout.astro';
 import PageHeader from '@/designs/d4/components/PageHeader.astro';
 import CtaPanel from '@/designs/d4/components/CtaPanel.astro';
 import Button from '@/designs/d4/components/Button.astro';
-import Todo from '@/components/ui/Todo.astro';
 import portrait from '@/assets/aashish.jpg';
+import PostCard from '@/designs/d4/components/PostCard.astro';
 import { getCollection } from 'astro:content';
+import { getPublished, byNewest, byOrder } from '@/lib/content';
+import Testimonials from '@/designs/d4/components/Testimonials.astro';
 import { BASILPOT, CONTACT, PERSON, SOCIALS, STATS } from '@/site.config';
 
 const projects = (await getCollection('projects', ({ data }) => !data.draft)).length;
 const socials = SOCIALS.filter((s) => s.visible && s.url);
 
-// TODO: confirm years and add the B.Sc. IT institution.
+const stories = (await getPublished('stories')).sort(byNewest).slice(0, 3);
+const services = (await getPublished('services')).sort(byOrder);
+
+const [bsc, mba] = PERSON.education;
+const college = (e: (typeof PERSON.education)[number]) => `${e.institution}, affiliated with ${e.affiliation}.`;
 const timeline = [
-  { when: 'TODO', what: 'B.Sc. IT', detail: PERSON.education[0]?.institution ?? 'Institution: TODO' },
-  { when: 'TODO', what: 'Founded Basilpot', detail: 'An idea-to-growth studio for teams across time zones.' },
-  { when: 'Now', what: 'MBA (in progress)', detail: 'Infomax College of IT & Management, affiliated with Asia Pacific University (APU).' },
+  { when: String(STATS.workingSince), what: 'Started working with businesses', detail: 'Started digital marketing with a few friends, for businesses in Nepal and abroad.' },
+  { when: bsc.years, what: 'B.Sc. IT', detail: college(bsc) },
+  { when: String(BASILPOT.founded), what: 'Founded Basilpot', detail: 'A growth studio: strategy, websites and software, automation and digital marketing, under one roof.' },
+  { when: `${mba.years.replace('–', '')} – now`, what: 'MBA (in progress)', detail: college(mba) },
 ];
+// Reviews: the homepage's featured ones, first three.
+const testimonials = (await getPublished('testimonials')).filter((t) => t.data.featured).sort(byOrder).slice(0, 3);
 const description = 'Aashish Khadka is the founder of Basilpot in Pokhara, Nepal. His story, how he works, education and where to find him online.';
 ---
 
 <Layout rawTitle="About Aashish Khadka, Founder of Basilpot" description={description} pageType="ProfilePage" ogType="profile" breadcrumbs={[{ label: 'About', href: '/about/' }]}>
-  <PageHeader title="About me" kicker="Aashish Khadka" lead="Founder of Basilpot. I help businesses grow, and I care most about the people behind them." breadcrumbs={[{ label: 'About', href: '/about/' }]} />
+  <PageHeader title="Hi, I'm Aashish Khadka." kicker="About" lead="Founder of Basilpot. I help businesses grow, and I care most about the people behind them." breadcrumbs={[{ label: 'About', href: '/about/' }]} />
 
   <section class="wrap grid gap-12 pt-20 md:grid-cols-12 md:gap-16 md:pt-28" aria-labelledby="story">
     <div class="md:col-span-5">
@@ -31,22 +40,27 @@ const description = 'Aashish Khadka is the founder of Basilpot in Pokhara, Nepal
       </div>
     </div>
     <div class="md:col-span-7">
-      <h2 id="story" class="display text-step-4">My story</h2>
+      <p class="label mb-4 flex items-center gap-3"><span class="h-px w-8 bg-accent" aria-hidden="true"></span>My story</p>
+      <h2 id="story" class="display text-step-4">From coding dreams to growing brands. Strategy &amp; software <span aria-hidden="true">☕️</span></h2>
       <div class="prose mt-8">
         <p>
-          I'm Aashish Khadka, founder of <a href={BASILPOT.url}>Basilpot</a>, based in Pokhara, Nepal. I work with businesses in Nepal and abroad to grow with a clear strategy, a plan their team can follow, and the SEO, digital marketing, branding and web to back it up.
+          I've always been the kind of person who does my own thing. I work as hard as I can, I try to grow myself, and I try to help the people around me grow too. I've never stopped thinking big, because I believe anything is possible if you keep showing up. For as long as I can remember, I've wanted to build my own company.
         </p>
         <p>
-          At Basilpot I lead the people-facing side of the work: client relationships, communication, partnerships and day-to-day operations. I connect the people building our products with the people using them, so decisions are never made inside a technical bubble.
+          That started in 2022, when I joined college for my B.Sc. IT. I never let the classroom set my limits. I pushed myself to attend every event, meetup, and opportunity I could find, because I knew the real learning was happening outside college walls. While exploring, I found <a href="/services/digital-marketing/">digital marketing</a> and started doing it for real with a few friends. We reached out to clients, sat in meetings, closed deals, did the work, and made sure we delivered properly. Most of what I know, I learned by exploring, making mistakes, and staying consistent. Since then, we've <a href="/work/">worked with businesses</a> across healthcare, hospitality, fitness, education, migration, and more, both in Nepal and around the world.
         </p>
-        <p>My focus is simple: keep the work grounded in actual people, actual businesses and actual problems.</p>
-        <p><Todo note="Personal story: how you started, what drives you, a moment that shaped how you work">TODO: two or three paragraphs in your own words about how you got here.</Todo></p>
+        <p>
+          Today, I'm still learning, and still watering <a href={BASILPOT.url}>Basilpot</a> so it keeps growing. Basilpot is a growth studio based in Pokhara. We take businesses from brainstorming and planning through design, development, and scaling. Alongside client work, we're growing <a href="/projects/">our own products</a>. I'm also doing my MBA at Infomax College, because the learning never stops. The goal hasn't changed since day one: build something real in Nepal, create opportunities here, and grow with the people who build it with me.
+        </p>
+        <p>Outside of work, you'll find me working out, cooking (and eating), hiking, traveling, or spending time with the people I love.</p>
+        <p>If you've got an idea worth building or a business ready to grow, <a href="/contact/">let's talk</a>.</p>
       </div>
 
-      <dl class="mt-12 grid grid-cols-3 gap-6 border-y border-line py-8">
-        <div class="flex flex-col-reverse"><dt class="mt-1 text-step--1 text-muted">businesses worked with</dt><dd class="display text-step-3">{STATS.businessesWorkedWith}+</dd></div>
-        <div class="flex flex-col-reverse"><dt class="mt-1 text-step--1 text-muted">products built</dt><dd class="display text-step-3">{projects}</dd></div>
-        <div class="flex flex-col-reverse"><dt class="mt-1 text-step--1 text-muted">based in</dt><dd class="display text-step-2 sm:text-step-3">Pokhara</dd></div>
+      <dl class="mt-12 grid grid-cols-2 gap-6 border-y border-line py-8 sm:grid-cols-4">
+        <div class="flex flex-col-reverse"><dt class="mt-1 text-step--1 text-muted"><a class="link" href="/work/#clients">businesses worked with</a></dt><dd class="display text-step-3">{STATS.businessesWorkedWith}+</dd></div>
+        <div class="flex flex-col-reverse"><dt class="mt-1 text-step--1 text-muted"><a class="link" href="/projects/">products built</a></dt><dd class="display text-step-3">{projects}</dd></div>
+        <div class="flex flex-col-reverse"><dt class="mt-1 text-step--1 text-muted">working since</dt><dd class="display text-step-3">{STATS.workingSince}</dd></div>
+        <div class="flex flex-col-reverse"><dt class="mt-1 text-step--1 text-muted">based in</dt><dd class="display text-step-2 sm:text-step-3 lg:text-step-2">Pokhara</dd></div>
       </dl>
 
       <h2 class="display mt-16 text-step-3">Timeline</h2>
@@ -55,7 +69,7 @@ const description = 'Aashish Khadka is the founder of Basilpot in Pokhara, Nepal
           timeline.map((t) => (
             <li class="relative pb-10 pl-8 last:pb-0">
               <span class="absolute -left-[5px] top-2 size-2.5 rounded-full bg-accent" aria-hidden="true" />
-              <p class="label">{t.when === 'TODO' ? <Todo note="Year">TODO</Todo> : t.when}</p>
+              <p class="label">{t.when}</p>
               <p class="title mt-1 text-step-1">{t.what}</p>
               <p class="mt-1 text-muted">{t.detail}</p>
             </li>
@@ -63,9 +77,16 @@ const description = 'Aashish Khadka is the founder of Basilpot in Pokhara, Nepal
         }
       </ol>
 
+      <h2 class="display mt-16 text-step-3">What I do</h2>
+      <ul class="mt-6 divide-y divide-line border-y border-line">
+        {services.map((s) => (
+          <li><a href={`/services/${s.id}/`} class="group flex items-baseline justify-between gap-6 py-4"><span><span class="title text-step-1 group-hover:text-accent transition-colors">{s.data.title}</span><span class="mt-1 block text-step--1 text-muted">{s.data.summary}</span></span><span aria-hidden="true" class="transition-transform group-hover:translate-x-1">→</span></a></li>
+        ))}
+      </ul>
+
       <h2 class="display mt-16 text-step-3">Basilpot</h2>
       <p class="mt-6 max-w-xl text-step-1 leading-snug text-muted">
-        {BASILPOT.description} When a project needs a full team (design, development, products), it goes through Basilpot.
+        {BASILPOT.description}
       </p>
       <div class="mt-8"><Button href={BASILPOT.url} variant="outline">Visit Basilpot</Button></div>
 
@@ -76,6 +97,18 @@ const description = 'Aashish Khadka is the founder of Basilpot in Pokhara, Nepal
       </ul>
     </div>
   </section>
+
+  {testimonials.length > 0 && <Testimonials items={testimonials} title="What clients say." />}
+
+  {
+    stories.length > 0 && (
+      <section class="wrap pt-24 md:pt-32" aria-labelledby="stories">
+        <h2 id="stories" class="display text-step-4">Stories</h2>
+        <ul class="mt-10 grid gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">{stories.map((p) => <li><PostCard post={p} /></li>)}</ul>
+        <div class="mt-8"><Button href="/stories/" variant="outline">Read all stories</Button></div>
+      </section>
+    )
+  }
 
   <CtaPanel />
 </Layout>

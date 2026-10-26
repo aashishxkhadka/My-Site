@@ -7,9 +7,12 @@ import Faq from '@/designs/d4/components/Faq.astro';
 import WorkCard from '@/designs/d4/components/WorkCard.astro';
 import CtaPanel from '@/designs/d4/components/CtaPanel.astro';
 import Button from '@/designs/d4/components/Button.astro';
-import { getPublished, byOrder } from '@/lib/content';
+import PostCard from '@/designs/d4/components/PostCard.astro';
+import Testimonials from '@/designs/d4/components/Testimonials.astro';
+import { getPublished, byOrder, byNewest } from '@/lib/content';
 import { serviceNode, faqNode } from '@/lib/schema';
-import { SERVICE_GROUPS, TOPICS } from '@/site.config';
+import { SERVICE_GROUPS } from '@/site.config';
+import { topicsInfo } from '@/lib/taxonomy';
 
 export const getStaticPaths = (async () => {
   const services = await getPublished('services');
@@ -25,9 +28,14 @@ const group = SERVICE_GROUPS.find((g) => g.key === d.group)?.label;
 const work = (await Promise.all(d.relatedWork.map((r) => getEntry(r)))).filter((w): w is CollectionEntry<'work'> => !!w && (import.meta.env.DEV || !w.data.draft));
 // Fall back to case studies that list this service.
 const related = work.length ? work : (await getPublished('work')).filter((w) => w.data.services.some((s) => s.id === service.id)).sort(byOrder).slice(0, 2);
-const allServices = await getPublished('services');
+const allServices = (await getPublished('services')).sort(byOrder);
+const otherServices = allServices.filter((s) => s.id !== service.id);
+// Up to 3 testimonials from clients who used this service.
+const testimonials = (await getPublished('testimonials')).filter((t) => t.data.services.some((s) => s.id === service.id)).sort(byOrder).slice(0, 3);
 const titleOf = (id: string) => allServices.find((s) => s.id === id)?.data.title ?? id;
-const topics = TOPICS.filter((t) => (d.relatedTopics as string[]).includes(t.key));
+// Further reading: the latest 3 posts from the related topics, plus a link to each topic hub.
+const topics = (await topicsInfo()).filter((t) => t.hasPage && (d.relatedTopics as string[]).includes(t.key));
+const reading = [...new Map(topics.flatMap((t) => t.posts).map((p) => [p.id, p])).values()].sort(byNewest).slice(0, 3);
 const crumbs = [{ label: 'Services', href: '/services/' }, { label: d.title, href: path }];
 ---
 
@@ -98,18 +106,38 @@ const crumbs = [{ label: 'Services', href: '/services/' }, { label: d.title, hre
       <section class="wrap pt-24 md:pt-32" aria-labelledby="related-work">
         <h2 id="related-work" class="display text-step-4">Related work</h2>
         <div class="mt-10 grid gap-14 md:grid-cols-2 md:gap-10">
-          {related.map((w) => <WorkCard item={w} serviceTitles={w.data.services.map((s) => titleOf(s.id))} />)}
+          {related.map((w) => <WorkCard item={w} services={w.data.services.map((s) => ({ title: titleOf(s.id), href: `/services/${s.id}/` }))} />)}
         </div>
       </section>
     )
   }
 
+  {testimonials.length > 0 && <Testimonials items={testimonials} title="What clients say." />}
+
   {
     topics.length > 0 && (
       <section class="wrap pt-20" aria-labelledby="reading">
         <h2 id="reading" class="label">Further reading</h2>
-        <ul class="mt-4 flex flex-wrap gap-2">
-          {topics.map((t) => <li><a class="inline-block rounded-full border border-line px-4 py-2 hover:border-ink" href={`/topics/${t.key}/`}>{t.label}</a></li>)}
+        <ul class="mt-6 grid gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">{reading.map((p) => <li><PostCard post={p} /></li>)}</ul>
+        <ul class="mt-6 flex flex-wrap gap-2">
+          {topics.map((t) => <li><a class="inline-block rounded-full border border-line px-4 py-2 font-semibold hover:border-ink" href={t.href}>{t.label} →</a></li>)}
+        </ul>
+      </section>
+    )
+  }
+
+  {
+    otherServices.length > 0 && (
+      <section class="wrap pt-24 md:pt-32" aria-labelledby="other-services">
+        <h2 id="other-services" class="display text-step-3">Other ways I can help</h2>
+        <ul class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {otherServices.map((o) => (
+            <li class="group relative flex flex-col rounded-2xl border border-line bg-paper p-6 transition-colors hover:border-ink">
+              <h3 class="title text-step-1"><a href={`/services/${o.id}/`} class="after:absolute after:inset-0 group-hover:text-accent transition-colors">{o.data.title}</a></h3>
+              <p class="mt-2 text-step--1 leading-relaxed text-muted">{o.data.summary}</p>
+              <span class="mt-auto pt-5 font-semibold" aria-hidden="true">Learn more →</span>
+            </li>
+          ))}
         </ul>
       </section>
     )

@@ -1,0 +1,26 @@
+---
+/**
+ * Static redirect for hosts without server-side redirects (GitHub Pages):
+ * meta refresh + canonical + noindex. Noindex pages are also left out of the sitemap.
+ */
+import { absoluteUrl } from '@/site.config';
+
+export interface Props {
+  to: string;
+}
+const { to } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Moved</title>
+    <meta name="robots" content="noindex, follow" />
+    <link rel="canonical" href={absoluteUrl(to)} />
+    <meta http-equiv="refresh" content={`0; url=${to}`} />
+  </head>
+  <body>
+    <p>This page has moved to <a href={to}>{to}</a>.</p>
+  </body>
+</html>

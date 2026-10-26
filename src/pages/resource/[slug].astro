@@ -6,6 +6,7 @@ import PageHeader from '@/designs/d4/components/PageHeader.astro';
 import Faq from '@/designs/d4/components/Faq.astro';
 import Button from '@/designs/d4/components/Button.astro';
 import CtaPanel from '@/designs/d4/components/CtaPanel.astro';
+import { Image } from 'astro:assets';
 import { getPublished } from '@/lib/content';
 import { faqNode } from '@/lib/schema';
 import { formatDate, isoDate } from '@/lib/format';
@@ -30,7 +31,11 @@ const crumbs = [{ label: 'Resources', href: '/resource/' }, { label: d.title, hr
       <span class="text-step--1 text-muted">Updated <time datetime={isoDate(d.updatedDate ?? d.pubDate)}>{formatDate(d.updatedDate ?? d.pubDate)}</time></span>
     </div>
   </PageHeader>
-  <div class="wrap pt-14 md:pt-20"><div class="prose"><Content /></div></div>
+  <div class="wrap pt-14 md:pt-20">
+    {d.heroImage && <Image src={d.heroImage} alt={d.heroAlt ?? ''} widths={[640, 960, 1280]} sizes="(min-width: 1024px) 760px, 92vw" loading="eager" class="mb-10 h-auto w-full max-w-3xl rounded-2xl" />}
+    {!d.heroImage && d.coverImageUrl && <img src={d.coverImageUrl} alt={d.heroAlt ?? ''} loading="eager" decoding="async" class="mb-10 aspect-[16/9] h-auto w-full max-w-3xl rounded-2xl object-cover" />}
+    <div class="prose"><Content /></div>
+  </div>
   <div class="wrap pt-16"><Faq items={d.faq} /></div>
   <CtaPanel />
 </Layout>

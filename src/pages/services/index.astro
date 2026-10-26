@@ -3,6 +3,10 @@ import Layout from '@/designs/d4/Layout.astro';
 import PageHeader from '@/designs/d4/components/PageHeader.astro';
 import ServiceItem from '@/designs/d4/components/ServiceItem.astro';
 import CtaPanel from '@/designs/d4/components/CtaPanel.astro';
+import SectionHeader from '@/designs/d4/components/SectionHeader.astro';
+import WorkCard from '@/designs/d4/components/WorkCard.astro';
+import Button from '@/designs/d4/components/Button.astro';
+import Testimonials from '@/designs/d4/components/Testimonials.astro';
 import { getPublished, byOrder } from '@/lib/content';
 import { itemListNode } from '@/lib/schema';
 import { SERVICE_GROUPS } from '@/site.config';
@@ -11,10 +15,13 @@ const services = (await getPublished('services')).sort(byOrder);
 const groups = SERVICE_GROUPS.map((g) => ({ ...g, items: services.filter((s) => s.data.group === g.key) })).filter((g) => g.items.length);
 let n = 0;
 const crumbs = [{ label: 'Services', href: '/services/' }];
+const work = (await getPublished('work')).filter((w) => w.data.featured).sort(byOrder).slice(0, 3);
+// Reviews: the featured ones, second three (About shows the first three).
+const testimonials = (await getPublished('testimonials')).filter((t) => t.data.featured).sort(byOrder).slice(3, 6);
 ---
 
 <Layout
-  title="Services"
+  rawTitle="SEO, Marketing & Web Services in Nepal | Aashish Khadka"
   description="Growth strategy, SEO, digital marketing, branding and websites for businesses in Nepal and abroad, delivered personally by Aashish Khadka."
   pageType="CollectionPage"
   breadcrumbs={crumbs}
@@ -39,6 +46,18 @@ const crumbs = [{ label: 'Services', href: '/services/' }];
       ))
     }
   </div>
+
+  {
+    work.length > 0 && (
+      <section class="wrap pt-24 md:pt-32" aria-labelledby="work-title">
+        <SectionHeader id="work-title" kicker="Selected work" title="Recent work." />
+        <div class="grid gap-14 sm:grid-cols-2 sm:gap-8 lg:grid-cols-3">{work.map((w) => <WorkCard item={w} compact />)}</div>
+        <div class="mt-12 flex justify-center"><Button href="/work/" variant="outline">View all work</Button></div>
+      </section>
+    )
+  }
+
+  {testimonials.length > 0 && <Testimonials items={testimonials} title="What clients say." />}
 
   <CtaPanel title="Not sure where to start?" lead="Tell me about your business and I'll suggest the one or two things that will make the biggest difference first." />
 </Layout>

@@ -20,10 +20,11 @@ export const SITE = {
   /** Appended to page titles. Page part must stay ≤ 60 − suffix length (≈43 chars). */
   titleSuffix: ' — Aashish Khadka',
   /** Homepage <title> (used as-is, no suffix). ≤ 60 chars. */
-  defaultTitle: 'Aashish Khadka — Founder of Basilpot, Pokhara',
-  /** Fallback meta description. ≤ 155 chars. TODO: final copy in step 2. */
+  // Keeps the keywords the old site ranked for (SEO, digital marketing, expert, Pokhara).
+  defaultTitle: 'SEO & Digital Marketing Expert in Pokhara | Aashish Khadka',
+  /** Fallback meta description. ≤ 155 chars. */
   defaultDescription:
-    'Aashish Khadka, founder of Basilpot in Pokhara, Nepal, helps businesses grow with strategy, SEO, digital marketing, branding and websites.',
+    'Aashish Khadka is an SEO and digital marketing expert in Pokhara, Nepal, and founder of Basilpot. Since 2022 he has helped 60+ businesses grow.',
   trailingSlash: true,
 } as const;
 
@@ -42,8 +43,8 @@ export const CONTACT = {
   email: 'aashishxseo@gmail.com',
   phoneDisplay: '+977 9805106358',
   phoneE164: '+9779805106358', // tel: links + schema telephone
-  /** TODO: confirm WhatsApp is on the same number. */
-  whatsapp: null as string | null, // e.g. 'https://wa.me/9779805106358'
+  /** Same number as the phone. */
+  whatsapp: 'https://wa.me/9779805106358' as string | null,
   address: {
     display: 'Pokhara, Nepal', // as shown on GBP
     locality: 'Pokhara',
@@ -51,8 +52,8 @@ export const CONTACT = {
     countryCode: 'NP',
     countryName: 'Nepal',
   },
-  /** TODO: GBP share URL / Maps embed for /contact/. */
-  mapUrl: null as string | null,
+  /** Google Business Profile, linked from the "Based in" card on /contact/. */
+  mapUrl: 'https://www.google.com/search?kgmid=/g/11w5823yh_' as string | null,
   /** Form backend chosen in step 3: 'web3forms' | 'pages-function'. */
   form: { provider: 'web3forms' as const, accessKey: null as string | null }, // TODO
 } as const;
@@ -77,7 +78,8 @@ export const SOCIALS: Social[] = [
   { key: 'x', label: 'X', url: 'https://x.com/aashishxkhadka', handle: '@aashishxkhadka', sameAs: true, visible: true },
   { key: 'instagram', label: 'Instagram', url: 'https://www.instagram.com/justaashish_/', sameAs: true, visible: true },
   { key: 'github', label: 'GitHub', url: null, sameAs: true, visible: true }, // TODO: GitHub URL
-  { key: 'gbp', label: 'Google Business Profile', url: null, sameAs: true, visible: false }, // TODO: GBP URL
+  // Knowledge Graph id of the Google Business Profile (stable; share.google links are redirects).
+  { key: 'gbp', label: 'Google', url: 'https://www.google.com/search?kgmid=/g/11w5823yh_', sameAs: true, visible: false },
 ];
 
 /* ------------------------------------------------------------------ */
@@ -89,7 +91,10 @@ export const BASILPOT = {
   id: `${SITE.url}/#basilpot`,
   name: 'Basilpot',
   url: 'https://basilpot.com',
-  description: 'An idea-to-growth studio: planning, design, development, digital marketing and growth.',
+  description: 'A growth studio. We help businesses grow with technology: strategy, websites and software, automation and digital marketing, all under one roof. We put the same energy into building our own products.',
+  /** Short label for cards and one-liners. */
+  tagline: 'Growth studio',
+  founded: 2024,
   logo: null as string | null, // TODO: absolute URL to Basilpot logo
 } as const;
 
@@ -105,17 +110,24 @@ export const PERSON = {
   education: [
     {
       credential: 'B.Sc. IT',
-      institution: null as string | null, // TODO: which institution?
+      institution: 'Infomax College of IT & Management',
+      affiliation: 'Asia Pacific University (APU)',
+      years: '2022–2025',
       status: 'completed' as const,
     },
     {
       credential: 'MBA',
       institution: 'Infomax College of IT & Management',
       affiliation: 'Asia Pacific University (APU)',
+      years: '2026–',
       status: 'in-progress' as const,
     },
   ],
-  /** knowsAbout = topic labels + service titles (assembled in the schema builder). */
+  /** Person.knowsAbout in JSON-LD. */
+  knowsAbout: [
+    'Growth strategy', 'Search engine optimization', 'Technical SEO', 'Local SEO',
+    'Generative engine optimization', 'Digital marketing', 'Branding', 'Web development',
+  ],
 } as const;
 
 /* ------------------------------------------------------------------ */
@@ -125,6 +137,12 @@ export const PERSON = {
 export const STATS = {
   /** Businesses worked with, personally and through Basilpot (confirmed 2026-10-19). */
   businessesWorkedWith: 60,
+  /** Year Aashish started doing this work (confirmed 2026-10-26). */
+  workingSince: 2022,
+  /** Google Business Profile star rating (confirmed 2026-10-26). Update when it changes. */
+  googleRating: 4.9,
+  /** Combined views on clients' social channels (confirmed 2026-10-26). */
+  socialViews: '10M+',
 } as const;
 
 /* ------------------------------------------------------------------ */
@@ -144,21 +162,32 @@ export const SERVICE_GROUP_KEYS = SERVICE_GROUPS.map((g) => g.key) as [
 ];
 
 /**
- * Topic hubs → /topics/[key]/. The registry lives here; the hub's written
- * intro lives in src/content/topics/[key].mdx (build fails if one is missing).
- * Adding a topic = one entry here + one MDX file.
+ * Blog topics.
+ *   Hub page:            /blog/[key]/
+ *   Post in the topic:   /blog/[key]/[slug]/   (posts without a topic: /blog/[slug]/)
+ * Every other path a post could have had redirects to its current one, so changing
+ * a post's category never breaks a link.
+ * Fullbleed: the post's category slug must equal a key here.
+ * `service`: the service page posts in this topic link to, and whose "Further reading" lists them.
+ * The hub's written intro lives in src/content/topics/[key].mdx (build fails if one is missing).
+ * Keys are reserved: no post may use them as its slug (checked at build).
  */
 export const TOPICS = [
-  { key: 'technical-seo', label: 'Technical SEO', short: 'Crawling, rendering, indexing and site architecture.' },
-  { key: 'semantic-seo', label: 'Semantic SEO', short: 'Entities, topical coverage and content structure.' },
-  { key: 'geo', label: 'Generative Engine Optimization', short: 'Being cited by AI search: ChatGPT, Perplexity, AI Overviews.' },
-  { key: 'local-seo', label: 'Local SEO', short: 'Google Business Profile, local pack and NAP consistency.' },
-  { key: 'building-products', label: 'Building Products', short: 'Notes from building and launching products at Basilpot.' },
+  { key: 'strategy', label: 'Strategy & Brand', short: 'Growth plans, positioning, pricing and branding.', service: 'growth-strategy' },
+  { key: 'marketing', label: 'Marketing', short: 'Ads, social media, content and tracking that bring in customers.', service: 'digital-marketing' },
+  { key: 'seo', label: 'SEO & Search', short: 'SEO, local SEO, AI search and websites that get found.', service: 'seo' },
 ] as const;
 export const TOPIC_KEYS = TOPICS.map((t) => t.key) as [
   (typeof TOPICS)[number]['key'],
   ...(typeof TOPICS)[number]['key'][],
 ];
+export const topicPath = (key: string) => `/blog/${key}/`;
+
+/** A topic hub appears in navigation and is indexable once it has this many posts. */
+export const TOPIC_MIN_POSTS = 3;
+
+/** Fullbleed category slug that sends a post to /stories/ instead of /blog/. */
+export const STORIES_CATEGORY = 'stories';
 
 /* ------------------------------------------------------------------ */
 /* Sections — the extension point.                                     */
@@ -188,6 +217,7 @@ export const SECTIONS = {
   work:      { collection: 'work',      base: '/work/',      label: 'Work',      template: 'custom', detailPages: true,  enabled: true, inSitemap: true, inLlms: true, inRss: false },
   projects:  { collection: 'projects',  base: '/projects/',  label: 'Projects',  template: 'custom', detailPages: false, enabled: true, inSitemap: true, inLlms: true, inRss: false },
   blog:      { collection: 'blog',      base: '/blog/',      label: 'Blog',      template: 'custom', detailPages: true,  enabled: true, inSitemap: true, inLlms: true, inRss: true, pageSize: 12 },
+  stories:   { collection: 'stories',   base: '/stories/',   label: 'Stories',   template: 'custom', detailPages: true,  enabled: true, inSitemap: true, inLlms: true, inRss: true, pageSize: 12 },
   resources: { collection: 'resources', base: '/resource/',  label: 'Resources', template: 'custom', detailPages: true,  enabled: true, inSitemap: true, inLlms: true, inRss: false },
   // Reserved — do not build yet, but nothing may claim these paths:
   // courses:    { collection: 'courses',    base: '/courses/',    label: 'Courses',    template: 'generic', detailPages: true,  enabled: false, ... },
@@ -233,9 +263,10 @@ export const NAV = {
     {
       heading: 'Writing',
       links: [
+        // Stories and Resources are hidden by the footer until they have published entries.
         { label: 'Blog', href: '/blog/' },
+        { label: 'Stories', href: '/stories/' },
         { label: 'Resources', href: '/resource/' },
-        ...TOPICS.map((t) => ({ label: t.label, href: `/topics/${t.key}/` })),
       ],
     },
     {

@@ -52,7 +52,7 @@ export const PATH_REDIRECTS: PathRedirect[] = [
   { from: '/page-sitemap.xml', to: '/sitemap-index.xml', status: 301 },
   { from: '/post-sitemap.xml', to: '/sitemap-index.xml', status: 301 },
 
-  // Archives. Catch-alls for now; replace with per-category → /topics/[key]/ mappings once we have the list.
+  // Archives. Catch-alls for now; replace with per-category → /blog/[topic]/ mappings once we have the list.
   { from: '/category/*', to: '/blog/', status: 301, note: 'TODO: map each category to a topic hub' },
   { from: '/tag/*', to: '/blog/', status: 301 },
   { from: '/author/*', to: '/about/', status: 301 },
