@@ -1,5 +1,5 @@
 # Build the Astro site and publish it to GitHub Pages.
-# Runs on every push to main, every hour (to pick up posts published in the
+# Runs on every push to main, every 5 minutes (to pick up posts published in the
 # Fullbleed CMS), and on demand from the Actions tab ("Run workflow").
 name: Deploy to GitHub Pages
 
@@ -7,7 +7,7 @@ on:
   push:
     branches: [main]
   schedule:
-    - cron: '17 * * * *'
+    - cron: '*/5 * * * *' # every 5 minutes, so new Fullbleed posts go live quickly (public repo: Actions minutes are free)
   workflow_dispatch:
 
 permissions:
