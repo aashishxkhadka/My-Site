@@ -27,8 +27,6 @@ jobs:
       FULLBLEED_API_KEY: ${{ secrets.FULLBLEED_API_KEY }}
       # TODO: set to '1' once fullbleed.basilpot.com stops challenging GitHub's servers (see README).
       FULLBLEED_STRICT: '0'
-      # Preview on new.aashishkhadka.com.np: every page noindex. Remove this line when moving to aashishkhadka.com.np.
-      SITE_PREVIEW: '1'
     steps:
       - uses: actions/checkout@v7
       - uses: withastro/action@v6
