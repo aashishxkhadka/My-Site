@@ -48,12 +48,12 @@ const [cutAvif, cutWebp, fullAvif, fullWebp, fallback] = await Promise.all([
 
   <div class="wrap relative grid min-h-[calc(100svh-4.25rem-5.5rem)] items-end md:grid-cols-12 md:gap-6">
     <!-- Portrait (center) -->
-    <div class="portrait reveal relative mx-auto w-[min(88vw,26rem)] md:absolute md:bottom-0 md:left-[57%] md:w-[min(38vw,34rem)] md:-translate-x-[40%]" style="--i:1">
+    <div class="portrait reveal relative mx-auto w-[min(78vw,24rem)] md:absolute md:bottom-0 md:left-[57%] md:w-[min(38vw,34rem)] md:-translate-x-[40%]" style="--i:1">
       <!-- Phones: studio-style light behind the cutout's head and shoulders (laptop gets it from the photo itself). -->
       <span class="halo pointer-events-none absolute md:hidden" aria-hidden="true"></span>
       <picture class="relative block">
-        <source media="(max-width: 767px)" type="image/avif" srcset={cutAvif.srcSet.attribute} sizes="88vw" />
-        <source media="(max-width: 767px)" type="image/webp" srcset={cutWebp.srcSet.attribute} sizes="88vw" />
+        <source media="(max-width: 767px)" type="image/avif" srcset={cutAvif.srcSet.attribute} sizes="78vw" />
+        <source media="(max-width: 767px)" type="image/webp" srcset={cutWebp.srcSet.attribute} sizes="78vw" />
         <source type="image/avif" srcset={fullAvif.srcSet.attribute} sizes="(min-width: 768px) 38vw, 88vw" />
         <source type="image/webp" srcset={fullWebp.srcSet.attribute} sizes="(min-width: 768px) 38vw, 88vw" />
         <img
@@ -103,7 +103,7 @@ const [cutAvif, cutWebp, fullAvif, fullWebp, fallback] = await Promise.all([
     </div>
 
     <!-- Text (left) -->
-    <div class="relative z-10 -mt-[min(58vw,16.5rem)] pb-12 md:col-span-7 md:mt-0 md:self-center md:pb-24 md:pt-16 lg:col-span-6">
+    <div class="relative z-10 -mt-[min(30vw,8rem)] pb-12 md:col-span-7 md:mt-0 md:self-center md:pb-24 md:pt-16 lg:col-span-6">
       <p class="reveal label flex items-center gap-3 text-ink">
         <span class="h-px w-8 bg-accent" aria-hidden="true"></span>
         <svg class="size-3.5 text-accent" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5Z"/></svg>
@@ -120,9 +120,9 @@ const [cutAvif, cutWebp, fullAvif, fullWebp, fallback] = await Promise.all([
       <p class="reveal mt-6 max-w-md text-step-1 leading-normal text-muted" style="--i:3">
         Strategy, SEO, digital marketing, branding and websites that bring in real customers, for businesses in Nepal and abroad.
       </p>
-      <div class="reveal mt-8 flex flex-wrap gap-3" style="--i:4">
-        <Button href="/contact/">Work with me</Button>
-        <Button href="#work" variant="outline">See my work</Button>
+      <div class="reveal mt-8 grid grid-cols-2 gap-2.5 sm:flex sm:flex-wrap sm:gap-3" style="--i:4">
+        <Button href="/contact/" class="justify-center whitespace-nowrap max-sm:gap-2 max-sm:px-3 max-sm:text-[0.9375rem]">Work with me</Button>
+        <Button href="#work" variant="outline" class="justify-center whitespace-nowrap max-sm:gap-2 max-sm:px-3 max-sm:text-[0.9375rem]">See my work</Button>
       </div>
       <!-- Proof, above the fold on every screen size -->
       <p class="reveal mt-8 flex flex-wrap items-center gap-x-3 gap-y-1 text-step--1 text-muted" style="--i:5">
@@ -132,8 +132,7 @@ const [cutAvif, cutWebp, fullAvif, fullWebp, fallback] = await Promise.all([
         </a>
         <span aria-hidden="true">·</span>
         <span><span class="font-semibold text-ink">{brandCount}+</span> businesses</span>
-        <span aria-hidden="true">·</span>
-        <span>Since {STATS.workingSince}</span>
+        <span class="whitespace-nowrap max-sm:basis-full"><span aria-hidden="true" class="mr-3 max-sm:hidden">·</span>Since {STATS.workingSince}</span>
       </p>
     </div>
   </div>
@@ -191,8 +190,8 @@ const [cutAvif, cutWebp, fullAvif, fullWebp, fallback] = await Promise.all([
 
   @media (max-width: 767px) {
     .portrait :global(img) {
-      -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 52%, transparent 88%);
-      mask-image: linear-gradient(to bottom, #000 0%, #000 52%, transparent 88%);
+      -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 50%, transparent 80%);
+      mask-image: linear-gradient(to bottom, #000 0%, #000 50%, transparent 80%);
     }
   }
 

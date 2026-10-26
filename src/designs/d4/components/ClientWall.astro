@@ -11,12 +11,12 @@ export interface Props {
 const { clients, mobileLimit } = Astro.props;
 ---
 
-<ul class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+<ul class="grid grid-cols-3 gap-2 sm:gap-3 lg:grid-cols-5">
   {
     clients.map((c, i) => (
       <li
         class:list={[
-          'group relative grid aspect-[5/2.4] place-items-center overflow-hidden rounded-xl border px-6',
+          'group relative grid aspect-[5/2.4] place-items-center overflow-hidden rounded-xl border px-3 sm:px-6',
           mobileLimit !== undefined && i >= mobileLimit && 'max-sm:hidden',
           c.data.logoOnDark ? 'border-transparent bg-[#1c1c1c]' : 'border-line bg-white',
         ]}

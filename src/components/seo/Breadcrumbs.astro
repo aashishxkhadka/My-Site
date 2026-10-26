@@ -18,7 +18,7 @@ const { crumbs } = Astro.props;
           {i === crumbs.length - 1 ? (
             <span aria-current="page" class="text-ink">{c.label}</span>
           ) : (
-            <a href={c.href} class="link">{c.label}</a>
+            <a href={c.href} class="link -my-3 inline-block py-3">{c.label}</a>
           )}
         </li>
       ))

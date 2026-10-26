@@ -38,9 +38,10 @@ const miniRows = ['lg:row-span-1', 'lg:row-span-2', 'lg:row-span-3'][Math.min(qu
 const quoteSlots = [
   'col-span-2', // A: wide, beside the featured tile
   'col-span-2 lg:col-span-1', // B
-  'col-span-2 lg:col-span-1', // C
-  'col-span-2', // D: wide
-  'col-span-2 hidden sm:block', // E: wide (left out on phones to keep the section short)
+  'col-span-2 hidden sm:block lg:col-span-1', // C
+  'col-span-2 hidden sm:block', // D: wide
+  'col-span-2 hidden sm:block', // E: wide
+  // Phones show the featured quote, A and B (C–E are left out to keep the section short).
 ];
 const tile = 'scroll-in rounded-3xl border border-line p-6 md:p-7';
 ---

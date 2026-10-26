@@ -19,8 +19,8 @@ const groups = NAV.footer.map((g) => ({ ...g, links: g.links.filter((l) => !hidd
       </p>
       <address class="mt-6 space-y-1 not-italic">
         <p>{CONTACT.address.display}</p>
-        <p><a class="link" href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a></p>
-        <p><a class="link" href={`tel:${CONTACT.phoneE164}`}>{CONTACT.phoneDisplay}</a></p>
+        <p><a class="link -my-2 inline-block py-2" href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a></p>
+        <p><a class="link -my-2 inline-block py-2" href={`tel:${CONTACT.phoneE164}`}>{CONTACT.phoneDisplay}</a></p>
       </address>
       {
         socials.length > 0 && (
@@ -45,7 +45,7 @@ const groups = NAV.footer.map((g) => ({ ...g, links: g.links.filter((l) => !hidd
             <ul class="space-y-2.5 text-[0.9375rem]">
               {group.links.map((l) => (
                 <li>
-                  <a class="text-muted transition-colors hover:text-ink" href={l.href} {...(isExternal(l.href) ? { rel: 'noopener', target: '_blank' } : {})}>
+                  <a class="-my-2 inline-block py-2 text-muted transition-colors hover:text-ink" href={l.href} {...(isExternal(l.href) ? { rel: 'noopener', target: '_blank' } : {})}>
                     {l.label}
                     {isExternal(l.href) && <span aria-hidden="true"> ↗</span>}
                   </a>
@@ -58,9 +58,26 @@ const groups = NAV.footer.map((g) => ({ ...g, links: g.links.filter((l) => !hidd
     </nav>
   </div>
   <div class="wrap flex flex-col gap-3 border-t border-line py-6 text-step--1 text-muted sm:flex-row sm:items-center sm:justify-between">
-    <p>© {year} {SITE.name}</p>
+    <p class="flex flex-wrap items-center gap-x-2">
+      <span>© {year} {SITE.name}</span>
+      <span aria-hidden="true">·</span>
+      <a href={BASILPOT.url} target="_blank" rel="noopener" class="grown group -my-2 inline-flex items-center gap-1.5 py-2 hover:text-ink">
+        Grown at <span class="font-semibold text-ink">Basilpot</span>
+        <span class="sprout" aria-hidden="true"><span>🌱</span><span>🌿</span></span>
+      </a>
+    </p>
     <ul class="flex gap-5">
-      {NAV.legal.map((l) => <li><a class="hover:text-ink" href={l.href}>{l.label}</a></li>)}
+      {NAV.legal.map((l) => <li><a class="-my-3 inline-block py-3 hover:text-ink" href={l.href}>{l.label}</a></li>)}
     </ul>
   </div>
 </footer>
+
+<style>
+  /* "Grown at Basilpot": on hover the sprout grows into a full plant. */
+  .sprout { position: relative; display: inline-block; width: 1.1em; height: 1.1em; line-height: 1.1em; }
+  .sprout > span { position: absolute; inset: 0; transform-origin: 50% 100%; transition: transform 500ms cubic-bezier(0.34, 1.56, 0.64, 1), opacity 300ms; }
+  .sprout > span:last-child { opacity: 0; transform: scale(0.4); }
+  .grown:hover .sprout > span:first-child, .grown:focus-visible .sprout > span:first-child { opacity: 0; transform: scale(0.4); }
+  .grown:hover .sprout > span:last-child, .grown:focus-visible .sprout > span:last-child { opacity: 1; transform: scale(1.15); }
+  @media (prefers-reduced-motion: reduce) { .sprout > span { transition: none; } }
+</style>

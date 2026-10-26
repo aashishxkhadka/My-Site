@@ -91,24 +91,26 @@ const mapsUrl = CONTACT.mapUrl ?? 'https://www.google.com/maps/search/?api=1&que
           <p class="label">Email</p>
           <p class="title mt-2 text-step-1 break-all">{CONTACT.email}</p>
         </a>
-        <a href={`tel:${CONTACT.phoneE164}`} class="block rounded-2xl border border-line bg-paper p-6 transition-colors hover:border-ink">
+        <div class="grid grid-cols-2 gap-4 md:block md:space-y-4">
+        <a href={`tel:${CONTACT.phoneE164}`} class="block rounded-2xl border border-line bg-paper p-5 transition-colors hover:border-ink md:p-6">
           <p class="label">Phone</p>
-          <p class="title mt-2 text-step-1">{CONTACT.phoneDisplay}</p>
+          <p class="title mt-2 whitespace-nowrap text-[0.9375rem] md:text-step-1">{CONTACT.phoneDisplay}</p>
         </a>
         {
           CONTACT.whatsapp && (
-            <a href={CONTACT.whatsapp} target="_blank" rel="noopener" class="block rounded-2xl border border-line bg-paper p-6 transition-colors hover:border-ink">
+            <a href={CONTACT.whatsapp} target="_blank" rel="noopener" class="block rounded-2xl border border-line bg-paper p-5 transition-colors hover:border-ink md:p-6">
               <p class="label">WhatsApp</p>
-              <p class="title mt-2 text-step-1">Message me ↗</p>
+              <p class="title mt-2 text-step-0 md:text-step-1">Message me ↗</p>
             </a>
           )
         }
+        </div>
         <a href={mapsUrl} target="_blank" rel="noopener" class="stage block rounded-2xl p-6">
           <p class="label">Based in</p>
           <p class="title mt-2 text-step-2">{CONTACT.address.display}</p>
           <p class="mt-2 text-step--1 text-muted">Working with clients in Nepal and abroad. See us on Google ↗</p>
         </a>
-        <nav class="rounded-2xl border border-line p-6" aria-labelledby="help-with">
+        <nav class="hidden rounded-2xl border border-line p-6 md:block" aria-labelledby="help-with">
           <h2 id="help-with" class="label">What I can help with</h2>
           <ul class="mt-3 divide-y divide-line">
             {services.map((s) => <li><a href={`/services/${s.id}/`} class="flex justify-between gap-4 py-2.5 font-medium hover:text-accent">{s.data.title}<span aria-hidden="true">→</span></a></li>)}

@@ -70,13 +70,13 @@ const crumbs = [{ label: 'Services', href: '/services/' }, { label: d.title, hre
 
   <section class="wrap pt-24 md:pt-32" aria-labelledby="process">
     <h2 id="process" class="display text-step-4">How it works</h2>
-    <ol class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <ol class="mt-10 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
       {
         d.process.map((p, i) => (
-          <li class="rounded-2xl border border-line bg-paper p-6">
+          <li class="rounded-2xl border border-line bg-paper p-5 sm:p-6">
             <p class="title text-step-2 text-accent">{String(i + 1).padStart(2, '0')}</p>
-            <p class="title mt-6 text-step-1">{p.title}</p>
-            <p class="mt-2 text-muted">{p.description}</p>
+            <p class="title mt-4 text-step-1 sm:mt-6">{p.title}</p>
+            <p class="mt-2 text-step--1 leading-relaxed text-muted sm:text-step-0">{p.description}</p>
           </li>
         ))
       }
@@ -130,12 +130,12 @@ const crumbs = [{ label: 'Services', href: '/services/' }, { label: d.title, hre
     otherServices.length > 0 && (
       <section class="wrap pt-24 md:pt-32" aria-labelledby="other-services">
         <h2 id="other-services" class="display text-step-3">Other ways I can help</h2>
-        <ul class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <ul class="mt-8 grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
           {otherServices.map((o) => (
-            <li class="group relative flex flex-col rounded-2xl border border-line bg-paper p-6 transition-colors hover:border-ink">
-              <h3 class="title text-step-1"><a href={`/services/${o.id}/`} class="after:absolute after:inset-0 group-hover:text-accent transition-colors">{o.data.title}</a></h3>
-              <p class="mt-2 text-step--1 leading-relaxed text-muted">{o.data.summary}</p>
-              <span class="mt-auto pt-5 font-semibold" aria-hidden="true">Learn more →</span>
+            <li class="group relative flex flex-col rounded-2xl border border-line bg-paper px-5 py-4 transition-colors hover:border-ink sm:p-6">
+              <h3 class="title flex items-center justify-between gap-3 text-step-1"><a href={`/services/${o.id}/`} class="after:absolute after:inset-0 group-hover:text-accent transition-colors">{o.data.title}</a><span class="sm:hidden" aria-hidden="true">→</span></h3>
+              <p class="mt-2 hidden text-step--1 leading-relaxed text-muted sm:block">{o.data.summary}</p>
+              <span class="mt-auto hidden pt-5 font-semibold sm:block" aria-hidden="true">Learn more →</span>
             </li>
           ))}
         </ul>
