@@ -287,6 +287,7 @@ export const NAV = {
   legal: [
     { label: 'Privacy', href: '/privacy/' },
     { label: 'Terms', href: '/terms/' },
+    { label: 'Sitemap', href: '/sitemap/' },
     { label: 'RSS', href: '/rss.xml' },
   ] satisfies NavLink[],
 } as const;

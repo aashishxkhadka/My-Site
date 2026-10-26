@@ -1,0 +1,80 @@
+---
+/**
+ * HTML sitemap for people (/sitemap/): every page, grouped by section.
+ * Search engines use /sitemap.xml; this is the readable version, linked from the footer.
+ */
+import Layout from '@/designs/d4/Layout.astro';
+import PageHeader from '@/designs/d4/components/PageHeader.astro';
+import { getPublished, byNewest, byOrder } from '@/lib/content';
+import { postPath, postTopic } from '@/lib/posts';
+import { topicsInfo } from '@/lib/taxonomy';
+import { formatDate, isoDate } from '@/lib/format';
+
+const services = (await getPublished('services')).sort(byOrder);
+const blog = (await getPublished('blog')).sort(byNewest);
+const stories = (await getPublished('stories')).sort(byNewest);
+const resources = (await getPublished('resources')).sort(byNewest);
+const topics = (await topicsInfo()).filter((t) => t.hasPage);
+const uncategorised = blog.filter((p) => !postTopic(p) || !topics.some((t) => t.key === postTopic(p)));
+
+const main = [
+  { label: 'Home', href: '/' },
+  { label: 'About', href: '/about/' },
+  { label: 'Services', href: '/services/' },
+  { label: 'Work', href: '/work/' },
+  { label: 'Projects', href: '/projects/' },
+  ...(blog.length ? [{ label: 'Blog', href: '/blog/' }] : []),
+  ...(stories.length ? [{ label: 'Stories', href: '/stories/' }] : []),
+  ...(resources.length ? [{ label: 'Resources', href: '/resource/' }] : []),
+  { label: 'Now', href: '/now/' },
+  { label: 'Contact', href: '/contact/' },
+  { label: 'Privacy Policy', href: '/privacy/' },
+  { label: 'Terms of Use', href: '/terms/' },
+];
+const crumbs = [{ label: 'Sitemap', href: '/sitemap/' }];
+type Item = { label: string; href: string; date?: Date | undefined };
+const post = (p: (typeof blog)[number] | (typeof stories)[number]): Item => ({ label: p.data.title, href: postPath(p), date: p.data.updatedDate ?? p.data.pubDate });
+---
+
+<Layout rawTitle="Sitemap | Aashish Khadka" description="Every page on aashishkhadka.com.np in one place: services, work, projects, blog posts, stories and free resources." breadcrumbs={crumbs}>
+  <PageHeader title="Sitemap" kicker="All pages" lead="Every page on this site in one place. New posts are added automatically." breadcrumbs={crumbs} />
+
+  <div class="wrap grid gap-x-12 gap-y-14 pb-24 pt-14 md:grid-cols-2 md:pb-32 md:pt-20">
+    <section aria-labelledby="sm-main">
+      <h2 id="sm-main" class="display text-step-2">Pages</h2>
+      <ul class="mt-5 divide-y divide-line border-y border-line">
+        {main.map((l) => <li><a class="flex justify-between gap-4 py-3 font-medium hover:text-accent" href={l.href}>{l.label}<span aria-hidden="true">→</span></a></li>)}
+      </ul>
+    </section>
+
+    <section aria-labelledby="sm-services">
+      <h2 id="sm-services" class="display text-step-2">Services</h2>
+      <ul class="mt-5 divide-y divide-line border-y border-line">
+        {services.map((s) => <li><a class="flex justify-between gap-4 py-3 font-medium hover:text-accent" href={`/services/${s.id}/`}>{s.data.title}<span aria-hidden="true">→</span></a></li>)}
+      </ul>
+    </section>
+
+    {
+      [
+        ...topics.map((t) => ({ id: `sm-${t.key}`, title: t.label, href: t.href, items: t.posts.sort(byNewest).map(post) })),
+        ...(uncategorised.length ? [{ id: 'sm-blog', title: topics.length ? 'More from the blog' : 'Blog', href: '/blog/', items: uncategorised.map(post) }] : []),
+        ...(stories.length ? [{ id: 'sm-stories', title: 'Stories', href: '/stories/', items: stories.map(post) }] : []),
+        ...(resources.length ? [{ id: 'sm-resources', title: 'Resources', href: '/resource/', items: resources.map((r) => ({ label: r.data.title, href: `/resource/${r.id}/`, date: r.data.updatedDate ?? r.data.pubDate })) }] : []),
+      ].map((g) => (
+        <section aria-labelledby={g.id}>
+          <h2 id={g.id} class="display text-step-2"><a class="hover:text-accent" href={g.href}>{g.title}</a></h2>
+          <ul class="mt-5 divide-y divide-line border-y border-line">
+            {g.items.map((i: Item) => (
+              <li>
+                <a class="flex items-baseline justify-between gap-4 py-3 hover:text-accent" href={i.href}>
+                  <span class="font-medium">{i.label}</span>
+                  {i.date && <time class="shrink-0 text-step--1 text-muted" datetime={isoDate(i.date)}>{formatDate(i.date)}</time>}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))
+    }
+  </div>
+</Layout>

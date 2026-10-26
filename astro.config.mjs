@@ -33,11 +33,17 @@ function mainSitemap() {
       'astro:build:done': () => {
         const part = new URL('sitemap-0.xml', outDir);
         if (!existsSync(part) || existsSync(new URL('sitemap-1.xml', outDir))) return;
-        writeFileSync(new URL('sitemap.xml', outDir), readFileSync(part));
+        // One <url> per line. (People get the HTML sitemap at /sitemap/.)
+        const xml = readFileSync(part, 'utf8')
+          .replace(/^<\?xml[^>]*\?>(<\?xml-stylesheet[^>]*\?>)?/, '<?xml version="1.0" encoding="UTF-8"?>\n')
+          .replace(/(<urlset[^>]*>)/, '$1\n')
+          .replace(/<url>/g, '  <url>')
+          .replace(/<\/url>/g, '</url>\n');
+        writeFileSync(new URL('sitemap.xml', outDir), xml);
         rmSync(part);
         writeFileSync(
           new URL('sitemap-index.xml', outDir),
-          '<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><sitemap><loc>https://aashishkhadka.com.np/sitemap.xml</loc></sitemap></sitemapindex>\n',
+          '<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <sitemap><loc>https://aashishkhadka.com.np/sitemap.xml</loc></sitemap>\n</sitemapindex>\n',
         );
       },
     },
