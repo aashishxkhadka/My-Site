@@ -25,8 +25,9 @@ jobs:
     env:
       # Fullbleed publishable key (repo Settings → Secrets and variables → Actions).
       FULLBLEED_API_KEY: ${{ secrets.FULLBLEED_API_KEY }}
-      # TODO: set to '1' once fullbleed.basilpot.com stops challenging GitHub's servers (see README).
-      FULLBLEED_STRICT: '0'
+      # '1': if Fullbleed can't be reached, the build fails and the live site keeps its last good version
+      # (instead of publishing without the CMS posts).
+      FULLBLEED_STRICT: '1'
     steps:
       - uses: actions/checkout@v7
       - uses: withastro/action@v6
