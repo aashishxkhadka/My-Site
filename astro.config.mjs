@@ -33,9 +33,9 @@ function mainSitemap() {
       'astro:build:done': () => {
         const part = new URL('sitemap-0.xml', outDir);
         if (!existsSync(part) || existsSync(new URL('sitemap-1.xml', outDir))) return;
-        // One <url> per line. (People get the HTML sitemap at /sitemap/.)
+        // One <url> per line, plus /sitemap.xsl so browsers show a table (search engines ignore it).
         const xml = readFileSync(part, 'utf8')
-          .replace(/^<\?xml[^>]*\?>(<\?xml-stylesheet[^>]*\?>)?/, '<?xml version="1.0" encoding="UTF-8"?>\n')
+          .replace(/^<\?xml[^>]*\?>(<\?xml-stylesheet[^>]*\?>)?/, '<?xml version="1.0" encoding="UTF-8"?>\n<?xml-stylesheet type="text/xsl" href="/sitemap.xsl"?>\n')
           .replace(/(<urlset[^>]*>)/, '$1\n')
           .replace(/<url>/g, '  <url>')
           .replace(/<\/url>/g, '</url>\n');
