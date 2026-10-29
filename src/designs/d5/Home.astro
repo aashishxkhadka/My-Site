@@ -117,9 +117,12 @@ const testimonials = (await getPublished('testimonials')).filter((t) => t.data.f
   <section class="wrap pt-24 md:pt-36" aria-label="How I work">
     <figure class="stage scroll-in relative overflow-hidden rounded-[2rem] border border-line px-6 py-14 md:px-16 md:py-20">
       <svg class="mb-8 h-10 w-12 text-accent md:h-12 md:w-14" viewBox="0 0 56 44" fill="currentColor" aria-hidden="true"><path d="M0 44V26.4C0 11.9 7.2 3.1 21.6 0l2.6 5.6C16.5 8 12.6 12.7 12.4 19.6H22V44H0Zm33.6 0V26.4C33.6 11.9 40.8 3.1 55.2 0l2.6 5.6c-7.7 2.4-11.6 7.1-11.8 14H56V44H33.6Z"/></svg>
-      <blockquote class="relative max-w-4xl">
-        <p class="display text-step-3 leading-[1.08]">
-          I keep the work grounded in actual people, actual businesses and actual problems.
+      <p class="label relative mb-6 flex items-center gap-3 text-ink"><span class="h-px w-8 bg-accent" aria-hidden="true"></span>Consistency</p>
+      <blockquote class="relative max-w-4xl [container-type:inline-size]">
+        <!-- Each sentence starts a new line. Phones: full size, wrapping. Tablet up: one line each, scaled to fit the box. -->
+        <p class="display text-step-3 leading-[1.12] md:text-[min(var(--text-step-3),3.8cqi)]">
+          <span class="block md:whitespace-nowrap">Growth isn't about one big move.</span>
+          <span class="mt-2 block md:mt-0 md:whitespace-nowrap">It's about doing the small things right, every day.</span>
         </p>
       </blockquote>
       <figcaption class="relative mt-10 flex items-center gap-4">
