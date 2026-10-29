@@ -319,7 +319,7 @@ const testimonials = defineCollection({
 
 /* ------------------------------------------------------------------ */
 /* pages → /now/, /privacy/, /terms/  (single prose pages)             */
-/* The latest Fullbleed post in category "now" replaces now.mdx.      */
+/* /now/ comes from the latest Fullbleed post in category "now".     */
 /* ------------------------------------------------------------------ */
 
 const pages = defineCollection({

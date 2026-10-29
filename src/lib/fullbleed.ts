@@ -255,9 +255,10 @@ export function withFullbleedPosts(base: Loader, target: Target): Loader {
 
 /**
  * Wraps the local `pages` loader: the most recently updated Fullbleed post in
- * category "now" replaces the local now.mdx (slug and title in Fullbleed don't
- * matter for the URL, which stays /now/). Without a key, or with no such post,
- * the local file is used.
+ * category "now" becomes the Now page (slug and title in Fullbleed don't matter
+ * for the URL, which stays /now/). There is no local now.mdx: without a key, or
+ * with no such post, /now/ isn't built (the deploy sets FULLBLEED_STRICT=1, so
+ * it fails rather than ship without it).
  *
  * Mapping: updatedAt → updatedDate ("Last updated"), metaTitle (≤ 60) → seo.title,
  * metaDescription (or the start of the body) → description.
@@ -274,7 +275,7 @@ export function withFullbleedNow(base: Loader): Loader {
         .filter((p) => sectionOf(p) === 'now')
         .sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt))[0];
       if (!item) {
-        ctx.logger.info(`No Fullbleed post in category "${NOW_CATEGORY}": using the local Now page.`);
+        ctx.logger.warn(`No Fullbleed post in category "${NOW_CATEGORY}": /now/ will not be built.`);
         return;
       }
       const id = 'now';
