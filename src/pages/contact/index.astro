@@ -3,11 +3,11 @@ import Layout from '@/designs/d4/Layout.astro';
 import PageHeader from '@/designs/d4/components/PageHeader.astro';
 import Todo from '@/components/ui/Todo.astro';
 import { professionalServiceNode } from '@/lib/schema';
-import { CONTACT, SITE } from '@/site.config';
+import { CONTACT } from '@/site.config';
 import { getPublished, byOrder } from '@/lib/content';
 
 const services = (await getPublished('services')).sort(byOrder);
-const key = CONTACT.form.accessKey;
+const endpoint = CONTACT.form.endpoint;
 const crumbs = [{ label: 'Contact', href: '/contact/' }];
 const mapsUrl = CONTACT.mapUrl ?? 'https://www.google.com/maps/search/?api=1&query=Pokhara%2C%20Nepal';
 ---
@@ -28,14 +28,11 @@ const mapsUrl = CONTACT.mapUrl ?? 'https://www.google.com/maps/search/?api=1&que
       <form
         class="mt-8 grid gap-5"
         method="POST"
-        action="https://api.web3forms.com/submit"
+        action={endpoint ?? `mailto:${CONTACT.email}`}
         data-contact-form
         data-email={CONTACT.email}
-        data-has-key={key ? 'true' : 'false'}
+        data-endpoint={endpoint ?? ''}
       >
-        {key && <input type="hidden" name="access_key" value={key} />}
-        <input type="hidden" name="subject" value="New enquiry from aashishkhadka.com.np" />
-        <input type="hidden" name="redirect" value={`${SITE.url}/contact/thanks/`} />
         <input type="checkbox" name="botcheck" class="hidden" tabindex="-1" autocomplete="off" aria-hidden="true" />
 
         <div class="grid gap-5 sm:grid-cols-2">
@@ -75,12 +72,13 @@ const mapsUrl = CONTACT.mapUrl ?? 'https://www.google.com/maps/search/?api=1&que
           <textarea name="message" rows="6" required placeholder="Where is the business today, and where do you want it to be?"></textarea>
         </label>
         <div class="flex flex-wrap items-center gap-4">
-          <button type="submit" class="group inline-flex items-center gap-2.5 rounded-full bg-accent px-7 py-4 font-semibold text-on-accent transition-opacity hover:opacity-90">
+          <button type="submit" data-submit class="group inline-flex items-center gap-2.5 rounded-full bg-accent px-7 py-4 font-semibold text-on-accent transition-opacity hover:opacity-90">
             Send message <span aria-hidden="true" class="transition-transform group-hover:translate-x-1">→</span>
           </button>
           <p class="text-step--1 text-muted">Or email <a class="link" href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a></p>
         </div>
-        {!key && import.meta.env.DEV && <p class="text-step--1"><Todo note="Set CONTACT.form.accessKey in site.config.ts">TODO: add a Web3Forms access key. Until then, the form opens a pre-filled email.</Todo></p>}
+        <p data-form-error role="alert" class="hidden rounded-xl border border-accent p-4 text-step--1"></p>
+        {!endpoint && import.meta.env.DEV && <p class="text-step--1"><Todo note="Set CONTACT.form.endpoint in site.config.ts">TODO: deploy workers/contact and set its URL. Until then, the form opens a pre-filled email.</Todo></p>}
       </form>
     </section>
 
@@ -150,12 +148,23 @@ const mapsUrl = CONTACT.mapUrl ?? 'https://www.google.com/maps/search/?api=1&que
 </style>
 
 <script>
-  // Without a Web3Forms key, fall back to a pre-filled email so the form still works.
+  // With the Worker (CONTACT.form.endpoint): send in the background, then go to /contact/thanks/.
+  // Without it: fall back to a pre-filled email so the form still works.
   const form = document.querySelector<HTMLFormElement>('[data-contact-form]');
-  if (form && form.dataset.hasKey !== 'true') {
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const f = new FormData(form);
+  const errorBox = form?.querySelector<HTMLElement>('[data-form-error]');
+  const button = form?.querySelector<HTMLButtonElement>('[data-submit]');
+  const showError = (msg: string) => {
+    if (!errorBox || !form) return;
+    errorBox.textContent = `${msg} You can also email ${form.dataset.email}.`;
+    errorBox.classList.remove('hidden');
+  };
+  if (new URLSearchParams(location.search).has('error')) showError('Sorry, your message could not be sent.');
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const f = new FormData(form);
+    const endpoint = form.dataset.endpoint;
+    if (!endpoint) {
       const lines = [
         `Name: ${f.get('name')}`,
         `Email: ${f.get('email')}`,
@@ -166,6 +175,18 @@ const mapsUrl = CONTACT.mapUrl ?? 'https://www.google.com/maps/search/?api=1&que
         String(f.get('message') ?? ''),
       ].filter((l, i) => l !== '' || i === 5);
       location.href = `mailto:${form.dataset.email}?subject=${encodeURIComponent('Enquiry from your website')}&body=${encodeURIComponent(lines.join('\n'))}`;
-    });
-  }
+      return;
+    }
+    errorBox?.classList.add('hidden');
+    if (button) { button.disabled = true; button.firstChild!.textContent = 'Sending… '; }
+    try {
+      const res = await fetch(endpoint, { method: 'POST', body: f, headers: { Accept: 'application/json' } });
+      const body = await res.json().catch(() => ({ ok: false }));
+      if (res.ok && body.ok) { location.href = '/contact/thanks/'; return; }
+      showError(body.error ?? 'Sorry, your message could not be sent.');
+    } catch {
+      showError('Sorry, your message could not be sent. Please check your connection.');
+    }
+    if (button) { button.disabled = false; button.firstChild!.textContent = 'Send message '; }
+  });
 </script>

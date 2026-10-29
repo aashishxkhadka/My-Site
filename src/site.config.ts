@@ -61,8 +61,11 @@ export const CONTACT = {
   },
   /** Google Business Profile, linked from the "Based in" card on /contact/. */
   mapUrl: 'https://www.google.com/search?kgmid=/g/11w5823yh_' as string | null,
-  /** Form backend chosen in step 3: 'web3forms' | 'pages-function'. */
-  form: { provider: 'web3forms' as const, accessKey: null as string | null }, // TODO
+  /**
+   * Contact form backend: the Cloudflare Worker in workers/contact/ (sends through Resend).
+   * Its URL after `npx wrangler deploy`. Until set, the form opens a pre-filled email instead.
+   */
+  form: { endpoint: null as string | null },
 } as const;
 
 /* ------------------------------------------------------------------ */

@@ -1,0 +1,14 @@
+# Contact form → Resend (see src/index.js).
+# Deploy:  cd workers/contact && npx wrangler deploy
+# Key:     npx wrangler secret put RESEND_API_KEY
+name = "aashish-contact"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+
+[vars]
+TO_EMAIL = "aashishxseo@gmail.com"
+# Until the domain is verified in Resend, use "Website <onboarding@resend.dev>" (it only delivers to the Resend account's own email).
+FROM_EMAIL = "Website <form@aashishkhadka.com.np>"
+ALLOWED_ORIGINS = "https://aashishkhadka.com.np,http://localhost:4321"
+THANKS_URL = "https://aashishkhadka.com.np/contact/thanks/"
+FORM_URL = "https://aashishkhadka.com.np/contact/"
