@@ -13,7 +13,7 @@ import type { Loader, LoaderContext } from 'astro/loaders';
 import type { MarkdownHeading } from 'astro';
 import { loadEnv } from 'vite';
 import { execFile } from 'node:child_process';
-import { TOPIC_KEYS, STORIES_CATEGORY, RESOURCES_CATEGORY, NOW_CATEGORY } from '@/site.config';
+import { SITE, TOPIC_KEYS, STORIES_CATEGORY, RESOURCES_CATEGORY, NOW_CATEGORY } from '@/site.config';
 
 const BASE = process.env.FULLBLEED_API_URL ?? 'https://fullbleed.basilpot.com/api/v1';
 
@@ -88,6 +88,22 @@ const decode = (s: string) =>
   s.replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;|&apos;/g, "'");
 const stripTags = (html: string) => decode(html.replace(/<[^>]+>/g, ' ')).replace(/\s+/g, ' ').trim();
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 80);
+
+/**
+ * Links to this site: the editor adds target="_blank" and rel="nofollow…" to every link.
+ * For internal links that means a new tab and no link equity, so make them plain relative links.
+ */
+function withInternalLinks(html: string): string {
+  const site = SITE.url.replace(/^https?:\/\//, '').replace(/\./g, '\\.');
+  const internal = new RegExp(`^https?://(www\\.)?${site}(?=/|$)`, 'i');
+  return html.replace(/<a\b([^>]*)>/gi, (tag, attrs: string) => {
+    const href = /\shref=["']([^"']*)["']/i.exec(attrs)?.[1];
+    if (!href || !(internal.test(href) || /^\/(?!\/)/.test(href))) return tag;
+    const path = href.replace(internal, '') || '/';
+    const rest = attrs.replace(/\s(href|target|rel)=["'][^"']*["']/gi, '');
+    return `<a href="${path}"${rest}>`;
+  });
+}
 
 /** Adds ids to <h2>/<h3> (for the table of contents) and returns the headings. */
 function withHeadingIds(html: string): { html: string; headings: MarkdownHeading[] } {
@@ -200,7 +216,7 @@ export function withFullbleedPosts(base: Loader, target: Target): Loader {
           ctx.logger.warn(`Fullbleed post "${item.slug}" skipped: a local MDX post already uses that slug.`);
           continue;
         }
-        const { html, headings } = withHeadingIds(item.bodyHtml ?? '');
+        const { html, headings } = withHeadingIds(withInternalLinks(item.bodyHtml ?? ''));
         const text = stripTags(html);
         const category = item.category?.slug;
         const topics = target === 'blog' && category && topicKeys.includes(category) ? [category] : [];
@@ -279,7 +295,7 @@ export function withFullbleedNow(base: Loader): Loader {
         return;
       }
       const id = 'now';
-      const { html, headings } = withHeadingIds(item.bodyHtml ?? '');
+      const { html, headings } = withHeadingIds(withInternalLinks(item.bodyHtml ?? ''));
       const text = stripTags(html);
       const metaTitle = item.metaTitle?.trim();
       const raw = {
