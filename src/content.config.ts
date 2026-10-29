@@ -8,7 +8,7 @@ import { defineCollection, reference, type SchemaContext } from 'astro:content';
 import { file, glob } from 'astro/loaders';
 import { z } from 'astro/zod';
 import { SERVICE_GROUP_KEYS, TOPIC_KEYS } from './site.config';
-import { withFullbleedPosts } from './lib/fullbleed';
+import { withFullbleedNow, withFullbleedPosts } from './lib/fullbleed';
 
 /* ------------------------------------------------------------------ */
 /* Shared fields                                                       */
@@ -319,10 +319,11 @@ const testimonials = defineCollection({
 
 /* ------------------------------------------------------------------ */
 /* pages → /now/, /privacy/, /terms/  (single prose pages)             */
+/* The latest Fullbleed post in category "now" replaces now.mdx.      */
 /* ------------------------------------------------------------------ */
 
 const pages = defineCollection({
-  loader: mdx('pages'),
+  loader: withFullbleedNow(mdx('pages')),
   schema: z.object({
     title: z.string(),
     description,

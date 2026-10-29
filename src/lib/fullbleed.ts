@@ -1,7 +1,8 @@
 /**
  * Fullbleed CMS (https://fullbleed.basilpot.com) — read-only public API client
- * and an Astro content loader that turns published Fullbleed posts into
- * `blog` and `stories` entries at build time.
+ * and Astro content loaders that turn published Fullbleed posts into `blog`,
+ * `stories` and `resources` entries, and the latest post in the "now" category
+ * into the Now page, at build time.
  *
  * Auth: a workspace-scoped publishable key (`kb_pub_…`) in FULLBLEED_API_KEY.
  * Locally: put it in `.env` (git-ignored). On GitHub: a repository secret.
@@ -12,7 +13,7 @@ import type { Loader, LoaderContext } from 'astro/loaders';
 import type { MarkdownHeading } from 'astro';
 import { loadEnv } from 'vite';
 import { execFile } from 'node:child_process';
-import { TOPIC_KEYS, STORIES_CATEGORY, RESOURCES_CATEGORY } from '@/site.config';
+import { TOPIC_KEYS, STORIES_CATEGORY, RESOURCES_CATEGORY, NOW_CATEGORY } from '@/site.config';
 
 const BASE = process.env.FULLBLEED_API_URL ?? 'https://fullbleed.basilpot.com/api/v1';
 
@@ -146,10 +147,35 @@ const fetchPosts = (key: string) => {
   return cache.posts;
 };
 
+/**
+ * Runs a CMS fetch, or returns null (and logs why) when there is no key or the API is unreachable.
+ * FULLBLEED_STRICT=1 (set in the deploy workflow once the API is reliably reachable from CI)
+ * fails the build instead, so a broken key or outage never silently removes content from the live site.
+ */
+async function fetchFromCms(ctx: LoaderContext, what: string, fetcher: (key: string) => Promise<FullbleedItem[]>): Promise<FullbleedItem[] | null> {
+  const key = process.env.FULLBLEED_API_KEY ?? loadEnv(process.env.NODE_ENV ?? 'production', process.cwd(), '').FULLBLEED_API_KEY;
+  if (!key) {
+    ctx.logger.info(`FULLBLEED_API_KEY not set: skipping CMS ${what} (local MDX only).`);
+    return null;
+  }
+  try {
+    return await fetcher(key);
+  } catch (err) {
+    cache = undefined;
+    const msg = (err as Error).message.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').slice(0, 160);
+    if (process.env.FULLBLEED_STRICT === '1') throw err;
+    if (process.env.GITHUB_ACTIONS) console.log(`::warning title=Fullbleed CMS unreachable::${msg}`);
+    ctx.logger.warn(`Could not reach Fullbleed (building without CMS ${what}): ${msg}`);
+    return null;
+  }
+}
+
 type Target = 'blog' | 'stories' | 'resources';
-/** Which section a Fullbleed post belongs to, by its category. */
-const sectionOf = (item: FullbleedItem): Target =>
-  item.category?.slug === STORIES_CATEGORY ? 'stories' : item.category?.slug === RESOURCES_CATEGORY ? 'resources' : 'blog';
+/** Which section a Fullbleed post belongs to, by its category ('now' posts feed the Now page, not a section). */
+const sectionOf = (item: FullbleedItem): Target | 'now' => {
+  const c = item.category?.slug;
+  return c === STORIES_CATEGORY ? 'stories' : c === RESOURCES_CATEGORY ? 'resources' : c === NOW_CATEGORY ? 'now' : 'blog';
+};
 const KINDS = ['guide', 'template', 'checklist', 'tool'] as const;
 
 export function withFullbleedPosts(base: Loader, target: Target): Loader {
@@ -157,24 +183,8 @@ export function withFullbleedPosts(base: Loader, target: Target): Loader {
     name: `fullbleed-${target}`,
     load: async (ctx: LoaderContext) => {
       await base.load(ctx);
-      const key = process.env.FULLBLEED_API_KEY ?? loadEnv(process.env.NODE_ENV ?? 'production', process.cwd(), '').FULLBLEED_API_KEY;
-      if (!key) {
-        ctx.logger.info('FULLBLEED_API_KEY not set: skipping CMS posts (local MDX only).');
-        return;
-      }
-      let posts: FullbleedItem[];
-      try {
-        posts = await fetchPosts(key);
-      } catch (err) {
-        cache = undefined;
-        // FULLBLEED_STRICT=1 (set in the deploy workflow once the API is reliably reachable from CI)
-        // fails the build instead, so a broken key or outage never silently removes posts from the live site.
-        const msg = (err as Error).message.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').slice(0, 160);
-        if (process.env.FULLBLEED_STRICT === '1') throw err;
-        if (process.env.GITHUB_ACTIONS) console.log(`::warning title=Fullbleed CMS unreachable::${msg}`);
-        ctx.logger.warn(`Could not reach Fullbleed (building without CMS posts): ${msg}`);
-        return;
-      }
+      const posts = await fetchFromCms(ctx, 'posts', fetchPosts);
+      if (!posts) return;
 
       const topicKeys = TOPIC_KEYS as readonly string[];
       const reserved = target === 'blog' ? [...topicKeys, 'page'] : ['page'];
@@ -239,6 +249,51 @@ export function withFullbleedPosts(base: Loader, target: Target): Loader {
         }
       }
       ctx.logger.info(`Loaded ${added} ${target} post${added === 1 ? '' : 's'} from Fullbleed.`);
+    },
+  };
+}
+
+/**
+ * Wraps the local `pages` loader: the most recently updated Fullbleed post in
+ * category "now" replaces the local now.mdx (slug and title in Fullbleed don't
+ * matter for the URL, which stays /now/). Without a key, or with no such post,
+ * the local file is used.
+ *
+ * Mapping: updatedAt → updatedDate ("Last updated"), metaTitle (≤ 60) → seo.title,
+ * metaDescription (or the start of the body) → description.
+ */
+export function withFullbleedNow(base: Loader): Loader {
+  return {
+    name: 'fullbleed-now',
+    load: async (ctx: LoaderContext) => {
+      await base.load(ctx);
+      const posts = await fetchFromCms(ctx, 'Now page', fetchPosts);
+      if (!posts) return;
+
+      const item = posts
+        .filter((p) => sectionOf(p) === 'now')
+        .sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt))[0];
+      if (!item) {
+        ctx.logger.info(`No Fullbleed post in category "${NOW_CATEGORY}": using the local Now page.`);
+        return;
+      }
+      const id = 'now';
+      const { html, headings } = withHeadingIds(item.bodyHtml ?? '');
+      const text = stripTags(html);
+      const metaTitle = item.metaTitle?.trim();
+      const raw = {
+        title: item.title,
+        description: describe(item, text),
+        updatedDate: new Date(item.updatedAt),
+        seo: metaTitle && metaTitle.length <= 60 ? { title: metaTitle } : {},
+      };
+      try {
+        const data = await ctx.parseData({ id, data: raw });
+        ctx.store.set({ id, data, body: text, rendered: { html, metadata: { headings } }, digest: ctx.generateDigest({ ...raw, html }) });
+        ctx.logger.info(`Loaded the Now page from Fullbleed ("${item.title}").`);
+      } catch (err) {
+        ctx.logger.warn(`Fullbleed Now post "${item.slug}" skipped: ${(err as Error).message}`);
+      }
     },
   };
 }

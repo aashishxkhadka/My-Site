@@ -197,6 +197,8 @@ export const TOPIC_MIN_POSTS = 3;
 export const STORIES_CATEGORY = 'stories';
 /** Fullbleed category whose posts become Resources (/resource/[slug]/). A tag naming the kind (Guide, Template, Checklist, Tool) sets it; default Guide. */
 export const RESOURCES_CATEGORY = 'resources';
+/** Fullbleed category whose latest post becomes the Now page (/now/), replacing src/content/pages/now.mdx. Never listed on the blog. */
+export const NOW_CATEGORY = 'now';
 
 /* ------------------------------------------------------------------ */
 /* Sections — the extension point.                                     */
@@ -265,7 +267,6 @@ export const NAV = {
         { label: 'Services', href: '/services/' },
         { label: 'Work', href: '/work/' },
         { label: 'Projects', href: '/projects/' },
-        { label: 'Now', href: '/now/' },
         { label: 'Contact', href: '/contact/' },
       ],
     },
@@ -276,6 +277,7 @@ export const NAV = {
         { label: 'Blog', href: '/blog/' },
         { label: 'Stories', href: '/stories/' },
         { label: 'Resources', href: '/resource/' },
+        { label: 'Now', href: '/now/' },
       ],
     },
     {

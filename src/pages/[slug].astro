@@ -4,7 +4,9 @@ import type { GetStaticPaths } from 'astro';
 import { getCollection, render } from 'astro:content';
 import Layout from '@/designs/d4/Layout.astro';
 import PageHeader from '@/designs/d4/components/PageHeader.astro';
+import CtaPanel from '@/designs/d4/components/CtaPanel.astro';
 import { formatDate, isoDate } from '@/lib/format';
+import { emptySectionHrefs } from '@/lib/taxonomy';
 
 export const getStaticPaths = (async () => {
   const pages = await getCollection('pages');
@@ -16,11 +18,40 @@ const d = page.data;
 const { Content } = await render(page);
 const path = `/${page.id}/`;
 const crumbs = [{ label: d.title, href: path }];
+
+// Now page: links to the writing (sections with nothing published yet are left out) and the contact panel.
+const isNow = page.id === 'now';
+const hidden = isNow ? await emptySectionHrefs() : [];
+const writing = [
+  { label: 'Blog', href: '/blog/', text: 'Notes on growth, SEO and marketing.' },
+  { label: 'Stories', href: '/stories/', text: 'Stories from work and life.' },
+  { label: 'Resources', href: '/resource/', text: 'Guides, templates and checklists you can use.' },
+].filter((l) => !hidden.includes(l.href));
 ---
 
 <Layout title={d.title} rawTitle={d.seo.title} description={d.description} noindex={d.seo.noindex} lastModified={d.updatedDate} breadcrumbs={crumbs}>
   <PageHeader title={d.title} breadcrumbs={crumbs}>
     <p class="mt-6 text-step--1 text-muted">Last updated <time datetime={isoDate(d.updatedDate)}>{formatDate(d.updatedDate)}</time></p>
   </PageHeader>
-  <div class="wrap pb-24 pt-14 md:pb-32 md:pt-20"><div class="prose"><Content /></div></div>
+  <div class={`wrap pt-14 md:pt-20 ${isNow ? '' : 'pb-24 md:pb-32'}`}><div class="prose"><Content /></div></div>
+  {
+    isNow && (
+      <>
+        <section class="wrap pt-16 md:pt-20" aria-labelledby="writing">
+          <h2 id="writing" class="display text-step-2">Read my writing</h2>
+          <ul class="mt-5 max-w-2xl divide-y divide-line border-y border-line">
+            {writing.map((l) => (
+              <li>
+                <a class="flex items-baseline justify-between gap-4 py-4 hover:text-accent" href={l.href}>
+                  <span><span class="font-medium">{l.label}</span> <span class="text-muted">· {l.text}</span></span>
+                  <span aria-hidden="true">→</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+        <CtaPanel />
+      </>
+    )
+  }
 </Layout>
