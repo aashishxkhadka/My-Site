@@ -65,7 +65,7 @@ export const CONTACT = {
    * Contact form backend: the Cloudflare Worker in workers/contact/ (sends through Resend).
    * Its URL after `npx wrangler deploy`. Until set, the form opens a pre-filled email instead.
    */
-  form: { endpoint: null as string | null },
+  form: { endpoint: 'https://aashish-contact.aashishkhadka2058.workers.dev' as string | null },
 } as const;
 
 /* ------------------------------------------------------------------ */
