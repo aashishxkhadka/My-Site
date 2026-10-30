@@ -303,6 +303,7 @@ export const NAV = {
 
 export const INTEGRATIONS = {
   metaPixelId: '624986926682601',
+  googleAnalyticsId: 'G-PL5YHEEYPH' as string | null,
   gscVerification: null as string | null, // TODO: GSC meta verification code
   cloudflareAnalyticsToken: null as string | null, // TODO: set after Pages project exists
 } as const;
