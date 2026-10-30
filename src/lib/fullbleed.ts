@@ -105,6 +105,16 @@ function withInternalLinks(html: string): string {
   });
 }
 
+/**
+ * Images uploaded in the editor come through as root-relative paths
+ * (/api/media-library/file/…), which would resolve against this site and 404.
+ * Point them at the CMS instead.
+ */
+function withCmsMedia(html: string): string {
+  const origin = new URL(BASE).origin;
+  return html.replace(/(<(?:img|source)\b[^>]*\ssrc=["'])\/(?!\/)/gi, `$1${origin}/`);
+}
+
 /** Adds ids to <h2>/<h3> (for the table of contents) and returns the headings. */
 function withHeadingIds(html: string): { html: string; headings: MarkdownHeading[] } {
   const headings: MarkdownHeading[] = [];
@@ -216,7 +226,7 @@ export function withFullbleedPosts(base: Loader, target: Target): Loader {
           ctx.logger.warn(`Fullbleed post "${item.slug}" skipped: a local MDX post already uses that slug.`);
           continue;
         }
-        const { html, headings } = withHeadingIds(withInternalLinks(item.bodyHtml ?? ''));
+        const { html, headings } = withHeadingIds(withCmsMedia(withInternalLinks(item.bodyHtml ?? '')));
         const text = stripTags(html);
         const category = item.category?.slug;
         const topics = target === 'blog' && category && topicKeys.includes(category) ? [category] : [];
@@ -295,7 +305,7 @@ export function withFullbleedNow(base: Loader): Loader {
         return;
       }
       const id = 'now';
-      const { html, headings } = withHeadingIds(withInternalLinks(item.bodyHtml ?? ''));
+      const { html, headings } = withHeadingIds(withCmsMedia(withInternalLinks(item.bodyHtml ?? '')));
       const text = stripTags(html);
       const metaTitle = item.metaTitle?.trim();
       const raw = {
