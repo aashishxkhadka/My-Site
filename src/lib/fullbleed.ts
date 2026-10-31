@@ -115,6 +115,14 @@ function withCmsMedia(html: string): string {
   return html.replace(/(<(?:img|source)\b[^>]*\ssrc=["'])\/(?!\/)/gi, `$1${origin}/`);
 }
 
+/**
+ * A table can be wider than a phone screen, and would stretch the whole page with it.
+ * Wrap each one so it scrolls sideways on its own (styled by .table-scroll in global.css).
+ */
+function withScrollableTables(html: string): string {
+  return html.replace(/<table\b[\s\S]*?<\/table>/gi, (table) => `<div class="table-scroll" tabindex="0">${table}</div>`);
+}
+
 /** Adds ids to <h2>/<h3> (for the table of contents) and returns the headings. */
 function withHeadingIds(html: string): { html: string; headings: MarkdownHeading[] } {
   const headings: MarkdownHeading[] = [];
@@ -226,7 +234,7 @@ export function withFullbleedPosts(base: Loader, target: Target): Loader {
           ctx.logger.warn(`Fullbleed post "${item.slug}" skipped: a local MDX post already uses that slug.`);
           continue;
         }
-        const { html, headings } = withHeadingIds(withCmsMedia(withInternalLinks(item.bodyHtml ?? '')));
+        const { html, headings } = withHeadingIds(withScrollableTables(withCmsMedia(withInternalLinks(item.bodyHtml ?? ''))));
         const text = stripTags(html);
         const category = item.category?.slug;
         const topics = target === 'blog' && category && topicKeys.includes(category) ? [category] : [];
@@ -305,7 +313,7 @@ export function withFullbleedNow(base: Loader): Loader {
         return;
       }
       const id = 'now';
-      const { html, headings } = withHeadingIds(withCmsMedia(withInternalLinks(item.bodyHtml ?? '')));
+      const { html, headings } = withHeadingIds(withScrollableTables(withCmsMedia(withInternalLinks(item.bodyHtml ?? ''))));
       const text = stripTags(html);
       const metaTitle = item.metaTitle?.trim();
       const raw = {

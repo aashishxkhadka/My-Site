@@ -258,6 +258,14 @@
   text-underline-offset: 0.2em;
   font-weight: 500;
 }
-.prose :where(table):not(:where(.not-prose, .not-prose *)) { font-size: 0.95em; }
+.prose :where(table):not(:where(.not-prose, .not-prose *)) { font-size: 0.95em; margin-block: 0; }
+/* CMS tables: scroll sideways inside the column; tables of 3+ columns keep a readable width instead of squeezing into tall, thin columns. */
+.prose .table-scroll { overflow-x: auto; margin-block: 2em; }
+.prose .table-scroll table:has(tr > :nth-child(3)) { min-width: 34rem; }
+.prose .table-scroll table:has(tr > :nth-child(4)) { min-width: 42rem; }
+.prose .table-scroll :where(th, td) { padding: 0.6em 0.75em; vertical-align: top; text-align: left; }
+.prose .table-scroll :where(th, td):first-child { padding-inline-start: 0; }
+.prose .table-scroll :where(th, td):last-child { padding-inline-end: 0; }
+.prose :where(th, td) p { margin: 0; }
 .prose :where(thead th):not(:where(.not-prose, .not-prose *)) { font-family: var(--font-display); }
 .prose :where(img):not(:where(.not-prose, .not-prose *)) { border-radius: 1rem; height: auto; }

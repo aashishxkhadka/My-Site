@@ -9,8 +9,9 @@ export interface Props {
   kicker?: string | undefined;
   lead?: string | undefined;
   breadcrumbs?: Crumb[] | undefined;
+  compactCrumbs?: boolean | undefined;
 }
-const { title, kicker, lead, breadcrumbs } = Astro.props;
+const { title, kicker, lead, breadcrumbs, compactCrumbs } = Astro.props;
 const crumbs = withHome(breadcrumbs);
 const hasAside = Astro.slots.has('aside');
 ---
@@ -19,7 +20,7 @@ const hasAside = Astro.slots.has('aside');
   <div class="pointer-events-none absolute inset-0" style="background: radial-gradient(50% 80% at 85% 0%, #2c2c2b 0%, transparent 70%);" aria-hidden="true"></div>
   <div class:list={['wrap relative pb-14 pt-10 md:pb-20 md:pt-14', hasAside && 'grid gap-10 md:grid-cols-12 md:items-end']}>
     <div class:list={[hasAside && 'md:col-span-8']}>
-      {crumbs && <Breadcrumbs crumbs={crumbs} />}
+      {crumbs && <Breadcrumbs crumbs={crumbs} compact={compactCrumbs} />}
       {kicker && <p class="label mt-10 flex items-center gap-3 text-ink"><span class="h-px w-8 bg-accent" aria-hidden="true"></span>{kicker}</p>}
       <h1 id="page-title" class:list={['display text-step-5 max-w-4xl', kicker ? 'mt-4' : 'mt-10']}>{title}</h1>
       {lead && <p class="mt-6 max-w-2xl text-step-1 leading-snug text-muted">{lead}</p>}
