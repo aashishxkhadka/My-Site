@@ -21,6 +21,7 @@ export interface Props {
 const { post } = Astro.props;
 const d = post.data;
 const section = SECTIONS[post.collection];
+const isBlog = post.collection === 'blog';
 const { Content, headings } = await render(post);
 const path = postPath(post);
 const toc = tocFor(headings, d.toc);
@@ -52,8 +53,8 @@ const crumbs = [
     ...(d.faq.length ? [faqNode(path, d.faq)] : []),
   ]}
 >
-  <PageHeader title={d.title} kicker={primary?.label ?? (post.collection === 'stories' ? 'Story' : undefined)} breadcrumbs={crumbs} compactCrumbs={post.collection === 'blog'}>
-    <p class="mt-8 flex flex-wrap gap-x-5 gap-y-1 text-step--1 text-muted">
+  <PageHeader title={d.title} kicker={primary?.label ?? (post.collection === 'stories' ? 'Story' : undefined)} breadcrumbs={crumbs} compact={isBlog}>
+    <p class:list={['flex flex-wrap gap-x-5 gap-y-1 text-step--1 text-muted', isBlog ? 'mt-5 md:mt-8' : 'mt-8']}>
       <span>By <a class="link text-ink" href="/about/">Aashish Khadka</a></span>
       <span>Published <time datetime={isoDate(d.pubDate)}>{formatDate(d.pubDate)}</time></span>
       {d.updatedDate && <span class="font-semibold text-ink">Last updated <time datetime={isoDate(d.updatedDate)}>{formatDate(d.updatedDate)}</time></span>}
@@ -61,7 +62,7 @@ const crumbs = [
     </p>
   </PageHeader>
 
-  <div class="wrap grid gap-12 pt-14 md:pt-20 lg:grid-cols-12">
+  <div class:list={['wrap grid gap-12 md:pt-20 lg:grid-cols-12', isBlog ? 'pt-6' : 'pt-14']}>
     <article class="min-w-0 lg:col-span-8">
       {
         d.answer && (
@@ -72,7 +73,7 @@ const crumbs = [
       }
       {d.heroImage && <Image src={d.heroImage} alt={d.heroAlt ?? ''} widths={[640, 960, 1280]} sizes="(min-width: 1024px) 760px, 92vw" loading="eager" class="mb-10 h-auto w-full rounded-2xl" />}
       {!d.heroImage && d.coverImageUrl && <img src={d.coverImageUrl} alt={d.heroAlt ?? ''} loading="eager" decoding="async" class="mb-10 aspect-[16/9] h-auto w-full rounded-2xl object-cover" />}
-      {toc.length > 0 && <div class="mb-10 lg:hidden"><Toc headings={toc} /></div>}
+      {toc.length > 0 && <div class="mb-10 lg:hidden"><Toc headings={toc} collapsible={isBlog} /></div>}
 
       <div class="prose"><Content /></div>
 
