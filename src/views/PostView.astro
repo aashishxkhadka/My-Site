@@ -75,7 +75,7 @@ const crumbs = [
       {!d.heroImage && d.coverImageUrl && <img src={d.coverImageUrl} alt={d.heroAlt ?? ''} loading="eager" decoding="async" class="mb-10 aspect-[16/9] h-auto w-full rounded-2xl object-cover" />}
       {toc.length > 0 && <div class="mb-10 lg:hidden"><Toc headings={toc} collapsible={isBlog} /></div>}
 
-      <div class="prose"><Content /></div>
+      <div class:list={['prose', isBlog && 'prose-justify']}><Content /></div>
 
       {
         d.keyTakeaways.length > 0 && (
