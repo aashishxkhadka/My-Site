@@ -267,7 +267,5 @@
 .prose .table-scroll :where(th, td):first-child { padding-inline-start: 0; }
 .prose .table-scroll :where(th, td):last-child { padding-inline-end: 0; }
 .prose :where(th, td) p { margin: 0; }
-/* Blog post text: justified, with hyphenation so narrow phone lines don't open wide gaps between words. */
-.prose-justify > :where(p, ul, ol, blockquote) { text-align: justify; hyphens: auto; }
 .prose :where(thead th):not(:where(.not-prose, .not-prose *)) { font-family: var(--font-display); }
 .prose :where(img):not(:where(.not-prose, .not-prose *)) { border-radius: 1rem; height: auto; }
