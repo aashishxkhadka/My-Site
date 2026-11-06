@@ -143,3 +143,10 @@
   kind: [marketing]
   industry: 'Education'
   order: 22
+- id: pari-ghar
+  name: 'Pari Ghar Guest House'
+  logo: ../assets/clients/pari-ghar.png
+  url: 'https://parighar.com/'
+  kind: [web, marketing]
+  industry: 'Hospitality'
+  order: 23

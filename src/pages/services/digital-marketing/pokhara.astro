@@ -37,7 +37,8 @@ const proof: { icon: IconName; value: string; label: string; href?: string; exte
   { icon: 'chart', value: STATS.socialViews, label: "views across clients' social media" },
   { icon: 'target', value: 'NPR 5,000', label: 'starting price, see pricing', href: '#cost' },
 ];
-// Client logos (featured first), for the scrolling row.
+// Client logos (featured first), for the scrolling row. The row stays white in both themes:
+// logos are made for light backgrounds (same as the homepage logo wall).
 const logos = (await getCollection('clients')).filter((c) => c.data.logo).sort((a, b) => Number(b.data.featured) - Number(a.data.featured) || a.data.order - b.data.order);
 
 /** Real results only. Flip to true once the table below has real numbers (never placeholders). */
@@ -142,9 +143,9 @@ const body = 'mt-6 max-w-2xl text-step-1 leading-relaxed text-muted';
     </dl>
     {
       logos.length > 0 && (
-        <div class="border-t border-line">
+        <div class="border-t border-line bg-white">
           <div class="wrap flex flex-col gap-4 py-6 md:flex-row md:items-center md:gap-8">
-            <p class="label shrink-0">Businesses I've helped grow</p>
+            <p class="label shrink-0 !text-[#5d5b55]">Businesses I've helped grow</p>
             <div class="logo-rail relative min-w-0 flex-1 overflow-hidden">
               <ul class="logo-track flex w-max items-center gap-10">
                 {[...logos, ...logos].map((c, i) => (
