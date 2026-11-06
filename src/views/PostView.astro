@@ -14,6 +14,7 @@ import { topicsInfo } from '@/lib/taxonomy';
 import { blogPostingNode, faqNode } from '@/lib/schema';
 import { formatDate, isoDate } from '@/lib/format';
 import { SECTIONS } from '@/site.config';
+import { shareImage } from '@/lib/og';
 
 export interface Props {
   post: Post;
@@ -25,6 +26,7 @@ const isBlog = post.collection === 'blog';
 const { Content, headings } = await render(post);
 const path = postPath(post);
 const toc = tocFor(headings, d.toc);
+const share = await shareImage(d);
 const minutes = readingMinutes(post.body);
 // Topics only apply to the blog; link a hub only once its page exists.
 const topics = post.collection === 'blog' ? (await topicsInfo()).filter((t) => (d.topics as string[]).includes(t.key)) : [];
@@ -44,6 +46,7 @@ const crumbs = [
   rawTitle={d.seo.title}
   description={d.description}
   noindex={d.seo.noindex}
+  {...share}
   ogType="article"
   publishedTime={d.pubDate}
   modifiedTime={d.updatedDate}

@@ -15,6 +15,8 @@ export interface Props {
   noindex?: boolean | undefined;
   /** Absolute or root-relative. Defaults to the generated card at /og/<path>.png (src/integrations/og-images.mjs). */
   ogImage?: string | undefined;
+  /** Pixel size of `ogImage`, when known. The generated card is always 1200×630. */
+  ogImageSize?: { width: number; height: number } | undefined;
   ogType?: 'website' | 'article' | 'profile';
   publishedTime?: Date | undefined;
   modifiedTime?: Date | undefined;
@@ -22,13 +24,15 @@ export interface Props {
   lastModified?: Date | undefined;
 }
 
-const { title, rawTitle, description, noindex = false, ogImage, ogType = 'website', publishedTime, modifiedTime, lastModified } = Astro.props;
+const { title, rawTitle, description, noindex = false, ogImage, ogImageSize, ogType = 'website', publishedTime, modifiedTime, lastModified } = Astro.props;
 const lastmod = lastModified ?? modifiedTime ?? publishedTime;
 
 const pageTitle = rawTitle ?? (title ? fullTitle(title, SITE.titleSuffix) : SITE.defaultTitle);
 const canonical = new URL(Astro.url.pathname, SITE.url).href;
 const ogPath = Astro.url.pathname === '/' ? '/og/home.png' : `/og${Astro.url.pathname.replace(/\/$/, '')}.png`;
 const image = new URL(ogImage ?? ogPath, SITE.url).href;
+// A custom image (e.g. a post's cover) of unknown size: leave the dimensions out rather than state wrong ones.
+const imageSize = ogImage ? ogImageSize : { width: 1200, height: 630 };
 const xHandle = SOCIALS.find((s) => s.key === 'x')?.handle;
 
 if (import.meta.env.DEV) {
@@ -49,14 +53,15 @@ if (import.meta.env.DEV) {
 <meta property="og:description" content={description} />
 <meta property="og:url" content={canonical} />
 <meta property="og:image" content={image} />
-<meta property="og:image:width" content="1200" />
-<meta property="og:image:height" content="630" />
+{imageSize && <meta property="og:image:width" content={String(imageSize.width)} />}
+{imageSize && <meta property="og:image:height" content={String(imageSize.height)} />}
 <meta property="og:image:alt" content={pageTitle} />
 {publishedTime && <meta property="article:published_time" content={publishedTime.toISOString()} />}
 {modifiedTime && <meta property="article:modified_time" content={modifiedTime.toISOString()} />}
 {lastmod && <meta name="last-modified" content={lastmod.toISOString()} />}
 
 <meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:image" content={image} />
 {xHandle && <meta name="twitter:site" content={xHandle} />}
 {xHandle && <meta name="twitter:creator" content={xHandle} />}
 

@@ -10,6 +10,7 @@ import { Image } from 'astro:assets';
 import { getPublished } from '@/lib/content';
 import { faqNode } from '@/lib/schema';
 import { formatDate, isoDate } from '@/lib/format';
+import { shareImage } from '@/lib/og';
 
 export const getStaticPaths = (async () => {
   const resources = await getPublished('resources');
@@ -20,10 +21,11 @@ const { resource } = Astro.props as { resource: CollectionEntry<'resources'> };
 const d = resource.data;
 const { Content } = await render(resource);
 const path = `/resource/${resource.id}/`;
+const share = await shareImage(d);
 const crumbs = [{ label: 'Resources', href: '/resource/' }, { label: d.title, href: path }];
 ---
 
-<Layout title={d.title} rawTitle={d.seo.title} description={d.description} noindex={d.seo.noindex} lastModified={d.updatedDate ?? d.pubDate} breadcrumbs={crumbs} schema={d.faq.length ? [faqNode(path, d.faq)] : []}>
+<Layout title={d.title} rawTitle={d.seo.title} description={d.description} noindex={d.seo.noindex} {...share} lastModified={d.updatedDate ?? d.pubDate} breadcrumbs={crumbs} schema={d.faq.length ? [faqNode(path, d.faq)] : []}>
   <PageHeader title={d.title} kicker={d.kind} lead={d.description} breadcrumbs={crumbs}>
     <div class="mt-9 flex flex-wrap items-center gap-4">
       {d.file && <Button href={`/downloads/${d.file}`} download>Download</Button>}
