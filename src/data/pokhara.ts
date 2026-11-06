@@ -11,7 +11,7 @@ export const crumbs = [
   { label: 'Digital Marketing', href: '/services/digital-marketing/' },
   { label: 'Pokhara', href: path },
 ];
-export const description = 'Pokhara-based digital marketing for tourism and local businesses: local SEO, Google Business Profile, social media and ads, with clear monthly reports. 60+ businesses served.';
+export const description = 'Digital marketing in Pokhara that brings real calls and bookings: local SEO, Google Maps, social media and ads. 60+ businesses served. Free first call.';
 export const whatsapp = whatsappLink("Hi Aashish, I'd like to talk about digital marketing for my business in Pokhara.");
 export const title = 'Digital Marketing in Pokhara: Local Expert | Aashish Khadka';
 export const ogDescription = 'Local SEO, Google Business Profile, social media and ads for Pokhara businesses, with clear monthly reports. 60+ businesses served.';
