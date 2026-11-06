@@ -279,7 +279,6 @@ export const NAV = {
       links: [
         { label: 'About', href: '/about/' },
         { label: 'Services', href: '/services/' },
-        { label: 'Digital marketing in Pokhara', href: '/services/digital-marketing/pokhara/' },
         { label: 'Work', href: '/work/' },
         { label: 'Projects', href: '/projects/' },
         { label: 'Contact', href: '/contact/' },
