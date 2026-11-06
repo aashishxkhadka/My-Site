@@ -1,10 +1,12 @@
 ---
-/** Shared end-of-body: deferred third-party scripts. */
+/** Shared end-of-body: floating WhatsApp button + deferred third-party scripts. */
 import MetaPixel from '@/components/analytics/MetaPixel.astro';
 import GoogleAnalytics from '@/components/analytics/GoogleAnalytics.astro';
 import CloudflareAnalytics from '@/components/analytics/CloudflareAnalytics.astro';
+import WhatsAppButton from '@/components/ui/WhatsAppButton.astro';
 ---
 
+<WhatsAppButton />
 <MetaPixel />
 <GoogleAnalytics />
 <CloudflareAnalytics />

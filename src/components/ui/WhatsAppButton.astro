@@ -1,0 +1,54 @@
+---
+/**
+ * Floating "Chat on WhatsApp" button, bottom right of every page (rendered by BodyEnd).
+ * Phones: a round icon button. Desktop: the label slides out on hover/focus.
+ * Also tracks clicks on ANY WhatsApp link on the page (this button, hero buttons, CTAs):
+ * Meta Pixel "Contact" + GA4 "whatsapp_click", when those are loaded.
+ */
+import { CONTACT, whatsappLink } from '@/site.config';
+
+const href = CONTACT.whatsapp ? whatsappLink("Hi Aashish, I found your website and I'd like to talk about my business.") : null;
+---
+
+{
+  href && (
+    <a
+      href={href}
+      target="_blank"
+      rel="nofollow noopener"
+      aria-label="Chat with Aashish on WhatsApp"
+      class="wa-fab group fixed z-50 flex items-center gap-0 rounded-full bg-[#25D366] p-3.5 text-white shadow-[0_8px_24px_rgba(0,0,0,0.22)] transition-[gap,padding,transform] duration-300 hover:-translate-y-0.5 hover:gap-2.5 hover:pr-5 focus-visible:gap-2.5 focus-visible:pr-5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#25D366] print:hidden"
+      data-track="whatsapp-float"
+    >
+      <svg class="size-7 shrink-0" viewBox="0 0 32 32" fill="currentColor" aria-hidden="true">
+        <path d="M16.04 3C8.86 3 3.02 8.83 3.02 16c0 2.3.6 4.53 1.74 6.5L3 29l6.68-1.75A12.98 12.98 0 0 0 16.04 29C23.2 29 29 23.17 29 16S23.2 3 16.04 3Zm0 23.78c-2.02 0-4-.54-5.72-1.57l-.41-.24-3.96 1.04 1.06-3.86-.27-.4A10.73 10.73 0 0 1 5.3 16c0-5.92 4.82-10.73 10.74-10.73 5.9 0 10.7 4.81 10.7 10.73 0 5.93-4.8 10.78-10.7 10.78Zm5.88-8.04c-.32-.16-1.9-.94-2.2-1.05-.3-.1-.51-.16-.73.16-.21.32-.83 1.05-1.02 1.27-.19.21-.38.24-.7.08-.32-.16-1.36-.5-2.59-1.6-.96-.85-1.6-1.9-1.79-2.22-.19-.32-.02-.5.14-.65.15-.15.32-.38.48-.57.16-.19.21-.32.32-.54.1-.21.05-.4-.03-.56-.08-.16-.73-1.75-1-2.4-.26-.63-.53-.54-.73-.55h-.62c-.21 0-.56.08-.86.4-.3.32-1.13 1.1-1.13 2.69 0 1.58 1.16 3.12 1.32 3.33.16.21 2.28 3.48 5.52 4.88.77.33 1.37.53 1.84.68.77.25 1.48.21 2.03.13.62-.09 1.9-.78 2.17-1.53.27-.75.27-1.4.19-1.53-.08-.13-.29-.21-.61-.37Z" />
+      </svg>
+      <span class="max-w-0 overflow-hidden whitespace-nowrap font-semibold transition-[max-width] duration-300 group-hover:max-w-[12rem] group-focus-visible:max-w-[12rem]">Chat on WhatsApp</span>
+    </a>
+  )
+}
+
+<script is:inline>
+  // Count WhatsApp clicks anywhere on the page (no-op until the pixel / GA have loaded).
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('a[href*="wa.me/"]');
+    if (!a) return;
+    var where = a.getAttribute('data-track') || 'page-link';
+    if (typeof window.fbq === 'function') window.fbq('track', 'Contact', { method: 'whatsapp', location: where });
+    if (typeof window.gtag === 'function') window.gtag('event', 'whatsapp_click', { link_location: where, page_path: location.pathname });
+  });
+</script>
+
+<style>
+  /* Clear of the screen edge and the iPhone home bar. */
+  .wa-fab {
+    right: max(1rem, env(safe-area-inset-right));
+    bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+  @media (min-width: 768px) {
+    .wa-fab { right: 1.5rem; bottom: 1.5rem; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .wa-fab, .wa-fab span { transition: none; }
+  }
+</style>
