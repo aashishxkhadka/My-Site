@@ -2,7 +2,7 @@
 /**
  * /services/digital-marketing/pokhara/ — local service page for Pokhara.
  * Hand-built (not from the services collection) because its sections are unique:
- * season calendar, two-markets table, pricing. Same d4 layout and components as
+ * season calendar, two-markets comparison, pricing. Same d4 layout and components as
  * /services/digital-marketing/. No FAQPage or self-serving review schema, on purpose.
  */
 import { getEntry, type CollectionEntry } from 'astro:content';
@@ -10,6 +10,7 @@ import Layout from '@/designs/d4/Layout.astro';
 import PageHeader from '@/designs/d4/components/PageHeader.astro';
 import Button from '@/designs/d4/components/Button.astro';
 import DataTable from '@/designs/d4/components/DataTable.astro';
+import Icon, { type IconName } from '@/designs/d4/components/Icon.astro';
 import Faq from '@/designs/d4/components/Faq.astro';
 import Testimonials from '@/designs/d4/components/Testimonials.astro';
 import CtaPanel from '@/designs/d4/components/CtaPanel.astro';
@@ -36,15 +37,47 @@ const testimonials = (await Promise.all(['begnas-aqua-park', 'happyface-clinic',
 );
 
 const prices = [
-  { name: 'Google Business Profile setup and optimisation', price: 5000, label: 'NPR 5,000 (one-time)' },
-  { name: 'Local SEO', price: 10000, unit: 'MON' as const, label: 'NPR 10,000 per month' },
-  { name: 'Social media marketing', price: 20000, unit: 'MON' as const, label: 'NPR 20,000 per month' },
-  { name: 'Full digital marketing plan', price: 30000, unit: 'MON' as const, label: 'NPR 30,000 per month' },
+  { name: 'Google Business Profile setup and optimisation', price: 5000, label: 'NPR 5,000 (one-time)', amount: '5,000', per: 'one-time' },
+  { name: 'Local SEO', price: 10000, unit: 'MON' as const, label: 'NPR 10,000 per month', amount: '10,000', per: 'per month' },
+  { name: 'Social media marketing', price: 20000, unit: 'MON' as const, label: 'NPR 20,000 per month', amount: '20,000', per: 'per month' },
+  { name: 'Full digital marketing plan', price: 30000, unit: 'MON' as const, label: 'NPR 30,000 per month', amount: '30,000', per: 'per month' },
 ];
 
+/** "Jump to" bar; each section's kicker shows its number from this list. */
+const toc = [
+  { id: 'different', label: 'Why Pokhara' },
+  { id: 'services', label: 'Services' },
+  { id: 'who', label: 'Who I help' },
+  { id: 'how', label: 'How I work' },
+  { id: 'cost', label: 'Pricing' },
+  { id: 'why', label: 'Why local' },
+  { id: 'this-week', label: 'Free tips' },
+  { id: 'faq-title', label: 'FAQ' },
+];
+const n = (id: string) => String(toc.findIndex((t) => t.id === id) + 1).padStart(2, '0');
+
+const markets = {
+  rows: ['Who', 'When they search', 'How they search', 'Where they decide', 'What wins'],
+  tourists: [
+    'Foreign visitors, Indian and other South Asian travellers, domestic tourists',
+    'Weeks or months before the trip, and again once they arrive',
+    'English: "hotel in Lakeside Pokhara", "Poon Hill trek cost"',
+    'Google, Google Maps, reviews, Instagram, booking sites',
+    'A strong website, reviews, clear prices in USD and NPR',
+  ],
+  locals: [
+    'People who live in and around Pokhara',
+    'Usually the same day they need something',
+    'English, Romanized Nepali and Nepali: "gym near me", "momo pasal near me"',
+    'Google Maps, Facebook, word of mouth, WhatsApp',
+    'A complete Google Business Profile, reviews, fast replies',
+  ],
+};
+
+// The two months before each peak season get a "launch" marker: marketing starts before the season.
 const months = [
-  ['Jan', 'winter'], ['Feb', 'winter'], ['Mar', 'peak'], ['Apr', 'peak'], ['May', 'peak'], ['Jun', 'monsoon'],
-  ['Jul', 'monsoon'], ['Aug', 'monsoon'], ['Sep', 'peak'], ['Oct', 'festival'], ['Nov', 'festival'], ['Dec', 'winter'],
+  ['Jan', 'winter', true], ['Feb', 'winter', true], ['Mar', 'peak', false], ['Apr', 'peak', false], ['May', 'peak', false], ['Jun', 'monsoon', false],
+  ['Jul', 'monsoon', true], ['Aug', 'monsoon', true], ['Sep', 'peak', false], ['Oct', 'festival', false], ['Nov', 'festival', false], ['Dec', 'winter', false],
 ] as const;
 const seasons = {
   peak: { label: 'Peak travel season', class: 'bg-[#ff7f00]' },
@@ -53,42 +86,99 @@ const seasons = {
   winter: { label: 'Winter, slower', class: 'bg-[#e3e1db]' },
 };
 
-const services = [
+const meaning: { icon: IconName; lead: string; text: string }[] = [
+  { icon: 'users', lead: 'Facebook is still essential', text: 'for reaching local customers.' },
+  { icon: 'camera', lead: 'Instagram matters a lot', text: 'for tourism, food and lifestyle businesses.' },
+  { icon: 'phone', lead: 'Almost everyone is on mobile,', text: 'often on mobile data, so your website must load fast on a phone.' },
+  { icon: 'message', lead: 'People prefer to message.', text: 'A WhatsApp or Viber button often gets more enquiries than a contact form.' },
+];
+
+const services: { icon: IconName; title: string; text: string; bestFor?: string; results?: string; link?: { label: string; href: string } }[] = [
   {
+    icon: 'pin',
     title: 'Local SEO and Google Business Profile',
     text: 'When someone in Pokhara searches "cafe near me" or "dentist in Pokhara", the businesses on the map get most of the calls. I set up and optimise your Google Business Profile, fix your details across the web, and build a steady flow of honest reviews, so you show up in Google Maps and the local pack.',
+    bestFor: 'Any business with a location customers visit',
+    results: 'Often within weeks for profile fixes; longer to build reviews',
     link: { label: 'How local SEO works', href: '/blog/local-seo/' },
   },
   {
+    icon: 'search',
     title: 'Website SEO',
     text: 'For searches like "best trekking agency in Pokhara" or "paragliding Pokhara price", your website needs to rank. I handle keyword research, on-page SEO, technical fixes and content that answers what your customers actually search, in the language they search in.',
+    bestFor: 'Tourism, services, education, e-commerce',
+    results: 'Usually a few months; it keeps building after that',
     link: { label: 'SEO service', href: '/services/seo/' },
   },
   {
+    icon: 'chat',
     title: 'Social media marketing (Facebook, Instagram, TikTok)',
     text: 'A content plan that fits your business and the season, posts and reels that show real people and real places (not stock photos), and replies that turn comments into enquiries.',
+    bestFor: 'Awareness, trust, tourism, food, lifestyle',
+    results: 'Steady growth over months',
   },
   {
+    icon: 'target',
     title: 'Paid ads (Meta and Google Ads)',
     text: "Ads planned around Pokhara's seasons: reaching travellers while they're still planning, and locals when they're ready to buy. Every rupee is tracked, so we know which ads bring enquiries and which to stop.",
+    bestFor: 'Seasonal offers, launches, fast enquiries',
+    results: 'As soon as ads go live',
   },
   {
+    icon: 'monitor',
     title: 'Websites and landing pages',
     text: 'With my team, we build fast, mobile-friendly websites and landing pages that load well on mobile data and make it easy to call, message or book.',
     link: { label: 'Website service', href: '/services/website-development/' },
   },
   {
+    icon: 'chart',
     title: 'Tracking and monthly reporting',
-    text: 'I set up Google Analytics 4 and Search Console, and track the actions that matter: calls, WhatsApp clicks, form submissions and bookings. Every month you get a clear report on what happened, what worked and what we\'ll do next.',
+    text: "I set up Google Analytics 4 and Search Console, and track the actions that matter: calls, WhatsApp clicks, form submissions and bookings. Every month you get a clear report on what happened, what worked and what we'll do next.",
+    bestFor: 'Every business',
+    results: 'From the first month',
   },
 ];
+
+const who = [
+  ['Hotels, resorts and homestays', 'Google Business Profile, reviews, website SEO, Instagram'],
+  ['Trekking, tour and adventure companies', 'SEO for trip pages, content for international searches, seasonal ads'],
+  ['Restaurants and cafes', 'Google Maps, reviews, Instagram and TikTok, local ads'],
+  ['Clinics and health businesses', 'Local SEO, trust-building content, Facebook'],
+  ['Gyms and fitness centres', 'Google Maps, Instagram and reels, local ads'],
+  ['Schools, colleges and institutes', 'SEO, Facebook, ads timed with admission seasons'],
+  ['Shops and local services', 'Google Business Profile, Facebook, WhatsApp'],
+].map(([type = '', first = '']) => ({ type, first: first.split(', ') }));
 
 const steps = [
   { title: 'Understand', text: 'One or two meetings to learn what your business actually needs: your customers, your season, your goals.' },
   { title: 'Plan', text: 'We decide together how digital marketing can really help your business grow.' },
   { title: 'Agree', text: 'A clear proposal, agreement and contract, so everything is written down.' },
   { title: 'Deliver', text: 'We do the work we promised.' },
-  { title: 'Report', text: 'Every month, data shows what our work actually did, and what we\'ll do next.' },
+  { title: 'Report', text: "Every month, data shows what our work actually did, and what we'll do next." },
+];
+
+const costFactors = [
+  ['Which services you need', 'Local SEO alone costs less than SEO + social media + ads'],
+  ['Your competition', 'Ranking for "hotel in Lakeside" is harder than for a niche service'],
+  ['Your target market', 'Reaching international travellers usually takes more content and ad spend than reaching locals'],
+  ['One-time or monthly', 'A one-time setup costs less than ongoing monthly growth work'],
+];
+
+const reasons: { icon: IconName; lead: string; text: string }[] = [
+  { icon: 'pin', lead: 'I know this market.', text: 'Lakeside, Damside, Prithvi Chowk, Mahendrapul: each area has different customers. I plan around that.' },
+  { icon: 'coffee', lead: 'We can meet in person.', text: 'Strategy is easier over tea than over email.' },
+  { icon: 'calendar', lead: 'I plan around the seasons.', text: "Your campaigns start before the season, not after it's already busy." },
+  { icon: 'globe', lead: "I speak your customers' language.", text: 'English for travellers, Nepali and Romanized Nepali for locals.' },
+  { icon: 'user', lead: 'You get one point of contact.', text: 'You talk to me, and my team handles development, design and branding behind the scenes.' },
+  { icon: 'chart', lead: 'You see the data.', text: 'Monthly reports show real enquiries and results, not just reach and likes.' },
+];
+
+const tips = [
+  ['Claim and complete your Google Business Profile.', 'Add accurate hours, real photos, your services and a map pin exactly on your door.'],
+  ['Ask every customer for an honest Google review.', 'Send a direct review link on WhatsApp right after a good experience. Never pay for reviews.'],
+  ['Add a WhatsApp button to your website and profiles.', 'Many people here would rather message than call.'],
+  ['Show your prices.', 'For tourism businesses, show NPR and USD. Hidden prices make travellers look elsewhere.'],
+  ['Plan content one season ahead.', 'Post your autumn offers in summer, not in October.'],
 ];
 
 const faq = [
@@ -101,8 +191,10 @@ const faq = [
   { question: 'Do you offer one-time work or only monthly plans?', answer: 'Both. Some clients need a one-time setup, like a Google Business Profile or a website audit. Others need ongoing monthly growth. We choose what fits your goals.' },
 ];
 
-const h2 = 'display text-step-4';
-const body = 'prose';
+const h2 = 'display text-step-4 max-w-4xl';
+const lead = 'mt-6 max-w-2xl text-step-1 leading-snug text-muted';
+const kicker = 'label mb-4 flex items-center gap-3';
+const card = 'scroll-in rounded-3xl border border-line bg-paper p-6 md:p-7';
 ---
 
 <Layout
@@ -134,80 +226,149 @@ const body = 'prose';
       <Button href={whatsapp} target="_blank" rel="nofollow noopener">Chat on WhatsApp</Button>
       <Button href="/contact/" variant="outline">Book a free 30-minute call</Button>
     </div>
-    <ul class="mt-9 flex flex-wrap gap-x-3 gap-y-2 text-step--1 text-muted" aria-label="Why businesses trust me">
-      <li>
-        <span class="text-accent" aria-hidden="true">★</span>
-        {google ? <a class="link text-ink" href={google} target="_blank" rel="noopener">{STATS.googleRating.toFixed(1)} star rating on Google</a> : `${STATS.googleRating.toFixed(1)} star rating on Google`}
-      </li>
-      <li aria-hidden="true">·</li>
-      <li>{STATS.businessesWorkedWith}+ businesses served</li>
-      <li aria-hidden="true">·</li>
-      <li>Hotels · restaurants · tourism · health · education · fitness</li>
-    </ul>
+
+    <dl slot="aside" class="grid grid-cols-2 gap-3 md:grid-cols-1">
+      <div class="group relative col-span-2 flex flex-row-reverse items-center justify-end gap-4 rounded-3xl border border-line bg-paper p-5 md:col-span-1">
+        <dt>
+          <span class="flex gap-0.5 text-accent">{Array.from({ length: 5 }, () => <Icon name="star" class="size-4 fill-current" />)}</span>
+          {google ? <a class="mt-1 block font-semibold after:absolute after:inset-0 group-hover:text-accent" href={google} target="_blank" rel="noopener">star rating on Google</a> : <span class="mt-1 block font-semibold">star rating on Google</span>}
+        </dt>
+        <dd class="display text-[2.75rem] leading-none">{STATS.googleRating.toFixed(1)}</dd>
+      </div>
+      <div class="flex flex-col-reverse rounded-3xl bg-accent p-5 text-on-accent">
+        <dt class="mt-1 font-semibold">businesses served</dt>
+        <dd class="display text-[2.75rem] leading-none">{STATS.businessesWorkedWith}+</dd>
+      </div>
+      <div class="flex flex-col-reverse rounded-3xl border border-line bg-paper p-5">
+        <dt class="mt-1 font-semibold">prices start from</dt>
+        <dd class="display text-step-3 leading-none">NPR 5,000</dd>
+      </div>
+    </dl>
   </PageHeader>
 
-  <!-- Why Pokhara is different -->
-  <section class="wrap pt-20 md:pt-28" aria-labelledby="different">
-    <h2 id="different" class:list={[h2, 'max-w-4xl']}>Why digital marketing in Pokhara is different</h2>
-    <div class:list={[body, 'mt-8']}>
-      <p>Most digital marketing advice online is written for big cities or for other countries. Pokhara doesn't work like that. If you copy a Kathmandu or international playbook here, you'll waste money. Here's what makes this city different.</p>
-      <h3>Pokhara is two markets in one city</h3>
-      <p>Every business here is selling to one, or both, of these groups:</p>
+  <!-- Jump to -->
+  <nav class="border-b border-line bg-paper" aria-label="On this page">
+    <div class="wrap flex items-center gap-4 overflow-x-auto py-3 [scrollbar-width:none]">
+      <span class="label shrink-0">Jump to</span>
+      <ul class="flex shrink-0 gap-2">
+        {toc.map((t) => <li><a class="inline-block whitespace-nowrap rounded-full border border-line px-4 py-2 text-step--1 font-semibold transition-colors hover:border-accent hover:text-accent" href={`#${t.id}`}>{t.label}</a></li>)}
+      </ul>
     </div>
-    <div class="mt-6 max-w-4xl">
-      <DataTable
-        label="Tourists and travellers compared with local customers"
-        head={['', 'Tourists and travellers', 'Local customers']}
-        rowHeaders
-        rows={[
-          ['Who', 'Foreign visitors, Indian and other South Asian travellers, domestic tourists', 'People who live in and around Pokhara'],
-          ['When they search', 'Weeks or months before the trip, and again once they arrive', 'Usually the same day they need something'],
-          ['How they search', 'English: "hotel in Lakeside Pokhara", "Poon Hill trek cost"', 'English, Romanized Nepali and Nepali: "gym near me", "momo pasal near me"'],
-          ['Where they decide', 'Google, Google Maps, reviews, Instagram, booking sites', 'Google Maps, Facebook, word of mouth, WhatsApp'],
-          ['What wins', 'A strong website, reviews, clear prices in USD and NPR', 'A complete Google Business Profile, reviews, fast replies'],
-        ]}
-      />
-    </div>
-    <div class:list={[body, 'mt-8']}>
-      <p>A hotel in Lakeside and a clinic in Prithvi Chowk need completely different strategies, even though they're in the same city. That's the first thing I work out with every client.</p>
-      <h3>The seasons decide your marketing calendar</h3>
-      <p>Pokhara runs on seasons. Autumn (around September to November) and spring (around March to May) bring the biggest trekking and travel crowds. Festivals like Dashain and Tihar bring a big wave of domestic visitors. The monsoon is quieter.</p>
-    </div>
+  </nav>
 
-    <figure class="mt-8 max-w-4xl">
+  <!-- At a glance -->
+  <aside class="wrap pt-14 md:pt-20" aria-labelledby="glance">
+    <div class="grid gap-6 rounded-3xl border border-line bg-paper p-6 md:grid-cols-12 md:p-10">
+      <div class="md:col-span-4">
+        <h2 id="glance" class={kicker}><span class="h-px w-8 bg-accent" aria-hidden="true"></span>At a glance</h2>
+        <p class="title text-step-2">The short version, in 30 seconds.</p>
+      </div>
+      <ul class="grid gap-4 sm:grid-cols-2 md:col-span-8">
+        {
+          [
+            ['Two markets, one city.', 'Travellers plan weeks ahead in English; locals search the same day, often in Nepali.'],
+            ['Seasons set the calendar.', 'Campaigns start before peak season, not during it.'],
+            ['Mobile and messaging first.', 'Fast pages on mobile data, and WhatsApp over contact forms.'],
+            ['Clear prices.', 'From NPR 5,000 one-time, or NPR 10,000 per month, with an exact quote after we talk.'],
+          ].map(([b, t]) => (
+            <li class="flex gap-3">
+              <span class="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-accent text-on-accent"><Icon name="check" class="size-3.5" /></span>
+              <p class="leading-snug"><strong class="font-semibold">{b}</strong> <span class="text-muted">{t}</span></p>
+            </li>
+          ))
+        }
+      </ul>
+      <ul class="flex flex-wrap gap-2 md:col-span-12" aria-label="Industries I work with">
+        {['Hotels', 'Restaurants', 'Tourism', 'Health', 'Education', 'Fitness'].map((i) => <li class="rounded-full bg-surface px-3 py-1.5 text-step--1 font-medium">{i}</li>)}
+      </ul>
+    </div>
+  </aside>
+
+  <!-- 01 Why Pokhara is different -->
+  <section class="wrap pt-24 md:pt-32" aria-labelledby="different">
+    <p class={kicker}><span class="h-px w-8 bg-accent" aria-hidden="true"></span>{n('different')} · Why Pokhara</p>
+    <h2 id="different" class={h2}>Why digital marketing in Pokhara is different</h2>
+    <p class={lead}>Most digital marketing advice online is written for big cities or for other countries. Pokhara doesn't work like that. If you copy a Kathmandu or international playbook here, you'll waste money. Here's what makes this city different.</p>
+
+    <h3 class="title mt-16 text-step-2">Pokhara is two markets in one city</h3>
+    <p class="mt-3 max-w-2xl text-muted">Every business here is selling to one, or both, of these groups:</p>
+    <div class="mt-8 grid gap-4 md:grid-cols-2">
+      {
+        [
+          { title: 'Tourists and travellers', icon: 'globe' as const, items: markets.tourists, dark: true },
+          { title: 'Local customers', icon: 'pin' as const, items: markets.locals, dark: false },
+        ].map((m) => (
+          <div class:list={['scroll-in rounded-3xl p-6 md:p-8', m.dark ? 'stage' : 'border border-line bg-paper']}>
+            <p class="flex items-center gap-3">
+              <span class="grid size-11 place-items-center rounded-full bg-accent text-on-accent"><Icon name={m.icon} class="size-5" /></span>
+              <span class="title text-step-2">{m.title}</span>
+            </p>
+            <dl class="mt-6 divide-y divide-line">
+              {m.items.map((x, i) => (
+                <div class="grid gap-1 py-4 sm:grid-cols-[9.5rem_1fr] sm:gap-4">
+                  <dt class="label pt-0.5 text-ink">{markets.rows[i]}</dt>
+                  <dd class="leading-snug">{x}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        ))
+      }
+    </div>
+    <p class="mt-8 max-w-3xl border-l-4 border-accent pl-5 text-step-1 leading-snug">
+      A hotel in Lakeside and a clinic in Prithvi Chowk need completely different strategies, even though they're in the same city. <strong class="font-semibold">That's the first thing I work out with every client.</strong>
+    </p>
+
+    <h3 class="title mt-20 text-step-2">The seasons decide your marketing calendar</h3>
+    <p class="mt-3 max-w-2xl leading-relaxed text-muted">Pokhara runs on seasons. Autumn (around September to November) and spring (around March to May) bring the biggest trekking and travel crowds. Festivals like Dashain and Tihar bring a big wave of domestic visitors. The monsoon is quieter.</p>
+
+    <figure class="mt-8 rounded-3xl border border-line bg-paper p-5 md:p-8">
       <ol
         class="grid grid-cols-6 gap-1.5 md:grid-cols-12"
         role="img"
-        aria-label="Pokhara's marketing seasons: March, April, May and September are peak travel season. October and November are peak season plus Dashain and Tihar. June, July and August are the quieter monsoon. December, January and February are a slower winter."
+        aria-label="Pokhara's marketing seasons: March, April, May and September are peak travel season. October and November are peak season plus Dashain and Tihar. June, July and August are the quieter monsoon. December, January and February are a slower winter. The best months to launch campaigns are January and February for spring, and July and August for autumn."
       >
-        {months.map(([m, s]) => <li class:list={['rounded-lg py-3 text-center text-step--1 font-semibold text-[#151514]', seasons[s].class]}>{m}</li>)}
+        {
+          months.map(([m, s, launch]) => (
+            <li class="flex flex-col items-center gap-1.5">
+              <span class:list={['w-full rounded-xl py-4 text-center text-step--1 font-bold text-[#151514] md:py-6', seasons[s].class]}>{m}</span>
+              <span class:list={['text-[0.6875rem] font-bold uppercase tracking-wide', launch ? 'text-accent' : 'invisible']}>▲<span class="hidden md:inline"> Launch</span></span>
+            </li>
+          ))
+        }
       </ol>
-      <figcaption>
-        <ul class="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-step--1 text-muted" aria-hidden="true">
-          {Object.values(seasons).map((s) => <li class="flex items-center gap-2"><span class:list={['size-3 rounded-sm', s.class]} />{s.label}</li>)}
-        </ul>
+      <figcaption class="mt-5 flex flex-wrap gap-x-6 gap-y-2 border-t border-line pt-5 text-step--1 text-muted" aria-hidden="true">
+        {Object.values(seasons).map((s) => <span class="flex items-center gap-2"><span class:list={['size-3 rounded-sm', s.class]} />{s.label}</span>)}
+        <span class="flex items-center gap-2 font-semibold text-accent">▲ Best time to launch campaigns</span>
       </figcaption>
     </figure>
 
-    <div class:list={[body, 'mt-8']}>
-      <p>The numbers show how big this market is. The Annapurna region recorded a record <strong>299,831 visitors in 2025</strong>, according to the Annapurna Conservation Area Project, and Pokhara is the main gateway to that region.</p>
-      <p>Good marketing here starts <strong>before</strong> the season, not during it. By the time the season begins, travellers have already planned and booked.</p>
-      <h3>Your customers are online, mostly on their phones</h3>
+    <div class="mt-4 grid gap-4 md:grid-cols-12">
+      <div class="scroll-in stage rounded-3xl p-6 md:col-span-5 md:p-8">
+        <p class="display text-[clamp(2.75rem,7vw,4.5rem)] leading-none text-accent">299,831</p>
+        <p class="mt-3 text-step-1 font-semibold">visitors to the Annapurna region in 2025, a record</p>
+        <p class="mt-2 text-step--1 text-muted">According to the Annapurna Conservation Area Project. Pokhara is the main gateway to that region.</p>
+      </div>
+      <blockquote class="scroll-in flex flex-col justify-center rounded-3xl border border-line bg-paper p-6 md:col-span-7 md:p-8">
+        <p class="display text-step-3 leading-[1.1]">Good marketing here starts <span class="text-accent">before</span> the season, not during it.</p>
+        <p class="mt-4 text-muted">By the time the season begins, travellers have already planned and booked.</p>
+      </blockquote>
     </div>
 
-    <figure class="mt-6 max-w-4xl">
+    <h3 class="title mt-20 text-step-2">Your customers are online, mostly on their phones</h3>
+    <figure class="mt-8">
       <ul class="grid gap-3 sm:grid-cols-3 sm:gap-4">
-        <li class="rounded-2xl border border-line bg-paper p-6">
-          <p class="display text-step-4 text-accent">16.6M</p>
-          <p class="mt-2 leading-snug">internet users in Nepal, 56% of the population</p>
+        <li class="scroll-in rounded-3xl bg-accent p-6 text-on-accent md:p-7">
+          <p class="display text-[clamp(2.5rem,5vw,3.5rem)] leading-none">16.6M</p>
+          <p class="mt-3 font-semibold leading-snug">internet users in Nepal, 56% of the population</p>
         </li>
-        <li class="rounded-2xl border border-line bg-paper p-6">
-          <p class="display text-step-4 text-accent">14.8M</p>
-          <p class="mt-2 leading-snug">social media user identities</p>
+        <li class={card}>
+          <p class="display text-[clamp(2.5rem,5vw,3.5rem)] leading-none">14.8M</p>
+          <p class="mt-3 font-semibold leading-snug">social media user identities</p>
         </li>
-        <li class="rounded-2xl border border-line bg-paper p-6">
-          <p class="display text-step-4 text-accent">4.35M</p>
-          <p class="mt-2 leading-snug">people reachable with Instagram ads</p>
+        <li class={card}>
+          <p class="display text-[clamp(2.5rem,5vw,3.5rem)] leading-none">4.35M</p>
+          <p class="mt-3 font-semibold leading-snug">people reachable with Instagram ads</p>
         </li>
       </ul>
       <figcaption class="mt-3 text-step--1 text-muted">
@@ -215,76 +376,76 @@ const body = 'prose';
       </figcaption>
     </figure>
 
-    <div class:list={[body, 'mt-8']}>
-      <p>What this means for a Pokhara business:</p>
-      <ul>
-        <li><strong>Facebook is still essential</strong> for reaching local customers.</li>
-        <li><strong>Instagram matters a lot</strong> for tourism, food and lifestyle businesses.</li>
-        <li><strong>Almost everyone is on mobile</strong>, often on mobile data, so your website must load fast on a phone.</li>
-        <li><strong>People prefer to message.</strong> A WhatsApp or Viber button often gets more enquiries than a contact form.</li>
-      </ul>
-    </div>
+    <p class="label mt-12 text-ink">What this means for a Pokhara business</p>
+    <ul class="mt-5 grid gap-3 sm:grid-cols-2 sm:gap-4">
+      {
+        meaning.map((m) => (
+          <li class="scroll-in flex gap-4 rounded-3xl border border-line p-5">
+            <span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-surface text-accent"><Icon name={m.icon} class="size-5" /></span>
+            <p class="leading-snug"><strong class="font-semibold">{m.lead}</strong> <span class="text-muted">{m.text}</span></p>
+          </li>
+        ))
+      }
+    </ul>
   </section>
 
-  <!-- Services -->
+  <!-- 02 Services -->
   <section class="wrap pt-24 md:pt-32" aria-labelledby="services">
-    <h2 id="services" class:list={[h2, 'max-w-4xl']}>Digital marketing services I offer in Pokhara</h2>
-    <p class="mt-6 max-w-2xl text-step-1 leading-snug text-muted">I don't sell fixed packages. Every plan is built from these services, based on what your business actually needs.</p>
-    <ul class="mt-10 grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+    <p class={kicker}><span class="h-px w-8 bg-accent" aria-hidden="true"></span>{n('services')} · Services</p>
+    <h2 id="services" class={h2}>Digital marketing services I offer in Pokhara</h2>
+    <p class={lead}>I don't sell fixed packages. Every plan is built from these services, based on what your business actually needs.</p>
+    <ul class="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {
-        services.map((s) => (
-          <li class="flex flex-col rounded-2xl border border-line bg-paper p-6">
-            <h3 class="title text-step-1">{s.title}</h3>
+        services.map((s, i) => (
+          <li class={`${card} group flex flex-col transition-colors hover:border-ink`}>
+            <div class="flex items-start justify-between gap-4">
+              <span class="grid size-12 place-items-center rounded-2xl bg-accent text-on-accent transition-transform duration-300 group-hover:-rotate-6"><Icon name={s.icon} /></span>
+              <span class="title text-step-1 text-muted" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+            </div>
+            <h3 class="title mt-6 text-step-1">{s.title}</h3>
             <p class="mt-3 leading-relaxed text-muted">{s.text}</p>
+            {(s.bestFor || s.results) && (
+              <dl class="mt-5 space-y-2 rounded-2xl bg-surface p-4 text-step--1">
+                {s.bestFor && <div><dt class="inline font-semibold">Best for: </dt><dd class="inline text-muted">{s.bestFor}</dd></div>}
+                {s.results && <div class="flex gap-2"><Icon name="clock" class="mt-0.5 size-4 shrink-0 text-accent" /><div><dt class="inline font-semibold">Results: </dt><dd class="inline text-muted">{s.results}</dd></div></div>}
+              </dl>
+            )}
             {s.link && <a class="mt-auto pt-5 font-semibold hover:text-accent" href={s.link.href}>{s.link.label} <span aria-hidden="true">→</span></a>}
           </li>
         ))
       }
     </ul>
-    <div class="mt-10 max-w-4xl">
-      <DataTable
-        label="When each service usually shows results"
-        head={['Service', 'Best for', 'When you usually see results']}
-        rowHeaders
-        rows={[
-          ['Local SEO and Google Business Profile', 'Any business with a location customers visit', 'Often within weeks for profile fixes; longer to build reviews'],
-          ['Website SEO', 'Tourism, services, education, e-commerce', 'Usually a few months; it keeps building after that'],
-          ['Social media', 'Awareness, trust, tourism, food, lifestyle', 'Steady growth over months'],
-          ['Paid ads', 'Seasonal offers, launches, fast enquiries', 'As soon as ads go live'],
-          ['Tracking and reporting', 'Every business', 'From the first month'],
-        ]}
-      />
-    </div>
   </section>
 
-  <!-- Who I work with -->
+  <!-- 03 Who I work with -->
   <section class="wrap pt-24 md:pt-32" aria-labelledby="who">
+    <p class={kicker}><span class="h-px w-8 bg-accent" aria-hidden="true"></span>{n('who')} · Who I help</p>
     <h2 id="who" class={h2}>Who I work with in Pokhara</h2>
-    <p class="mt-6 max-w-2xl text-step-1 leading-snug text-muted">I work with businesses that want real growth, not vanity numbers. Most of my clients fall into these groups:</p>
-    <div class="mt-8 max-w-4xl">
-      <DataTable
-        label="What usually works first for each type of business"
-        head={['Business type', 'What usually works first']}
-        rowHeaders
-        rows={[
-          ['Hotels, resorts and homestays', 'Google Business Profile, reviews, website SEO, Instagram'],
-          ['Trekking, tour and adventure companies', 'SEO for trip pages, content for international searches, seasonal ads'],
-          ['Restaurants and cafes', 'Google Maps, reviews, Instagram and TikTok, local ads'],
-          ['Clinics and health businesses', 'Local SEO, trust-building content, Facebook'],
-          ['Gyms and fitness centres', 'Google Maps, Instagram and reels, local ads'],
-          ['Schools, colleges and institutes', 'SEO, Facebook, ads timed with admission seasons'],
-          ['Shops and local services', 'Google Business Profile, Facebook, WhatsApp'],
-        ]}
-      />
-    </div>
-    <p class="mt-6 max-w-2xl text-muted">I'm based in Pokhara, and I can work with businesses outside Pokhara remotely too.</p>
+    <p class={lead}>I work with businesses that want real growth, not vanity numbers. Most of my clients fall into these groups:</p>
+    <ul class="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {
+        who.map((w) => (
+          <li class={card}>
+            <h3 class="title text-step-1 leading-tight">{w.type}</h3>
+            <p class="label mt-5">What usually works first</p>
+            <ul class="mt-3 flex flex-wrap gap-1.5">
+              {w.first.map((f) => <li class="rounded-full bg-surface px-3 py-1 text-step--1 font-medium">{f}</li>)}
+            </ul>
+          </li>
+        ))
+      }
+      <li class="scroll-in stage flex flex-col justify-between gap-6 rounded-3xl p-6 md:p-7">
+        <p class="title text-step-1 leading-snug">I'm based in Pokhara, and I can work with businesses outside Pokhara remotely too.</p>
+        <a class="font-semibold text-accent" href="/services/digital-marketing/">All digital marketing services <span aria-hidden="true">→</span></a>
+      </li>
+    </ul>
   </section>
 
   {
     showResults && (
       <section class="wrap pt-24 md:pt-32" aria-labelledby="results">
         <h2 id="results" class={h2}>Real results for Pokhara businesses</h2>
-        <p class="mt-6 max-w-2xl text-step-1 leading-snug text-muted">Anyone can promise results. Here's what we've actually achieved. To respect client privacy, I share the industry and the numbers, not the names.</p>
+        <p class={lead}>Anyone can promise results. Here's what we've actually achieved. To respect client privacy, I share the industry and the numbers, not the names.</p>
         <div class="mt-8 max-w-5xl">
           <DataTable
             label="Results for Pokhara businesses"
@@ -299,90 +460,139 @@ const body = 'prose';
     )
   }
 
-  <!-- How I work -->
+  <!-- 04 How I work -->
   <section class="wrap pt-24 md:pt-32" aria-labelledby="how">
+    <p class={kicker}><span class="h-px w-8 bg-accent" aria-hidden="true"></span>{n('how')} · How I work</p>
     <h2 id="how" class={h2}>How I work</h2>
-    <p class="mt-6 max-w-2xl text-step-1 leading-snug text-muted">Most of my clients stay long-term, and I think this process is why. I don't sell random packages a business doesn't need.</p>
-    <ol class="mt-10 grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-5">
-      {
-        steps.map((s, i) => (
-          <li class:list={['rounded-2xl p-5 sm:p-6', i === steps.length - 1 ? 'stage sm:col-span-2 lg:col-span-1' : 'border border-line bg-paper']}>
-            <p class="title text-step-2 text-accent">{String(i + 1).padStart(2, '0')}</p>
-            <p class="title mt-4 text-step-1 sm:mt-6">{s.title}</p>
-            <p class="mt-2 leading-relaxed text-muted">{s.text}</p>
-          </li>
-        ))
-      }
-    </ol>
+    <p class={lead}>Most of my clients stay long-term, and I think this process is why. I don't sell random packages a business doesn't need.</p>
+    <div class="relative mt-12">
+      <div class="pointer-events-none absolute left-12 right-12 top-12 hidden h-px bg-line lg:block" aria-hidden="true"></div>
+      <ol class="relative grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-5">
+        {
+          steps.map((s, i) => (
+            <li class:list={['scroll-in rounded-3xl p-6', i === steps.length - 1 ? 'stage sm:col-span-2 lg:col-span-1' : 'border border-line bg-paper']}>
+              <span class="title grid size-12 place-items-center rounded-full bg-accent text-step-1 text-on-accent">{i + 1}</span>
+              <p class="title mt-6 text-step-1">{s.title}</p>
+              <p class="mt-2 leading-relaxed text-muted">{s.text}</p>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
     <p class="mt-8 text-muted">Want to know where this way of working came from? <a class="link font-semibold text-ink" href="/stories/learning-outside-the-classroom/">Read my story</a>.</p>
   </section>
 
-  <!-- Cost -->
-  <section class="wrap pt-24 md:pt-32" aria-labelledby="cost">
-    <h2 id="cost" class:list={[h2, 'max-w-4xl']}>How much does digital marketing cost in Pokhara?</h2>
-    <p class="mt-6 max-w-2xl text-step-1 leading-snug text-muted">The honest answer: it depends on what your business needs. A cafe that needs Google Maps and Instagram needs a very different budget from a trekking company targeting travellers in Europe.</p>
-    <div class="mt-10 grid gap-10 lg:grid-cols-2 lg:gap-12">
-      <DataTable label="Starting prices" head={['Service', 'Starting from']} rowHeaders rows={prices.map((p) => [p.name, p.label])} />
-      <DataTable
-        label="What affects the cost"
-        head={['What affects the cost', 'Why']}
-        rowHeaders
-        rows={[
-          ['Which services you need', 'Local SEO alone costs less than SEO + social media + ads'],
-          ['Your competition', 'Ranking for "hotel in Lakeside" is harder than for a niche service'],
-          ['Your target market', 'Reaching international travellers usually takes more content and ad spend than reaching locals'],
-          ['One-time or monthly', 'A one-time setup costs less than ongoing monthly growth work'],
-        ]}
-      />
+  <!-- Mid-page nudge -->
+  <section class="wrap pt-16" aria-label="Talk to me">
+    <div class="stage relative flex flex-col gap-6 overflow-hidden rounded-3xl p-6 md:flex-row md:items-center md:justify-between md:p-10">
+      <div class="pointer-events-none absolute -right-16 -top-24 size-72 rounded-full bg-accent/25 blur-3xl" aria-hidden="true"></div>
+      <div class="relative">
+        <p class="title text-step-2">Not sure where to start?</p>
+        <p class="mt-2 max-w-xl text-muted">Tell me about your business and I'll suggest the one or two things that will make the biggest difference first.</p>
+      </div>
+      <div class="relative shrink-0"><Button href={whatsapp} target="_blank" rel="nofollow noopener">Chat on WhatsApp</Button></div>
     </div>
-    <p class="mt-10 max-w-3xl rounded-2xl border-l-4 border-accent bg-paper p-6 leading-relaxed">
-      These are base prices. Depending on your industry and the scope of work, the price may be different. After our first meeting, you get an exact quote based on your goals. No hidden costs, and no services you don't need. Ad budgets (money paid directly to Meta or Google) are separate from these fees.
+  </section>
+
+  <!-- 05 Cost -->
+  <section class="wrap pt-24 md:pt-32" aria-labelledby="cost">
+    <p class={kicker}><span class="h-px w-8 bg-accent" aria-hidden="true"></span>{n('cost')} · Pricing</p>
+    <h2 id="cost" class={h2}>How much does digital marketing cost in Pokhara?</h2>
+    <p class={lead}>The honest answer: it depends on what your business needs. A cafe that needs Google Maps and Instagram needs a very different budget from a trekking company targeting travellers in Europe.</p>
+
+    <ul class="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-label="Starting prices">
+      {
+        prices.map((p, i) => (
+          <li class:list={['scroll-in flex flex-col rounded-3xl p-6 md:p-7', i === prices.length - 1 ? 'stage' : 'border border-line bg-paper']}>
+            <h3 class="title text-step-1 leading-tight">{p.name}</h3>
+            <p class="mt-auto pt-8 text-step--1 text-muted">Starting from</p>
+            <p class="mt-1 flex items-baseline gap-1.5"><span class="font-semibold text-muted">NPR</span><span class="display text-step-4 leading-none">{p.amount}</span></p>
+            <p class:list={['mt-3 w-fit rounded-full px-3 py-1 text-step--1 font-semibold', p.per === 'one-time' ? 'bg-surface' : 'bg-accent text-on-accent']}>{p.per}</p>
+          </li>
+        ))
+      }
+    </ul>
+
+    <p class="label mt-14 text-ink">What affects the cost</p>
+    <dl class="mt-5 grid gap-x-10 border-t border-line sm:grid-cols-2">
+      {
+        costFactors.map(([f, why]) => (
+          <div class="border-b border-line py-5">
+            <dt class="title text-step-1">{f}</dt>
+            <dd class="mt-1 leading-relaxed text-muted">{why}</dd>
+          </div>
+        ))
+      }
+    </dl>
+    <p class="mt-10 flex max-w-3xl gap-4 rounded-3xl border-l-4 border-accent bg-paper p-6 leading-relaxed">
+      <span class="mt-0.5 grid size-7 shrink-0 place-items-center rounded-full bg-accent font-bold text-on-accent" aria-hidden="true">i</span>
+      <span>These are base prices. Depending on your industry and the scope of work, the price may be different. After our first meeting, you get an exact quote based on your goals. No hidden costs, and no services you don't need. Ad budgets (money paid directly to Meta or Google) are separate from these fees.</span>
     </p>
   </section>
 
-  <!-- Why a Pokhara-based marketer -->
+  <!-- 06 Why a Pokhara-based marketer -->
   <section class="wrap pt-24 md:pt-32" aria-labelledby="why">
-    <h2 id="why" class:list={[h2, 'max-w-4xl']}>Why work with a Pokhara-based digital marketer</h2>
-    <ul class="mt-10 grid gap-x-12 gap-y-6 md:grid-cols-2">
+    <p class={kicker}><span class="h-px w-8 bg-accent" aria-hidden="true"></span>{n('why')} · Why local</p>
+    <h2 id="why" class={h2}>Why work with a Pokhara-based digital marketer</h2>
+    <ul class="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {
-        [
-          ['I know this market.', 'Lakeside, Damside, Prithvi Chowk, Mahendrapul: each area has different customers. I plan around that.'],
-          ['We can meet in person.', 'Strategy is easier over tea than over email.'],
-          ['I plan around the seasons.', "Your campaigns start before the season, not after it's already busy."],
-          ["I speak your customers' language.", 'English for travellers, Nepali and Romanized Nepali for locals.'],
-          ['You get one point of contact.', 'You talk to me, and my team handles development, design and branding behind the scenes.'],
-          ['You see the data.', 'Monthly reports show real enquiries and results, not just reach and likes.'],
-        ].map(([lead, text]) => (
-          <li class="flex gap-4 text-step-0 leading-relaxed">
-            <span class="mt-[0.6em] size-2 shrink-0 rounded-full bg-accent" aria-hidden="true" />
-            <p><strong class="font-semibold">{lead}</strong> <span class="text-muted">{text}</span></p>
+        reasons.map((r) => (
+          <li class={card}>
+            <span class="grid size-12 place-items-center rounded-2xl bg-surface text-accent"><Icon name={r.icon} /></span>
+            <p class="title mt-5 text-step-1">{r.lead}</p>
+            <p class="mt-2 leading-relaxed text-muted">{r.text}</p>
           </li>
         ))
       }
     </ul>
   </section>
 
-  <!-- 5 things this week -->
+  <!-- 07 Five things this week: a checklist people can tick (no JS; a CSS counter counts the ticks) -->
   <section class="wrap pt-24 md:pt-32" aria-labelledby="this-week">
-    <h2 id="this-week" class:list={[h2, 'max-w-4xl']}>5 things any Pokhara business can do this week</h2>
-    <div class:list={[body, 'mt-8']}>
-      <p>Not ready to hire anyone yet? Start with these. They're free.</p>
-      <ol>
-        <li><strong>Claim and complete your Google Business Profile.</strong> Add accurate hours, real photos, your services and a map pin exactly on your door.</li>
-        <li><strong>Ask every customer for an honest Google review.</strong> Send a direct review link on WhatsApp right after a good experience. Never pay for reviews.</li>
-        <li><strong>Add a WhatsApp button to your website and profiles.</strong> Many people here would rather message than call.</li>
-        <li><strong>Show your prices.</strong> For tourism businesses, show NPR and USD. Hidden prices make travellers look elsewhere.</li>
-        <li><strong>Plan content one season ahead.</strong> Post your autumn offers in summer, not in October.</li>
+    <p class={kicker}><span class="h-px w-8 bg-accent" aria-hidden="true"></span>{n('this-week')} · Free tips</p>
+    <h2 id="this-week" class={h2}>5 things any Pokhara business can do this week</h2>
+    <p class={lead}>Not ready to hire anyone yet? Start with these. They're free.</p>
+    <div class="checklist mt-12 grid gap-8 lg:grid-cols-12">
+      <ol class="space-y-3 lg:col-span-8">
+        {
+          tips.map(([b, t], i) => (
+            <li>
+              <label class="tip flex cursor-pointer gap-4 rounded-3xl border border-line bg-paper p-5 transition-colors hover:border-ink md:p-6">
+                <input type="checkbox" class="sr-only" />
+                <span class="box grid size-8 shrink-0 place-items-center rounded-full border-2 border-line text-step--1 font-bold transition-colors" aria-hidden="true">
+                  <span class="num">{i + 1}</span>
+                  <Icon name="check" class="tick hidden size-4" />
+                </span>
+                <span class="leading-relaxed"><strong class="font-semibold">{b}</strong> <span class="text-muted">{t}</span></span>
+              </label>
+            </li>
+          ))
+        }
       </ol>
-      <p>Want to go deeper? Check your website page by page with my <a href="/resource/on-page-seo-checklist-template/">free on-page SEO checklist template</a>, or read the <a href="/blog/on-page-seo-checklist/">on-page SEO checklist guide</a>.</p>
+      <div class="lg:col-span-4">
+        <div class="space-y-4 lg:sticky lg:top-28">
+          <div class="stage rounded-3xl p-6" aria-hidden="true">
+            <p class="label">Your progress</p>
+            <p class="done display mt-2 text-step-4 leading-none"> of 5 done</p>
+            <p class="mt-3 text-step--1 text-muted">Tick each one off as you go.</p>
+          </div>
+          <a class="group block rounded-3xl border border-line bg-paper p-6 transition-colors hover:border-ink" href="/resource/on-page-seo-checklist-template/">
+            <p class="label">Go deeper</p>
+            <p class="title mt-2 text-step-1 group-hover:text-accent">Free on-page SEO checklist template <span aria-hidden="true">→</span></p>
+            <p class="mt-1 text-step--1 text-muted">Check your website page by page.</p>
+          </a>
+          <a class="group block rounded-3xl border border-line bg-paper p-6 transition-colors hover:border-ink" href="/blog/on-page-seo-checklist/">
+            <p class="label">Read</p>
+            <p class="title mt-2 text-step-1 group-hover:text-accent">On-page SEO checklist guide <span aria-hidden="true">→</span></p>
+          </a>
+        </div>
+      </div>
     </div>
   </section>
 
   {testimonials.length > 0 && <Testimonials items={testimonials} title="What clients say." />}
 
-  <div class="wrap pt-24 md:pt-32">
-    <Faq items={faq} title="Frequently asked questions" />
-  </div>
+  <div class="wrap pt-24 md:pt-32"><Faq items={faq} title="Frequently asked questions" /></div>
 
   <CtaPanel
     kicker="Work with me"
@@ -393,3 +603,18 @@ const body = 'prose';
 
   <div class="wrap -mt-12 pb-24 md:-mt-16 md:pb-32"><AuthorBox /></div>
 </Layout>
+
+<style>
+  /* Checklist: a ticked tip turns orange; the progress card counts ticks with a CSS counter. */
+  .checklist { counter-reset: done; }
+  .checklist input:checked { counter-increment: done; }
+  .checklist .done::before { content: counter(done); color: var(--accent); }
+  .tip:has(input:checked) { border-color: var(--accent); }
+  .tip:has(input:checked) .box { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+  .tip:has(input:checked) .num { display: none; }
+  .tip:has(input:checked) :global(.tick) { display: block; }
+  .tip:has(input:checked) strong { text-decoration: line-through; text-decoration-color: var(--accent); }
+  .tip:has(input:focus-visible) { outline: 2px solid var(--focus); outline-offset: 2px; }
+  /* Jump-to links land below the sticky header. */
+  h2[id] { scroll-margin-top: 6rem; }
+</style>
