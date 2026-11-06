@@ -70,6 +70,8 @@ export default defineConfig({
   image: {
     // AVIF first, WebP fallback via <Picture>.
     responsiveStyles: true,
+    // CMS covers: fetched at build time to make the JPG share image (src/lib/og.ts).
+    domains: ['media.fullbleed.basilpot.com'],
   },
   // d4 type, used by d5.
   fonts: [
