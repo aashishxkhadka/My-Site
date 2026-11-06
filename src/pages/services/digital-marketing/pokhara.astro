@@ -5,13 +5,14 @@
  * Hand-built (not from the services collection) because its sections are unique.
  * No FAQPage or self-serving review schema, on purpose.
  */
-import { getEntry, type CollectionEntry } from 'astro:content';
-import { getImage } from 'astro:assets';
+import { getCollection, getEntry, type CollectionEntry } from 'astro:content';
+import { Image, getImage } from 'astro:assets';
 import Layout from '@/designs/d4/Layout.astro';
 import Breadcrumbs from '@/components/seo/Breadcrumbs.astro';
 import Button from '@/designs/d4/components/Button.astro';
 import DataTable from '@/designs/d4/components/DataTable.astro';
 import Icon from '@/designs/d4/components/Icon.astro';
+import type { IconName } from '@/designs/d4/icons';
 import Faq from '@/designs/d4/components/Faq.astro';
 import Testimonials from '@/designs/d4/components/Testimonials.astro';
 import CtaPanel from '@/designs/d4/components/CtaPanel.astro';
@@ -28,6 +29,16 @@ const heroWide = await getImage({ src: heroImage, width: 1672, format: 'webp', q
 const heroPhoto = await getImage({ src: lake, width: 740, format: 'webp', quality: 80 });
 
 const google = SOCIALS.find((s) => s.key === 'gbp')?.url;
+
+// Proof band under the hero: confirmed numbers only (STATS in site.config).
+const proof: { icon: IconName; value: string; label: string; href?: string; external?: boolean; stars?: boolean }[] = [
+  { icon: 'star', value: STATS.googleRating.toFixed(1), label: 'rating on Google', stars: true, ...(google ? { href: google, external: true } : {}) },
+  { icon: 'users', value: `${STATS.businessesWorkedWith}+`, label: 'businesses served, most still with us' },
+  { icon: 'chart', value: STATS.socialViews, label: "views across clients' social media" },
+  { icon: 'target', value: 'NPR 5,000', label: 'starting price, see pricing', href: '#cost' },
+];
+// Client logos (featured first), for the scrolling row.
+const logos = (await getCollection('clients')).filter((c) => c.data.logo).sort((a, b) => Number(b.data.featured) - Number(a.data.featured) || a.data.order - b.data.order);
 
 /** Real results only. Flip to true once the table below has real numbers (never placeholders). */
 const showResults = false;
@@ -109,24 +120,45 @@ const body = 'mt-6 max-w-2xl text-step-1 leading-relaxed text-muted';
     </div>
   </section>
 
-  <!-- Stat band -->
-  <div class="border-y border-line bg-paper">
-    <dl class="wrap grid grid-cols-2 gap-y-6 py-8 md:grid-cols-4 md:divide-x md:divide-line md:py-10">
+  <!-- Proof band: four trust numbers, then a slow-scrolling row of client logos -->
+  <section class="border-y border-line bg-paper" aria-label="Why businesses trust me">
+    <dl class="wrap grid grid-cols-2 gap-x-6 gap-y-8 py-9 md:grid-cols-4 md:gap-0 md:divide-x md:divide-line md:py-11">
       {
-        [
-          [`${STATS.googleRating.toFixed(1)}★`, 'Google rating'],
-          [`${STATS.businessesWorkedWith}+`, 'businesses served'],
-          ['299,831', 'Annapurna visitors, 2025'],
-          ['NPR 5,000', 'starting price'],
-        ].map(([v, l]) => (
-          <div class="flex flex-col-reverse md:px-8 md:first:pl-0">
-            <dt class="mt-1 text-step--1 text-muted">{l}</dt>
-            <dd class="display text-step-3 text-accent">{v}</dd>
+        proof.map((p) => (
+          <div class="group relative flex items-center gap-4 md:px-6 md:first:pl-0 lg:px-8">
+            <span class="hidden size-11 shrink-0 place-items-center rounded-2xl bg-surface text-accent transition-colors group-hover:bg-accent group-hover:text-on-accent sm:grid"><Icon name={p.icon} class="size-5" /></span>
+            <div class="flex flex-col-reverse">
+              <dt class="mt-1.5 text-step--1 leading-snug text-muted">
+                {p.href ? <a href={p.href} {...(p.external ? { target: '_blank', rel: 'noopener' } : {})} class="after:absolute after:inset-0 group-hover:text-ink">{p.label} <span aria-hidden="true">{p.external ? '↗' : '↓'}</span></a> : p.label}
+              </dt>
+              <dd class="flex items-center gap-2">
+                <span class="display whitespace-nowrap text-[clamp(1.6rem,2.4vw,2.25rem)] leading-none">{p.value}</span>
+                {p.stars && <span class="flex text-accent" aria-label="5 out of 5 stars">{Array.from({ length: 5 }, () => <Icon name="star" class="size-3.5 fill-current" />)}</span>}
+              </dd>
+            </div>
           </div>
         ))
       }
     </dl>
-  </div>
+    {
+      logos.length > 0 && (
+        <div class="border-t border-line">
+          <div class="wrap flex flex-col gap-4 py-6 md:flex-row md:items-center md:gap-8">
+            <p class="label shrink-0">Businesses I've helped grow</p>
+            <div class="logo-rail relative min-w-0 flex-1 overflow-hidden">
+              <ul class="logo-track flex w-max items-center gap-10">
+                {[...logos, ...logos].map((c, i) => (
+                  <li class="shrink-0" aria-hidden={i >= logos.length ? 'true' : undefined}>
+                    <Image src={c.data.logo!} alt={i < logos.length ? c.data.name : ''} widths={[160, 320]} sizes="160px" class:list={['h-9 w-auto max-w-[9rem] object-contain opacity-70 grayscale transition duration-300 hover:opacity-100 hover:grayscale-0', c.data.logoOnDark && 'invert hover:invert-0 hover:rounded hover:bg-[#1c1c1c]']} />
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      )
+    }
+  </section>
 
   <!-- Phones and tablets: jump bar (desktop gets the sticky contents list) -->
   <nav class="border-b border-line lg:hidden" aria-label="Jump to a section">
@@ -385,6 +417,16 @@ const body = 'mt-6 max-w-2xl text-step-1 leading-relaxed text-muted';
 </Layout>
 
 <style>
+  /* Light-on-dark logos are inverted to read on white, and get their dark tile back on hover. */
+  /* Logo row: scrolls slowly, pauses on hover, fades at the edges. Still (and scrollable) for reduced motion. */
+  .logo-rail { mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); }
+  .logo-track { animation: logos 45s linear infinite; }
+  .logo-rail:hover .logo-track { animation-play-state: paused; }
+  @keyframes logos { to { transform: translateX(calc(-50% - 1.25rem)); } }
+  @media (prefers-reduced-motion: reduce) {
+    .logo-rail { overflow-x: auto; }
+    .logo-track { animation: none; }
+  }
   /* Hero: always light cream, matched to the hero image's own background (#fbf7f0), in both themes. */
   .hero {
     background: #fbf7f0;
