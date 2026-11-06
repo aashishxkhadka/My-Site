@@ -6,7 +6,7 @@
  * No FAQPage or self-serving review schema, on purpose.
  */
 import { getEntry, type CollectionEntry } from 'astro:content';
-import { Image } from 'astro:assets';
+import { getImage } from 'astro:assets';
 import Layout from '@/designs/d4/Layout.astro';
 import Breadcrumbs from '@/components/seo/Breadcrumbs.astro';
 import Button from '@/designs/d4/components/Button.astro';
@@ -21,6 +21,11 @@ import { localBusinessNode } from '@/lib/schema';
 import { STATS, SOCIALS } from '@/site.config';
 import { path, crumbs, title, description, ogDescription, ogImage, ogImageAlt, whatsapp, glance, testimonialIds, prices, toc, n, markets, months, seasons, meaning, services, who, steps, costFactors, reasons, tips, faq } from '@/data/pokhara';
 import lake from '@/assets/pokhara/phewa-lake.png';
+import heroImage from '@/assets/pokhara/pokhara-hero.png';
+
+// Hero images: the full image (wide screens) and a photo-only crop (phones, tablets).
+const heroWide = await getImage({ src: heroImage, width: 1672, format: 'webp', quality: 80 });
+const heroPhoto = await getImage({ src: lake, width: 740, format: 'webp', quality: 80 });
 
 const google = SOCIALS.find((s) => s.key === 'gbp')?.url;
 
@@ -60,46 +65,52 @@ const body = 'mt-6 max-w-2xl text-step-1 leading-relaxed text-muted';
     }),
   ]}
 >
-  <!-- Hero: full-width Phewa Lake photo, darkened, text on top -->
-  <section class="stage relative isolate overflow-hidden" aria-labelledby="page-title">
-    <Image
-      src={lake}
-      alt="Phewa Lake and Machhapuchhre in Pokhara, with a boat on the water"
-      widths={[740]}
-      sizes="100vw"
-      loading="eager"
-      fetchpriority="high"
-      class="absolute inset-0 -z-10 h-full w-full object-cover object-[50%_62%]"
-    />
-    <!-- Phones: even dark tint (text spans the full width). Desktop: dark on the text side, photo shows through on the right. -->
-    <div class="absolute inset-0 -z-10 bg-[rgba(20,20,19,0.82)] md:bg-[linear-gradient(90deg,rgba(20,20,19,0.94)_0%,rgba(20,20,19,0.82)_45%,rgba(20,20,19,0.35)_100%)]" aria-hidden="true"></div>
-    <div class="absolute inset-x-0 bottom-0 -z-10 h-32 bg-gradient-to-t from-[rgba(20,20,19,0.85)] to-transparent" aria-hidden="true"></div>
-
-    <div class="wrap pb-20 pt-8 md:pb-32 md:pt-12">
-      <Breadcrumbs crumbs={withHome(crumbs)!} />
-      <p class="label mt-12 flex items-center gap-3 text-ink md:mt-16"><span class="h-px w-8 bg-accent" aria-hidden="true"></span>Digital Marketing in Pokhara</p>
-      <h1 id="page-title" class="display mt-5 max-w-4xl text-[clamp(2.5rem,6.2vw,5.5rem)] leading-[0.95]">Digital marketing in <span class="text-accent">Pokhara</span> that brings real enquiries, not just likes</h1>
-      <div class="mt-8 max-w-2xl space-y-4 text-step-1 leading-snug text-[#dcd9d2]">
-        <p>I'm Aashish, a digital marketer based in Pokhara. With my team, I've worked with <strong class="text-ink">more than {STATS.businessesWorkedWith} businesses</strong>, and most of them still work with us today.</p>
-        <p>I help Pokhara businesses get found on Google, show up on Google Maps, and turn social media and ads into real calls, WhatsApp messages and bookings. Not just likes.</p>
+  <!--
+    Hero. Wide screens (≥1340px): the full hero image is the background (75% wide, anchored right, so the
+    photo always starts after the text column); its cream side blends into the section background. Narrower screens: the text would cover
+    the photo, so a photo-only crop shows below the text instead. <picture> loads just one of them.
+  -->
+  <section class="hero relative isolate overflow-hidden" aria-labelledby="page-title">
+    <div class="wrap pb-14 pt-8 md:pt-12 min-[1340px]:pb-28">
+      <div class="min-[1340px]:max-w-[37rem]">
+        <Breadcrumbs crumbs={withHome(crumbs)!} />
+        <p class="label mt-10 flex items-center gap-3 text-accent md:mt-14"><span class="h-px w-8 bg-accent" aria-hidden="true"></span>Digital Marketing in Pokhara</p>
+        <h1 id="page-title" class="display mt-5 text-[clamp(2.4rem,5.4vw,4.25rem)] leading-[0.97]">Digital marketing in <span class="text-accent">Pokhara</span> that brings real enquiries, not just likes</h1>
+        <div class="mt-7 max-w-2xl space-y-4 text-step-1 leading-snug text-muted">
+          <p>I'm Aashish, a digital marketer based in Pokhara. With my team, I've worked with <strong class="text-ink">more than {STATS.businessesWorkedWith} businesses</strong>, and most of them still work with us today.</p>
+          <p>I help Pokhara businesses get found on Google, show up on Google Maps, and turn social media and ads into real calls, WhatsApp messages and bookings. Not just likes.</p>
+        </div>
+        <div class="mt-9 flex flex-wrap items-center gap-3">
+          <Button href={whatsapp} target="_blank" rel="nofollow noopener">Chat on WhatsApp</Button>
+          <Button href="/contact/" variant="outline" class="bg-white/60">Book a free 30-minute call</Button>
+          {
+            google && (
+              <a href={google} target="_blank" rel="noopener" class="ml-1 flex items-center gap-2 text-step--1 font-semibold">
+                <span class="flex text-accent">{Array.from({ length: 5 }, () => <Icon name="star" class="size-4 fill-current" />)}</span>
+                {STATS.googleRating.toFixed(1)} on Google
+              </a>
+            )
+          }
+        </div>
       </div>
-      <div class="mt-10 flex flex-wrap items-center gap-3">
-        <Button href={whatsapp} target="_blank" rel="nofollow noopener">Chat on WhatsApp</Button>
-        <Button href="/contact/" variant="outline" class="bg-[#141413]/40 backdrop-blur">Book a free 30-minute call</Button>
-        {
-          google && (
-            <a href={google} target="_blank" rel="noopener" class="ml-1 flex items-center gap-2 text-step--1 font-semibold">
-              <span class="flex text-accent">{Array.from({ length: 5 }, () => <Icon name="star" class="size-4 fill-current" />)}</span>
-              {STATS.googleRating.toFixed(1)} on Google
-            </a>
-          )
-        }
-      </div>
+      <picture>
+        <source media="(min-width: 1340px)" srcset={heroWide.src} width={heroWide.attributes.width} height={heroWide.attributes.height} />
+        <img
+          src={heroPhoto.src}
+          width={heroPhoto.attributes.width}
+          height={heroPhoto.attributes.height}
+          alt="Phewa Lake and Machhapuchhre in Pokhara, with a boat on the water"
+          loading="eager"
+          fetchpriority="high"
+          decoding="async"
+          class="mt-12 aspect-[4/3] w-full rounded-3xl object-cover sm:aspect-[16/9] min-[1340px]:absolute min-[1340px]:right-0 min-[1340px]:top-1/2 min-[1340px]:-z-10 min-[1340px]:mt-0 min-[1340px]:aspect-auto min-[1340px]:h-auto min-[1340px]:w-[75%] min-[1340px]:max-w-[110rem] min-[1340px]:-translate-y-1/2 min-[1340px]:rounded-none min-[1340px]:object-contain"
+        />
+      </picture>
     </div>
   </section>
 
   <!-- Stat band -->
-  <div class="border-b border-line bg-paper">
+  <div class="border-y border-line bg-paper">
     <dl class="wrap grid grid-cols-2 gap-y-6 py-8 md:grid-cols-4 md:divide-x md:divide-line md:py-10">
       {
         [
@@ -374,6 +385,20 @@ const body = 'mt-6 max-w-2xl text-step-1 leading-relaxed text-muted';
 </Layout>
 
 <style>
+  /* Hero: always light cream, matched to the hero image's own background (#fbf7f0), in both themes. */
+  .hero {
+    background: #fbf7f0;
+    color-scheme: light;
+    --ink: #151514;
+    --ink-muted: #5d5b55;
+    --line: #dedbd2;
+    --paper: #ffffff;
+    --surface: #eceae4;
+    --accent: #c2410c;
+    --on-accent: #ffffff;
+    --focus: #c2410c;
+    color: var(--ink);
+  }
   .tip:has(input:checked) strong { text-decoration: line-through; text-decoration-color: var(--accent); }
   h2[id] { scroll-margin-top: 7rem; }
 </style>
