@@ -1,0 +1,395 @@
+---
+/**
+ * /services/digital-marketing/pokhara/ — local service page for Pokhara.
+ * Hand-built (not from the services collection) because its sections are unique:
+ * season calendar, two-markets table, pricing. Same d4 layout and components as
+ * /services/digital-marketing/. No FAQPage or self-serving review schema, on purpose.
+ */
+import { getEntry, type CollectionEntry } from 'astro:content';
+import Layout from '@/designs/d4/Layout.astro';
+import PageHeader from '@/designs/d4/components/PageHeader.astro';
+import Button from '@/designs/d4/components/Button.astro';
+import DataTable from '@/designs/d4/components/DataTable.astro';
+import Faq from '@/designs/d4/components/Faq.astro';
+import Testimonials from '@/designs/d4/components/Testimonials.astro';
+import CtaPanel from '@/designs/d4/components/CtaPanel.astro';
+import AuthorBox from '@/designs/d4/components/AuthorBox.astro';
+import { localBusinessNode } from '@/lib/schema';
+import { STATS, SOCIALS, whatsappLink } from '@/site.config';
+
+const path = '/services/digital-marketing/pokhara/';
+const crumbs = [
+  { label: 'Services', href: '/services/' },
+  { label: 'Digital Marketing', href: '/services/digital-marketing/' },
+  { label: 'Pokhara', href: path },
+];
+const description = 'Pokhara-based digital marketing for tourism and local businesses: local SEO, Google Business Profile, social media and ads, with clear monthly reports. 60+ businesses served.';
+const whatsapp = whatsappLink("Hi Aashish, I'd like to talk about digital marketing for my business in Pokhara.");
+const google = SOCIALS.find((s) => s.key === 'gbp')?.url;
+
+/** Real results only. Flip to true once the table below has real numbers (never placeholders). */
+const showResults = false;
+
+// Reviews from Pokhara businesses (tourism, health, education).
+const testimonials = (await Promise.all(['begnas-aqua-park', 'happyface-clinic', 'unistar-education'].map((id) => getEntry('testimonials', id)))).filter(
+  (t): t is CollectionEntry<'testimonials'> => !!t && (import.meta.env.DEV || !t.data.draft),
+);
+
+const prices = [
+  { name: 'Google Business Profile setup and optimisation', price: 5000, label: 'NPR 5,000 (one-time)' },
+  { name: 'Local SEO', price: 10000, unit: 'MON' as const, label: 'NPR 10,000 per month' },
+  { name: 'Social media marketing', price: 20000, unit: 'MON' as const, label: 'NPR 20,000 per month' },
+  { name: 'Full digital marketing plan', price: 30000, unit: 'MON' as const, label: 'NPR 30,000 per month' },
+];
+
+const months = [
+  ['Jan', 'winter'], ['Feb', 'winter'], ['Mar', 'peak'], ['Apr', 'peak'], ['May', 'peak'], ['Jun', 'monsoon'],
+  ['Jul', 'monsoon'], ['Aug', 'monsoon'], ['Sep', 'peak'], ['Oct', 'festival'], ['Nov', 'festival'], ['Dec', 'winter'],
+] as const;
+const seasons = {
+  peak: { label: 'Peak travel season', class: 'bg-[#ff7f00]' },
+  festival: { label: 'Peak season + Dashain and Tihar', class: 'bg-[#ffc48a]' },
+  monsoon: { label: 'Monsoon, quieter', class: 'bg-[#c8d2dc]' },
+  winter: { label: 'Winter, slower', class: 'bg-[#e3e1db]' },
+};
+
+const services = [
+  {
+    title: 'Local SEO and Google Business Profile',
+    text: 'When someone in Pokhara searches "cafe near me" or "dentist in Pokhara", the businesses on the map get most of the calls. I set up and optimise your Google Business Profile, fix your details across the web, and build a steady flow of honest reviews, so you show up in Google Maps and the local pack.',
+    link: { label: 'How local SEO works', href: '/blog/local-seo/' },
+  },
+  {
+    title: 'Website SEO',
+    text: 'For searches like "best trekking agency in Pokhara" or "paragliding Pokhara price", your website needs to rank. I handle keyword research, on-page SEO, technical fixes and content that answers what your customers actually search, in the language they search in.',
+    link: { label: 'SEO service', href: '/services/seo/' },
+  },
+  {
+    title: 'Social media marketing (Facebook, Instagram, TikTok)',
+    text: 'A content plan that fits your business and the season, posts and reels that show real people and real places (not stock photos), and replies that turn comments into enquiries.',
+  },
+  {
+    title: 'Paid ads (Meta and Google Ads)',
+    text: "Ads planned around Pokhara's seasons: reaching travellers while they're still planning, and locals when they're ready to buy. Every rupee is tracked, so we know which ads bring enquiries and which to stop.",
+  },
+  {
+    title: 'Websites and landing pages',
+    text: 'With my team, we build fast, mobile-friendly websites and landing pages that load well on mobile data and make it easy to call, message or book.',
+    link: { label: 'Website service', href: '/services/website-development/' },
+  },
+  {
+    title: 'Tracking and monthly reporting',
+    text: 'I set up Google Analytics 4 and Search Console, and track the actions that matter: calls, WhatsApp clicks, form submissions and bookings. Every month you get a clear report on what happened, what worked and what we\'ll do next.',
+  },
+];
+
+const steps = [
+  { title: 'Understand', text: 'One or two meetings to learn what your business actually needs: your customers, your season, your goals.' },
+  { title: 'Plan', text: 'We decide together how digital marketing can really help your business grow.' },
+  { title: 'Agree', text: 'A clear proposal, agreement and contract, so everything is written down.' },
+  { title: 'Deliver', text: 'We do the work we promised.' },
+  { title: 'Report', text: 'Every month, data shows what our work actually did, and what we\'ll do next.' },
+];
+
+const faq = [
+  { question: 'How much does digital marketing cost in Pokhara?', answer: 'It depends on the services you need, your competition and your target market. Base prices start from NPR 5,000 for a one-time Google Business Profile setup, and from NPR 10,000 per month for local SEO. You get an exact quote after our first meeting.' },
+  { question: 'How long does it take to see results?', answer: 'Paid ads can bring enquiries as soon as they go live. Google Business Profile improvements often show results within weeks. Website SEO usually takes a few months to build, but it keeps working long after.' },
+  { question: 'Do I need a website, or is Facebook enough?', answer: "Facebook is important in Nepal, but it isn't enough on its own. A website lets you rank on Google, show full details and prices, and build trust with travellers. A Google Business Profile is the minimum every local business should have." },
+  { question: 'Which platform is best for a Pokhara business?', answer: 'It depends on your customers. Locals: Google Maps and Facebook. Tourists: Google search, Google Maps, reviews and Instagram. Food, fitness and lifestyle: Instagram and TikTok work well. We decide after understanding your business, not before.' },
+  { question: 'Can you help my tourism business get direct bookings?', answer: 'Yes. Direct bookings are one of the most common goals for tourism businesses, and the approach is clear: ranking your own website, getting more reviews and making it easy to book directly, so you depend less on commission-based booking sites.' },
+  { question: 'Do you only work with businesses in Pokhara?', answer: "No. I'm based in Pokhara and know this market best, and I can work with businesses in other cities remotely too.", link: { before: 'See my', label: 'digital marketing services', href: '/services/digital-marketing/' } },
+  { question: 'Do you offer one-time work or only monthly plans?', answer: 'Both. Some clients need a one-time setup, like a Google Business Profile or a website audit. Others need ongoing monthly growth. We choose what fits your goals.' },
+];
+
+const h2 = 'display text-step-4';
+const body = 'prose';
+---
+
+<Layout
+  rawTitle="Digital Marketing in Pokhara: Local Expert | Aashish Khadka"
+  description={description}
+  ogDescription="Local SEO, Google Business Profile, social media and ads for Pokhara businesses, with clear monthly reports. 60+ businesses served."
+  ogImage="/og/services/digital-marketing-service-in-pokhara-aashish-khadka.png"
+  ogImageSize={{ width: 1200, height: 630 }}
+  ogImageAlt="Digital marketing in Pokhara by Aashish Khadka"
+  breadcrumbs={crumbs}
+  schema={[
+    localBusinessNode({
+      path,
+      name: 'Aashish Khadka: Digital Marketing in Pokhara',
+      description,
+      city: 'Pokhara',
+      streetAddress: 'Buddha Chowk',
+      priceRange: 'NPR 5,000+',
+      offers: prices,
+    }),
+  ]}
+>
+  <PageHeader title="Digital marketing in Pokhara that brings real enquiries, not just likes" kicker="Digital Marketing in Pokhara" breadcrumbs={crumbs}>
+    <div class="mt-6 max-w-2xl space-y-4 text-step-1 leading-snug text-muted">
+      <p>I'm Aashish, a digital marketer based in Pokhara. With my team, I've worked with <strong class="text-ink">more than {STATS.businessesWorkedWith} businesses</strong>, and most of them still work with us today.</p>
+      <p>I help Pokhara businesses get found on Google, show up on Google Maps, and turn social media and ads into real calls, WhatsApp messages and bookings. Not just likes.</p>
+    </div>
+    <div class="mt-9 flex flex-wrap gap-3">
+      <Button href={whatsapp} target="_blank" rel="nofollow noopener">Chat on WhatsApp</Button>
+      <Button href="/contact/" variant="outline">Book a free 30-minute call</Button>
+    </div>
+    <ul class="mt-9 flex flex-wrap gap-x-3 gap-y-2 text-step--1 text-muted" aria-label="Why businesses trust me">
+      <li>
+        <span class="text-accent" aria-hidden="true">★</span>
+        {google ? <a class="link text-ink" href={google} target="_blank" rel="noopener">{STATS.googleRating.toFixed(1)} star rating on Google</a> : `${STATS.googleRating.toFixed(1)} star rating on Google`}
+      </li>
+      <li aria-hidden="true">·</li>
+      <li>{STATS.businessesWorkedWith}+ businesses served</li>
+      <li aria-hidden="true">·</li>
+      <li>Hotels · restaurants · tourism · health · education · fitness</li>
+    </ul>
+  </PageHeader>
+
+  <!-- Why Pokhara is different -->
+  <section class="wrap pt-20 md:pt-28" aria-labelledby="different">
+    <h2 id="different" class:list={[h2, 'max-w-4xl']}>Why digital marketing in Pokhara is different</h2>
+    <div class:list={[body, 'mt-8']}>
+      <p>Most digital marketing advice online is written for big cities or for other countries. Pokhara doesn't work like that. If you copy a Kathmandu or international playbook here, you'll waste money. Here's what makes this city different.</p>
+      <h3>Pokhara is two markets in one city</h3>
+      <p>Every business here is selling to one, or both, of these groups:</p>
+    </div>
+    <div class="mt-6 max-w-4xl">
+      <DataTable
+        label="Tourists and travellers compared with local customers"
+        head={['', 'Tourists and travellers', 'Local customers']}
+        rowHeaders
+        rows={[
+          ['Who', 'Foreign visitors, Indian and other South Asian travellers, domestic tourists', 'People who live in and around Pokhara'],
+          ['When they search', 'Weeks or months before the trip, and again once they arrive', 'Usually the same day they need something'],
+          ['How they search', 'English: "hotel in Lakeside Pokhara", "Poon Hill trek cost"', 'English, Romanized Nepali and Nepali: "gym near me", "momo pasal near me"'],
+          ['Where they decide', 'Google, Google Maps, reviews, Instagram, booking sites', 'Google Maps, Facebook, word of mouth, WhatsApp'],
+          ['What wins', 'A strong website, reviews, clear prices in USD and NPR', 'A complete Google Business Profile, reviews, fast replies'],
+        ]}
+      />
+    </div>
+    <div class:list={[body, 'mt-8']}>
+      <p>A hotel in Lakeside and a clinic in Prithvi Chowk need completely different strategies, even though they're in the same city. That's the first thing I work out with every client.</p>
+      <h3>The seasons decide your marketing calendar</h3>
+      <p>Pokhara runs on seasons. Autumn (around September to November) and spring (around March to May) bring the biggest trekking and travel crowds. Festivals like Dashain and Tihar bring a big wave of domestic visitors. The monsoon is quieter.</p>
+    </div>
+
+    <figure class="mt-8 max-w-4xl">
+      <ol
+        class="grid grid-cols-6 gap-1.5 md:grid-cols-12"
+        role="img"
+        aria-label="Pokhara's marketing seasons: March, April, May and September are peak travel season. October and November are peak season plus Dashain and Tihar. June, July and August are the quieter monsoon. December, January and February are a slower winter."
+      >
+        {months.map(([m, s]) => <li class:list={['rounded-lg py-3 text-center text-step--1 font-semibold text-[#151514]', seasons[s].class]}>{m}</li>)}
+      </ol>
+      <figcaption>
+        <ul class="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-step--1 text-muted" aria-hidden="true">
+          {Object.values(seasons).map((s) => <li class="flex items-center gap-2"><span class:list={['size-3 rounded-sm', s.class]} />{s.label}</li>)}
+        </ul>
+      </figcaption>
+    </figure>
+
+    <div class:list={[body, 'mt-8']}>
+      <p>The numbers show how big this market is. The Annapurna region recorded a record <strong>299,831 visitors in 2025</strong>, according to the Annapurna Conservation Area Project, and Pokhara is the main gateway to that region.</p>
+      <p>Good marketing here starts <strong>before</strong> the season, not during it. By the time the season begins, travellers have already planned and booked.</p>
+      <h3>Your customers are online, mostly on their phones</h3>
+    </div>
+
+    <figure class="mt-6 max-w-4xl">
+      <ul class="grid gap-3 sm:grid-cols-3 sm:gap-4">
+        <li class="rounded-2xl border border-line bg-paper p-6">
+          <p class="display text-step-4 text-accent">16.6M</p>
+          <p class="mt-2 leading-snug">internet users in Nepal, 56% of the population</p>
+        </li>
+        <li class="rounded-2xl border border-line bg-paper p-6">
+          <p class="display text-step-4 text-accent">14.8M</p>
+          <p class="mt-2 leading-snug">social media user identities</p>
+        </li>
+        <li class="rounded-2xl border border-line bg-paper p-6">
+          <p class="display text-step-4 text-accent">4.35M</p>
+          <p class="mt-2 leading-snug">people reachable with Instagram ads</p>
+        </li>
+      </ul>
+      <figcaption class="mt-3 text-step--1 text-muted">
+        Late 2025 figures from <a class="link" href="https://datareportal.com/reports/digital-2026-nepal" target="_blank" rel="noopener">DataReportal, Digital 2026: Nepal</a>. Facebook's ad audience was around 14.8 million.
+      </figcaption>
+    </figure>
+
+    <div class:list={[body, 'mt-8']}>
+      <p>What this means for a Pokhara business:</p>
+      <ul>
+        <li><strong>Facebook is still essential</strong> for reaching local customers.</li>
+        <li><strong>Instagram matters a lot</strong> for tourism, food and lifestyle businesses.</li>
+        <li><strong>Almost everyone is on mobile</strong>, often on mobile data, so your website must load fast on a phone.</li>
+        <li><strong>People prefer to message.</strong> A WhatsApp or Viber button often gets more enquiries than a contact form.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Services -->
+  <section class="wrap pt-24 md:pt-32" aria-labelledby="services">
+    <h2 id="services" class:list={[h2, 'max-w-4xl']}>Digital marketing services I offer in Pokhara</h2>
+    <p class="mt-6 max-w-2xl text-step-1 leading-snug text-muted">I don't sell fixed packages. Every plan is built from these services, based on what your business actually needs.</p>
+    <ul class="mt-10 grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+      {
+        services.map((s) => (
+          <li class="flex flex-col rounded-2xl border border-line bg-paper p-6">
+            <h3 class="title text-step-1">{s.title}</h3>
+            <p class="mt-3 leading-relaxed text-muted">{s.text}</p>
+            {s.link && <a class="mt-auto pt-5 font-semibold hover:text-accent" href={s.link.href}>{s.link.label} <span aria-hidden="true">→</span></a>}
+          </li>
+        ))
+      }
+    </ul>
+    <div class="mt-10 max-w-4xl">
+      <DataTable
+        label="When each service usually shows results"
+        head={['Service', 'Best for', 'When you usually see results']}
+        rowHeaders
+        rows={[
+          ['Local SEO and Google Business Profile', 'Any business with a location customers visit', 'Often within weeks for profile fixes; longer to build reviews'],
+          ['Website SEO', 'Tourism, services, education, e-commerce', 'Usually a few months; it keeps building after that'],
+          ['Social media', 'Awareness, trust, tourism, food, lifestyle', 'Steady growth over months'],
+          ['Paid ads', 'Seasonal offers, launches, fast enquiries', 'As soon as ads go live'],
+          ['Tracking and reporting', 'Every business', 'From the first month'],
+        ]}
+      />
+    </div>
+  </section>
+
+  <!-- Who I work with -->
+  <section class="wrap pt-24 md:pt-32" aria-labelledby="who">
+    <h2 id="who" class={h2}>Who I work with in Pokhara</h2>
+    <p class="mt-6 max-w-2xl text-step-1 leading-snug text-muted">I work with businesses that want real growth, not vanity numbers. Most of my clients fall into these groups:</p>
+    <div class="mt-8 max-w-4xl">
+      <DataTable
+        label="What usually works first for each type of business"
+        head={['Business type', 'What usually works first']}
+        rowHeaders
+        rows={[
+          ['Hotels, resorts and homestays', 'Google Business Profile, reviews, website SEO, Instagram'],
+          ['Trekking, tour and adventure companies', 'SEO for trip pages, content for international searches, seasonal ads'],
+          ['Restaurants and cafes', 'Google Maps, reviews, Instagram and TikTok, local ads'],
+          ['Clinics and health businesses', 'Local SEO, trust-building content, Facebook'],
+          ['Gyms and fitness centres', 'Google Maps, Instagram and reels, local ads'],
+          ['Schools, colleges and institutes', 'SEO, Facebook, ads timed with admission seasons'],
+          ['Shops and local services', 'Google Business Profile, Facebook, WhatsApp'],
+        ]}
+      />
+    </div>
+    <p class="mt-6 max-w-2xl text-muted">I'm based in Pokhara, and I can work with businesses outside Pokhara remotely too.</p>
+  </section>
+
+  {
+    showResults && (
+      <section class="wrap pt-24 md:pt-32" aria-labelledby="results">
+        <h2 id="results" class={h2}>Real results for Pokhara businesses</h2>
+        <p class="mt-6 max-w-2xl text-step-1 leading-snug text-muted">Anyone can promise results. Here's what we've actually achieved. To respect client privacy, I share the industry and the numbers, not the names.</p>
+        <div class="mt-8 max-w-5xl">
+          <DataTable
+            label="Results for Pokhara businesses"
+            head={['Industry', 'The challenge', 'What we did', 'Result']}
+            rowHeaders
+            rows={[
+              // TODO(Aashish): real numbers + timeframes, then set showResults = true.
+            ]}
+          />
+        </div>
+      </section>
+    )
+  }
+
+  <!-- How I work -->
+  <section class="wrap pt-24 md:pt-32" aria-labelledby="how">
+    <h2 id="how" class={h2}>How I work</h2>
+    <p class="mt-6 max-w-2xl text-step-1 leading-snug text-muted">Most of my clients stay long-term, and I think this process is why. I don't sell random packages a business doesn't need.</p>
+    <ol class="mt-10 grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-5">
+      {
+        steps.map((s, i) => (
+          <li class:list={['rounded-2xl p-5 sm:p-6', i === steps.length - 1 ? 'stage sm:col-span-2 lg:col-span-1' : 'border border-line bg-paper']}>
+            <p class="title text-step-2 text-accent">{String(i + 1).padStart(2, '0')}</p>
+            <p class="title mt-4 text-step-1 sm:mt-6">{s.title}</p>
+            <p class="mt-2 leading-relaxed text-muted">{s.text}</p>
+          </li>
+        ))
+      }
+    </ol>
+    <p class="mt-8 text-muted">Want to know where this way of working came from? <a class="link font-semibold text-ink" href="/stories/learning-outside-the-classroom/">Read my story</a>.</p>
+  </section>
+
+  <!-- Cost -->
+  <section class="wrap pt-24 md:pt-32" aria-labelledby="cost">
+    <h2 id="cost" class:list={[h2, 'max-w-4xl']}>How much does digital marketing cost in Pokhara?</h2>
+    <p class="mt-6 max-w-2xl text-step-1 leading-snug text-muted">The honest answer: it depends on what your business needs. A cafe that needs Google Maps and Instagram needs a very different budget from a trekking company targeting travellers in Europe.</p>
+    <div class="mt-10 grid gap-10 lg:grid-cols-2 lg:gap-12">
+      <DataTable label="Starting prices" head={['Service', 'Starting from']} rowHeaders rows={prices.map((p) => [p.name, p.label])} />
+      <DataTable
+        label="What affects the cost"
+        head={['What affects the cost', 'Why']}
+        rowHeaders
+        rows={[
+          ['Which services you need', 'Local SEO alone costs less than SEO + social media + ads'],
+          ['Your competition', 'Ranking for "hotel in Lakeside" is harder than for a niche service'],
+          ['Your target market', 'Reaching international travellers usually takes more content and ad spend than reaching locals'],
+          ['One-time or monthly', 'A one-time setup costs less than ongoing monthly growth work'],
+        ]}
+      />
+    </div>
+    <p class="mt-10 max-w-3xl rounded-2xl border-l-4 border-accent bg-paper p-6 leading-relaxed">
+      These are base prices. Depending on your industry and the scope of work, the price may be different. After our first meeting, you get an exact quote based on your goals. No hidden costs, and no services you don't need. Ad budgets (money paid directly to Meta or Google) are separate from these fees.
+    </p>
+  </section>
+
+  <!-- Why a Pokhara-based marketer -->
+  <section class="wrap pt-24 md:pt-32" aria-labelledby="why">
+    <h2 id="why" class:list={[h2, 'max-w-4xl']}>Why work with a Pokhara-based digital marketer</h2>
+    <ul class="mt-10 grid gap-x-12 gap-y-6 md:grid-cols-2">
+      {
+        [
+          ['I know this market.', 'Lakeside, Damside, Prithvi Chowk, Mahendrapul: each area has different customers. I plan around that.'],
+          ['We can meet in person.', 'Strategy is easier over tea than over email.'],
+          ['I plan around the seasons.', "Your campaigns start before the season, not after it's already busy."],
+          ["I speak your customers' language.", 'English for travellers, Nepali and Romanized Nepali for locals.'],
+          ['You get one point of contact.', 'You talk to me, and my team handles development, design and branding behind the scenes.'],
+          ['You see the data.', 'Monthly reports show real enquiries and results, not just reach and likes.'],
+        ].map(([lead, text]) => (
+          <li class="flex gap-4 text-step-0 leading-relaxed">
+            <span class="mt-[0.6em] size-2 shrink-0 rounded-full bg-accent" aria-hidden="true" />
+            <p><strong class="font-semibold">{lead}</strong> <span class="text-muted">{text}</span></p>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <!-- 5 things this week -->
+  <section class="wrap pt-24 md:pt-32" aria-labelledby="this-week">
+    <h2 id="this-week" class:list={[h2, 'max-w-4xl']}>5 things any Pokhara business can do this week</h2>
+    <div class:list={[body, 'mt-8']}>
+      <p>Not ready to hire anyone yet? Start with these. They're free.</p>
+      <ol>
+        <li><strong>Claim and complete your Google Business Profile.</strong> Add accurate hours, real photos, your services and a map pin exactly on your door.</li>
+        <li><strong>Ask every customer for an honest Google review.</strong> Send a direct review link on WhatsApp right after a good experience. Never pay for reviews.</li>
+        <li><strong>Add a WhatsApp button to your website and profiles.</strong> Many people here would rather message than call.</li>
+        <li><strong>Show your prices.</strong> For tourism businesses, show NPR and USD. Hidden prices make travellers look elsewhere.</li>
+        <li><strong>Plan content one season ahead.</strong> Post your autumn offers in summer, not in October.</li>
+      </ol>
+      <p>Want to go deeper? Check your website page by page with my <a href="/resource/on-page-seo-checklist-template/">free on-page SEO checklist template</a>, or read the <a href="/blog/on-page-seo-checklist/">on-page SEO checklist guide</a>.</p>
+    </div>
+  </section>
+
+  {testimonials.length > 0 && <Testimonials items={testimonials} title="What clients say." />}
+
+  <div class="wrap pt-24 md:pt-32">
+    <Faq items={faq} title="Frequently asked questions" />
+  </div>
+
+  <CtaPanel
+    kicker="Work with me"
+    title="Let's grow your business in Pokhara."
+    lead="Tell me about your business and what you want to achieve. The first call is free, and you'll leave with at least one idea you can use straight away, whether we work together or not."
+    whatsapp={whatsapp}
+  />
+
+  <div class="wrap -mt-12 pb-24 md:-mt-16 md:pb-32"><AuthorBox /></div>
+</Layout>

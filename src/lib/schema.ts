@@ -200,3 +200,50 @@ export const professionalServiceNode = (): JsonLdNode => ({
   parentOrganization: { '@id': ids.org },
   ...(sameAs().length ? { sameAs: sameAs() } : {}),
 });
+
+/**
+ * A local service page (e.g. /services/digital-marketing/pokhara/): the business as
+ * it serves one city, with its starting prices as offers. Its own @id, so it never
+ * clashes with the site-wide #business node on /contact/.
+ */
+export const localBusinessNode = (opts: {
+  path: string;
+  name: string;
+  description: string;
+  city: string;
+  streetAddress?: string;
+  priceRange: string;
+  offers: { name: string; price: number; unit?: 'MON' }[];
+}): JsonLdNode => {
+  const url = absoluteUrl(opts.path);
+  return {
+    '@type': 'ProfessionalService',
+    '@id': `${url}#business`,
+    name: opts.name,
+    description: opts.description,
+    url,
+    telephone: CONTACT.phoneE164,
+    email: CONTACT.email,
+    priceRange: opts.priceRange,
+    address: {
+      '@type': 'PostalAddress',
+      ...(opts.streetAddress ? { streetAddress: opts.streetAddress } : {}),
+      addressLocality: CONTACT.address.locality,
+      addressRegion: CONTACT.address.region,
+      addressCountry: CONTACT.address.countryCode,
+    },
+    areaServed: { '@type': 'City', name: opts.city },
+    founder: { '@id': ids.person },
+    parentOrganization: { '@id': ids.org },
+    makesOffer: opts.offers.map((o) => ({
+      '@type': 'Offer',
+      itemOffered: { '@type': 'Service', name: o.name },
+      priceSpecification: {
+        '@type': 'UnitPriceSpecification',
+        minPrice: o.price,
+        priceCurrency: 'NPR',
+        ...(o.unit ? { unitCode: o.unit, unitText: 'per month' } : {}),
+      },
+    })),
+  };
+};

@@ -9,7 +9,7 @@ import Button from '@/designs/d4/components/Button.astro';
 import Testimonials from '@/designs/d4/components/Testimonials.astro';
 import { getPublished, byOrder } from '@/lib/content';
 import { itemListNode } from '@/lib/schema';
-import { SERVICE_GROUPS } from '@/site.config';
+import { SERVICE_GROUPS, LOCAL_PAGES } from '@/site.config';
 
 const services = (await getPublished('services')).sort(byOrder);
 const groups = SERVICE_GROUPS.map((g) => ({ ...g, items: services.filter((s) => s.data.group === g.key) })).filter((g) => g.items.length);
@@ -40,7 +40,17 @@ const testimonials = (await getPublished('testimonials')).filter((t) => t.data.f
         <section class="grid gap-6 border-t border-line pt-10 first:border-t-0 md:grid-cols-12 md:gap-10" aria-labelledby={`group-${g.key}`}>
           <h2 id={`group-${g.key}`} class="label md:col-span-3 md:pt-10">{g.label}</h2>
           <div class="md:col-span-9">
-            {g.items.map((s) => <ServiceItem service={s} index={n++} />)}
+            {g.items.map((s) => (
+              <>
+                <ServiceItem service={s} index={n++} />
+                {LOCAL_PAGES.filter((l) => l.parent === s.id).map((l) => (
+                  <a href={l.href} class="group -mt-2 mb-6 ml-[2.25rem] flex items-center justify-between gap-4 rounded-2xl border border-line bg-paper px-5 py-4 font-semibold transition-colors hover:border-ink md:-mt-4 md:mb-10 md:ml-[4.5rem]">
+                    <span><span class="label mr-3 text-accent">Local</span>{l.label}</span>
+                    <span aria-hidden="true" class="transition-transform group-hover:translate-x-1">→</span>
+                  </a>
+                ))}
+              </>
+            ))}
           </div>
         </section>
       ))

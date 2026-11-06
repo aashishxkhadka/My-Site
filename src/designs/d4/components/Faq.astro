@@ -1,7 +1,8 @@
 ---
 /** Accessible FAQ: native <details>, no JS. */
 export interface Props {
-  items: { question: string; answer: string }[];
+  /** `link`: optional "See …" link shown after the answer. */
+  items: { question: string; answer: string; link?: { before: string; label: string; href: string } }[];
   title?: string;
 }
 const { items, title = 'Questions' } = Astro.props;
@@ -18,7 +19,10 @@ const { items, title = 'Questions' } = Astro.props;
               {f.question}
               <span class="grid size-9 shrink-0 place-items-center rounded-full border border-line transition-transform duration-300 group-open:rotate-45" aria-hidden="true">+</span>
             </summary>
-            <p class="max-w-2xl pb-6 text-muted">{f.answer}</p>
+            <p class="max-w-2xl pb-6 text-muted">
+              {f.answer}
+              {f.link && <>{' '}{f.link.before} <a class="link text-ink" href={f.link.href}>{f.link.label}</a>.</>}
+            </p>
           </details>
         ))}
       </div>

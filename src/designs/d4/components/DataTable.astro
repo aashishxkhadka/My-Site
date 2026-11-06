@@ -1,0 +1,28 @@
+---
+/**
+ * A simple data table in the blog's table style. Scrolls sideways inside its own
+ * box on phones instead of stretching the page. With `rowHeaders`, the first cell
+ * of each row is a <th scope="row"> (bold).
+ */
+export interface Props {
+  head: string[];
+  rows: string[][];
+  /** Names the scroll box for screen readers. */
+  label: string;
+  rowHeaders?: boolean;
+}
+const { head, rows, label, rowHeaders = false } = Astro.props;
+---
+
+<div class="prose max-w-none">
+  <div class="table-scroll !my-0" tabindex="0" role="region" aria-label={label}>
+    <table>
+      <thead>
+        <tr>{head.map((h) => (h ? <th scope="col">{h}</th> : <td />))}</tr>
+      </thead>
+      <tbody>
+        {rows.map((r) => <tr>{r.map((c, i) => (rowHeaders && i === 0 ? <th scope="row">{c}</th> : <td>{c}</td>))}</tr>)}
+      </tbody>
+    </table>
+  </div>
+</div>

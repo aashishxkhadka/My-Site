@@ -5,8 +5,10 @@
  * written, this reads each page back (title, breadcrumb trail) and renders the
  * matching PNG, so a page and its image can never drift apart.
  * Images only exist in production builds; in dev the og:image URL 404s.
+ * A page can use its own image instead: put it in public/og/ and pass its path as ogImage.
  */
 import { readFile, writeFile, mkdir, readdir } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import satori from 'satori';
@@ -99,6 +101,9 @@ export default function ogImages() {
           if (!image) continue;
           const { pathname } = new URL(image);
           if (!pathname.startsWith('/og/')) continue;
+
+          // A hand-made image shipped from public/og/ (already copied into the build): keep it.
+          if (existsSync(join(out, pathname))) continue;
 
           const page = '/' + relative(out, dirname(file)).split('\\').join('/') + '/';
           const path = page === '//' ? '/' : page;

@@ -203,6 +203,17 @@ export const RESOURCES_CATEGORY = 'resources';
 /** Fullbleed category whose latest post becomes the Now page (/now/). Never listed on the blog. */
 export const NOW_CATEGORY = 'now';
 
+/**
+ * Local service pages: hand-built pages under a service, e.g. /services/digital-marketing/pokhara/.
+ * Listed under their parent service on /services/, /sitemap/ and /contact/.
+ */
+export const LOCAL_PAGES = [
+  { label: 'Digital marketing in Pokhara', href: '/services/digital-marketing/pokhara/', parent: 'digital-marketing' },
+] as const;
+
+/** WhatsApp chat link with a pre-filled first message. */
+export const whatsappLink = (text: string) => `${CONTACT.whatsapp ?? 'https://wa.me/9779805106358'}?text=${encodeURIComponent(text)}`;
+
 /* ------------------------------------------------------------------ */
 /* Sections — the extension point.                                     */
 /* A new section = a collection in content.config.ts + an entry here.  */
@@ -268,6 +279,7 @@ export const NAV = {
       links: [
         { label: 'About', href: '/about/' },
         { label: 'Services', href: '/services/' },
+        { label: 'Digital marketing in Pokhara', href: '/services/digital-marketing/pokhara/' },
         { label: 'Work', href: '/work/' },
         { label: 'Projects', href: '/projects/' },
         { label: 'Contact', href: '/contact/' },

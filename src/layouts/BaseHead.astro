@@ -16,6 +16,8 @@ export interface Props {
   noindex?: boolean | undefined;
   ogImage?: string | undefined;
   ogImageSize?: { width: number; height: number } | undefined;
+  ogImageAlt?: string | undefined;
+  ogDescription?: string | undefined;
   ogType?: 'website' | 'article' | 'profile' | undefined;
   publishedTime?: Date | undefined;
   modifiedTime?: Date | undefined;
@@ -64,6 +66,8 @@ const nodes: JsonLdNode[] = [
   noindex={p.noindex}
   ogImage={p.ogImage}
   ogImageSize={p.ogImageSize}
+  ogImageAlt={p.ogImageAlt}
+  ogDescription={p.ogDescription}
   ogType={p.ogType ?? 'website'}
   publishedTime={p.publishedTime}
   modifiedTime={p.modifiedTime}

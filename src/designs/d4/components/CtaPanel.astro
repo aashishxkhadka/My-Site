@@ -9,11 +9,14 @@ export interface Props {
   title?: string;
   lead?: string;
   kicker?: string;
+  /** Adds a "Chat on WhatsApp" button (this link) before "Start a conversation", and the city to the contact line. */
+  whatsapp?: string;
 }
 const {
   title = "Let's grow your business.",
   lead = "Tell me where your business is today and where you want it to be. I'll tell you honestly how I can help.",
   kicker = 'Work with me',
+  whatsapp,
 } = Astro.props;
 ---
 
@@ -24,12 +27,23 @@ const {
       <h2 id="cta" class="display text-step-4">{title}</h2>
       <p class="mt-6 max-w-md text-step-1 leading-snug text-muted">{lead}</p>
       <div class="mt-9 flex flex-wrap gap-3">
-        <Button href="/contact/">Start a conversation</Button>
+        {whatsapp && <Button href={whatsapp} target="_blank" rel="nofollow noopener">Chat on WhatsApp</Button>}
+        <Button href="/contact/" variant={whatsapp ? 'outline' : 'primary'}>Start a conversation</Button>
       </div>
-      <div class="mt-10 flex flex-col gap-1 sm:flex-row sm:gap-8">
-        <a class="link font-medium" href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>
-        <a class="link font-medium" href={`tel:${CONTACT.phoneE164}`}>{CONTACT.phoneDisplay}</a>
-      </div>
+      {
+        whatsapp ? (
+          <div class="mt-10 flex flex-col gap-1 sm:flex-row sm:flex-wrap sm:gap-x-8">
+            <a class="link font-medium" href={`tel:${CONTACT.phoneE164}`}>{CONTACT.phoneDisplay}</a>
+            <a class="link font-medium" href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>
+            <span class="font-medium text-muted">{CONTACT.address.display}</span>
+          </div>
+        ) : (
+          <div class="mt-10 flex flex-col gap-1 sm:flex-row sm:gap-8">
+            <a class="link font-medium" href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>
+            <a class="link font-medium" href={`tel:${CONTACT.phoneE164}`}>{CONTACT.phoneDisplay}</a>
+          </div>
+        )
+      }
     </div>
     <div class="relative hidden md:col-span-5 md:block" aria-hidden="true">
       <Picture src={portrait} alt="" formats={['avif', 'webp']} widths={[500, 716]} sizes="35vw" class="cta-portrait absolute bottom-0 right-[4%] h-[90%] w-auto max-w-none object-contain object-bottom" />

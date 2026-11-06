@@ -9,6 +9,7 @@ import { getPublished, byNewest, byOrder } from '@/lib/content';
 import { postPath, postTopic } from '@/lib/posts';
 import { topicsInfo } from '@/lib/taxonomy';
 import { formatDate, isoDate } from '@/lib/format';
+import { LOCAL_PAGES } from '@/site.config';
 
 const services = (await getPublished('services')).sort(byOrder);
 const blog = (await getPublished('blog')).sort(byNewest);
@@ -50,7 +51,7 @@ const post = (p: (typeof blog)[number] | (typeof stories)[number]): Item => ({ l
     <section aria-labelledby="sm-services">
       <h2 id="sm-services" class="display text-step-2">Services</h2>
       <ul class="mt-5 divide-y divide-line border-y border-line">
-        {services.map((s) => <li><a class="flex justify-between gap-4 py-3 font-medium hover:text-accent" href={`/services/${s.id}/`}>{s.data.title}<span aria-hidden="true">→</span></a></li>)}
+        {services.flatMap((s) => [{ label: s.data.title, href: `/services/${s.id}/` }, ...LOCAL_PAGES.filter((l) => l.parent === s.id)]).map((l) => <li><a class="flex justify-between gap-4 py-3 font-medium hover:text-accent" href={l.href}>{l.label}<span aria-hidden="true">→</span></a></li>)}
       </ul>
     </section>
 
