@@ -92,12 +92,12 @@ const body = 'mt-6 max-w-2xl text-step-1 leading-relaxed text-muted';
           <p>I'm Aashish, a digital marketer based in Pokhara. With my team, I've worked with <strong class="text-ink">more than {STATS.businessesWorkedWith} businesses</strong>, and most of them still work with us today.</p>
           <p>I help Pokhara businesses get found on Google, show up on Google Maps, and turn social media and ads into real calls, WhatsApp messages and bookings. Not just likes.</p>
         </div>
-        <div class="mt-9 flex flex-wrap items-center gap-3">
-          <Button href={whatsapp} target="_blank" rel="nofollow noopener">Chat on WhatsApp</Button>
-          <Button href="/contact/" variant="outline" class="bg-white/60">Book a free 30-minute call</Button>
+        <div class="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+          <Button href={whatsapp} target="_blank" rel="nofollow noopener" class="justify-center sm:justify-start">Chat on WhatsApp</Button>
+          <Button href="/contact/" variant="outline" class="justify-center bg-white/60 sm:justify-start">Book a free 30-minute call</Button>
           {
             google && (
-              <a href={google} target="_blank" rel="noopener" class="ml-1 flex items-center gap-2 text-step--1 font-semibold">
+              <a href={google} target="_blank" rel="noopener" class="flex min-h-11 items-center justify-center gap-2 text-step--1 font-semibold sm:ml-1 sm:justify-start">
                 <span class="flex text-accent">{Array.from({ length: 5 }, () => <Icon name="star" class="size-4 fill-current" />)}</span>
                 {STATS.googleRating.toFixed(1)} on Google
               </a>
@@ -130,7 +130,7 @@ const body = 'mt-6 max-w-2xl text-step-1 leading-relaxed text-muted';
             <span class="hidden size-11 shrink-0 place-items-center rounded-2xl bg-surface text-accent transition-colors group-hover:bg-accent group-hover:text-on-accent sm:grid"><Icon name={p.icon} class="size-5" /></span>
             <div class="flex flex-col-reverse">
               <dt class="mt-1.5 text-step--1 leading-snug text-muted">
-                {p.href ? <a href={p.href} {...(p.external ? { target: '_blank', rel: 'noopener' } : {})} class="after:absolute after:inset-0 group-hover:text-ink">{p.label} <span aria-hidden="true">{p.external ? '↗' : '↓'}</span></a> : p.label}
+                {p.href ? <a href={p.href} {...(p.external ? { target: '_blank', rel: 'noopener' } : {})} class="after:absolute after:inset-0 group-hover:text-ink">{p.label}{'\u00a0'}<span aria-hidden="true">{p.external ? '↗' : '↓'}</span></a> : p.label}
               </dt>
               <dd class="flex items-center gap-2">
                 <span class="display whitespace-nowrap text-[clamp(1.6rem,2.4vw,2.25rem)] leading-none">{p.value}</span>
@@ -209,15 +209,15 @@ const body = 'mt-6 max-w-2xl text-step-1 leading-relaxed text-muted';
         <div class="mt-8 overflow-hidden rounded-3xl border border-line">
           <div class="grid grid-cols-2 bg-surface md:grid-cols-[11rem_1fr_1fr]">
             <span class="hidden md:block"></span>
-            <p class="title flex items-center gap-2 p-4 text-step-1"><Icon name="globe" class="size-5 shrink-0 text-accent" />Tourists and travellers</p>
-            <p class="title flex items-center gap-2 border-l border-line p-4 text-step-1"><Icon name="pin" class="size-5 shrink-0 text-accent" />Local customers</p>
+            <p class="title flex items-center gap-2 p-3 text-step-1 sm:p-4"><Icon name="globe" class="size-5 shrink-0 text-accent" />Tourists and travellers</p>
+            <p class="title flex items-center gap-2 border-l border-line p-3 text-step-1 sm:p-4"><Icon name="pin" class="size-5 shrink-0 text-accent" />Local customers</p>
           </div>
           {
             markets.rows.map((r, i) => (
               <div class="grid grid-cols-2 border-t border-line md:grid-cols-[11rem_1fr_1fr]">
-                <p class="label col-span-2 px-4 pt-4 text-ink md:col-span-1 md:py-4">{r}</p>
-                <p class="p-4 leading-snug">{markets.tourists[i]}</p>
-                <p class="border-l border-line p-4 leading-snug">{markets.locals[i]}</p>
+                <p class="label col-span-2 px-3 pt-4 text-ink sm:px-4 md:col-span-1 md:py-4">{r}</p>
+                <p class="p-3 leading-snug sm:p-4">{markets.tourists[i]}</p>
+                <p class="border-l border-line p-3 leading-snug sm:p-4">{markets.locals[i]}</p>
               </div>
             ))
           }
@@ -332,7 +332,7 @@ const body = 'mt-6 max-w-2xl text-step-1 leading-relaxed text-muted';
         <span class={num} aria-hidden="true">{n('how')}</span>
         <h2 id="how" class={h2}>How I work</h2>
         <p class={body}>Most of my clients stay long-term, and I think this process is why. I don't sell random packages a business doesn't need.</p>
-        <ol class="mt-10 space-y-8 border-l-2 border-line pl-8">
+        <ol class="ml-5 mt-10 space-y-8 border-l-2 border-line pl-8 lg:ml-0">
           {
             steps.map((s, i) => (
               <li class="relative">
